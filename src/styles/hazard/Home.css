@@ -1,0 +1,9 @@
+/* Home-specific variables and styles */
+.hazard-page.home {
+  --primary-accent: #f97316;
+  --primary-accent-hover: #ea580c;
+  --primary-accent-rgb: 249, 115, 22;
+  --bg-color: #0c0a09; /* Deep warm stone tone background for home */
+  --card-bg: rgba(28, 25, 23, 0.6);
+  --border-color: rgba(231, 229, 228, 0.08);
+}

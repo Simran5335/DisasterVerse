@@ -62,7 +62,7 @@ const Dashboard = () => {
 
   return (
     <div style={styles.dashboardContainer}>
-      
+
       {/* 1. LEFT SIDEBAR */}
       <aside style={styles.sidebar}>
         <div>
@@ -76,7 +76,7 @@ const Dashboard = () => {
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
             <button onClick={() => setActiveTab('map')} style={{ ...styles.navBtn, ...(activeTab === 'map' ? styles.activeNavBtn : {}) }}>🗺️ India Disaster Map</button>
             <button onClick={() => setActiveTab('kit')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
-            <button onClick={() => setActiveTab('hazard')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
+            <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
             <button onClick={() => setActiveTab('plan')} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
@@ -91,7 +91,7 @@ const Dashboard = () => {
 
       {/* 2. MIDDLE CONTENT AREA */}
       <main style={styles.mainContent}>
-        
+
         {/* Top Header */}
         <header style={styles.topBar}>
           <div>
@@ -126,8 +126,8 @@ const Dashboard = () => {
 
             <div style={styles.badgeDetailsGrid}>
               {badgesList.map((item) => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   style={{
                     ...styles.badgeDetailBox,
                     borderColor: item.unlocked ? '#dc2626' : '#2a2422',
@@ -191,10 +191,11 @@ const Dashboard = () => {
         {activeTab === 'hazard' && (
           <div style={styles.tabContentCard}>
             <h2>🔍 Hazard Spotter</h2>
-            <p style={{ color: '#9ca3af' }}>Inspect virtual rooms in homes and offices to spot electrical hazards and blocked exits.</p>
+            <p style={{ color: '#9ca3af' }}>
+              Inspect virtual rooms in homes and offices to spot electrical hazards and blocked exits.
+            </p>
           </div>
         )}
-
         {activeTab === 'checklist' && (
           <div style={styles.tabContentCard}>
             <h2>📋 Preparedness Checklist & Readiness Score</h2>
@@ -220,7 +221,7 @@ const Dashboard = () => {
 
       {/* 3. RIGHT SIDEBAR */}
       <aside style={styles.rightSidebar}>
-        
+
         {/* XP Card */}
         <div style={styles.rightCard}>
           <div style={styles.xpHeader}>
@@ -239,7 +240,7 @@ const Dashboard = () => {
           <h3 style={styles.rightCardTitle}>🏅 Milestone Ranks</h3>
           <div style={styles.badgesGrid}>
             {badgesList.map((item) => (
-              <div 
+              <div
                 key={item.id}
                 style={{
                   ...styles.badgeItem,
@@ -304,26 +305,26 @@ const Dashboard = () => {
             <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar.</p>
 
             <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-              
+
               <div>
                 <label style={styles.modalLabel}>Display Name</label>
-                <input 
-                  type="text" 
-                  value={newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  style={styles.modalInput} 
-                  required 
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  style={styles.modalInput}
+                  required
                 />
               </div>
 
               <div>
                 <label style={styles.modalLabel}>New Password</label>
-                <input 
-                  type="password" 
-                  placeholder="Leave blank to keep current" 
-                  value={newPassword} 
-                  onChange={(e) => setNewPassword(e.target.value)} 
-                  style={styles.modalInput} 
+                <input
+                  type="password"
+                  placeholder="Leave blank to keep current"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  style={styles.modalInput}
                 />
               </div>
 
@@ -331,10 +332,10 @@ const Dashboard = () => {
                 <label style={styles.modalLabel}>Choose Avatar (Boys, Girls & Bots)</label>
                 <div style={styles.avatarPickerGrid}>
                   {avatarOptions.map((av, index) => (
-                    <img 
+                    <img
                       key={index}
-                      src={av} 
-                      alt="option" 
+                      src={av}
+                      alt="option"
                       style={{
                         ...styles.avatarOptionImg,
                         border: selectedAvatarOption === av ? '2px solid #dc2626' : '2px solid transparent'
