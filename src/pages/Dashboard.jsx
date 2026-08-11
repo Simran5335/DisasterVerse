@@ -74,7 +74,7 @@ const Dashboard = () => {
           <nav style={styles.navLinks}>
             <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
-            <button onClick={() => setActiveTab('map')} style={{ ...styles.navBtn, ...(activeTab === 'map' ? styles.activeNavBtn : {}) }}>🗺️ India Disaster Map</button>
+            <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
             <button onClick={() => navigate('/emergency-kit-builder')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
             <button onClick={() => navigate('/earthquake-balance-builder')} style={{ ...styles.navBtn }}>🏗️ Earthquake Builder</button>
             <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
