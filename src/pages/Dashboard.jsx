@@ -75,7 +75,8 @@ const Dashboard = () => {
             <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
             <button onClick={() => setActiveTab('map')} style={{ ...styles.navBtn, ...(activeTab === 'map' ? styles.activeNavBtn : {}) }}>🗺️ India Disaster Map</button>
-            <button onClick={() => setActiveTab('kit')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
+            <button onClick={() => navigate('/emergency-kit-builder')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
+            <button onClick={() => navigate('/earthquake-balance-builder')} style={{ ...styles.navBtn }}>🏗️ Earthquake Builder</button>
             <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
@@ -158,7 +159,7 @@ const Dashboard = () => {
               <div style={styles.gameBox}>
                 <h3>1. Earthquake – "Balance Builder"</h3>
                 <p style={styles.gameDesc}>Build houses selecting foundations, pillars, and roofs, then test against earthquakes (4.5–8.5 magnitude).</p>
-                <button style={styles.actionBtn} onClick={() => alert('Starting Balance Builder...')}>Play Simulation</button>
+                <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
               </div>
               <div style={styles.gameBox}>
                 <h3>2. Flood – "River Defender"</h3>

@@ -1,0 +1,65 @@
+.game-page {
+  min-height: 100vh;
+  background-color: #0f0d0c;
+  color: #fff;
+  font-family: sans-serif;
+  padding-bottom: 40px;
+}
+
+.game-header {
+  background-color: #161211;
+  border-bottom: 1px solid #241e1c;
+  padding: 20px 40px;
+  margin-bottom: 30px;
+}
+
+.game-header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-category-earthquake {
+  font-size: 11px;
+  color: #f43f5e;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.game-category-kit {
+  font-size: 11px;
+  color: #06b6d4;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.game-title {
+  font-size: 24px;
+  margin: 4px 0 0 0;
+  color: #fff;
+}
+
+.game-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 4px 0 0 0;
+}
+
+.game-exit-btn {
+  background-color: #1f1a18;
+  border: 1px solid #2a2422;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.game-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
