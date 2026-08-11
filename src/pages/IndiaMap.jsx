@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/IndiaMap.css';
@@ -613,6 +614,7 @@ function RegionPanel({ region, selectedCity, weather, selectedHazard, onClose, o
 }
 
 export default function IndiaMap() {
+  const navigate = useNavigate();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const geoJsonRef = useRef(null);
@@ -945,7 +947,6 @@ export default function IndiaMap() {
     <div className="india-map-page">
       <header className="india-map-header">
         <div className="map-brand">
-          <div className="brand-mark">◈</div>
           <div>
             <div className="brand-title">INDIA DISASTER MAP</div>
             <div className="brand-subtitle">Historical disaster risk insights &amp; regional patterns</div>
@@ -979,6 +980,22 @@ export default function IndiaMap() {
           </div>
           <button className="search-button" onClick={() => submitSearch(searchResults[0])}>Search</button>
         </div>
+
+       <button
+  type="button"
+  className="map-back-button"
+  onClick={() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/dashboard');
+    }
+  }}
+  aria-label="Go back"
+  title="Go back"
+>
+  <span aria-hidden="true">←</span>
+</button>
       </header>
 
       <div className="hazard-filter-bar">

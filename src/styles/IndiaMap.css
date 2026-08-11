@@ -22,13 +22,15 @@ input {
 ========================= */
 
 .india-map-header {
-  max-width: 1540px;
-  margin: 0 auto 14px;
-  min-height: 74px;
+  width: 100%;
+  margin: 0 0 22px;
+  min-height: 108px;
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 480px;
-  gap: 24px;
+  grid-template-columns: minmax(360px, 1fr) minmax(440px, 760px);
+  gap: 28px;
   align-items: center;
+  padding: 34px 250px 0 0;
 }
 
 .map-brand {
@@ -37,18 +39,6 @@ input {
   gap: 12px;
 }
 
-.brand-mark {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(96, 165, 250, 0.45);
-  border-radius: 12px;
-  color: #a78bfa;
-  background: rgba(30, 41, 59, 0.7);
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.15);
-  font-size: 22px;
-}
 
 .brand-title {
   font-size: 18px;
@@ -66,6 +56,45 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 94px;
   gap: 9px;
+  transform: translate(175px, 38px);
+}
+
+.map-back-button {
+  position: absolute;
+  top: 8px;
+  right: 25px;
+  width: 58px;
+  height: 42px;
+  min-width: 58px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #294158;
+  border-radius: 10px;
+  background: #091b2b;
+  color: #dbeafe;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.map-back-button span:first-child {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.map-back-button:hover {
+  border-color: #38bdf8;
+  background: #10314a;
+  transform: translateX(-1px);
+}
+
+.map-back-button:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .search-wrapper {
@@ -815,10 +844,22 @@ input {
 @media (max-width: 1180px) {
   .india-map-header {
     grid-template-columns: 1fr;
+    padding-right: 0;
+    gap: 14px;
+  }
+
+  .map-back-button {
+    position: static;
+    width: 58px;
+    min-width: 58px;
+    height: 42px;
+    padding: 0;
+    justify-self: end;
   }
 
   .map-search-panel {
     max-width: 620px;
+    transform: none;
   }
 
   .india-map-layout {
@@ -842,6 +883,7 @@ input {
 
   .map-search-panel {
     grid-template-columns: 1fr;
+    transform: none;
   }
 
   .map-stage {
@@ -983,10 +1025,11 @@ input {
 }
 
 .india-map-header {
-  min-height: 76px;
-  margin-bottom: 12px;
-  grid-template-columns: minmax(0, 1fr) minmax(440px, 1.15fr);
+  min-height: 100px;
+  margin-bottom: 16px;
+  grid-template-columns: minmax(520px, 1fr) minmax(440px, 760px);
   gap: 28px;
+  padding: 34px 250px 0 0;
 }
 
 .map-brand {
@@ -1003,7 +1046,7 @@ input {
 }
 
 .brand-title {
-  font-size: 22px;
+  font-size: 30px;
   letter-spacing: 0.025em;
 }
 
@@ -1527,5 +1570,140 @@ input {
 
   .hazard-select-wrap {
     min-width: 165px;
+  }
+}
+
+
+/* =========================
+   HEADER BACK BUTTON
+========================= */
+@media (max-width: 980px) {
+  .india-map-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .map-search-panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .map-back-button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-width: 620px) {
+  .india-map-header {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .map-back-button {
+    min-width: 48px;
+    width: 48px;
+    height: 42px;
+    padding: 0;
+  }
+
+  .map-back-button span:last-child {
+    display: none;
+  }
+
+  .map-search-panel {
+    grid-template-columns: minmax(0, 1fr) 82px;
+  }
+}
+
+
+/* Final header spacing / back-button fit overrides */
+@media (max-width: 1250px) {
+  .india-map-header {
+    grid-template-columns: minmax(360px, 1fr) minmax(400px, 680px);
+    padding-right: 150px;
+  }
+
+  .map-back-button {
+    top: 8px;
+    right: 28px;
+    width: 58px;
+    min-width: 58px;
+    height: 42px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .india-map-header {
+    min-height: auto;
+    padding: 24px 0 0;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .map-back-button {
+    position: static;
+    width: 58px;
+    min-width: 58px;
+    height: 42px;
+    padding: 0;
+    order: 3;
+    justify-self: end;
+  }
+}
+
+/* =========================
+   FINAL SIZE TUNING
+   Smaller Back button + larger Hazard filter
+========================= */
+@media (min-width: 901px) {
+  .map-back-button {
+    width: 58px;
+    min-width: 58px;
+    height: 42px;
+    padding: 0;
+    font-size: 25px;
+    border-radius: 10px;
+    gap: 0;
+  }
+
+  .map-back-button span:first-child {
+    font-size: 25px;
+  }
+
+  .hazard-filter-bar {
+    min-height: 50px;
+    gap: 14px;
+  }
+
+  .hazard-filter-bar > label {
+    font-size: 13px;
+  }
+
+  .hazard-select-wrap {
+    min-width: 230px;
+    height: 46px;
+    border-radius: 10px;
+  }
+
+  .hazard-select-wrap select {
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 14px;
+  }
+
+  .hazard-select-icon {
+    left: 14px;
+    font-size: 15px;
+  }
+
+  .hazard-select-wrap::after {
+    right: 14px;
+    top: 10px;
+    font-size: 18px;
+  }
+
+  .hazard-filter-hint {
+    font-size: 12px;
   }
 }
