@@ -1,6 +1,6 @@
 .india-map-page {
   min-height: 100vh;
-  padding: 18px;
+  padding: 32px 18px 18px;
   background:
     radial-gradient(circle at 20% 0%, rgba(52, 211, 153, 0.08), transparent 28%),
     #061421;
@@ -24,16 +24,18 @@ input {
 .india-map-header {
   width: 100%;
   margin: 0 0 22px;
-  min-height: 108px;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) minmax(440px, 760px);
-  gap: 28px;
-  align-items: center;
-  padding: 34px 250px 0 0;
+  grid-template-columns: minmax(300px, 420px) 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 20px;
+  row-gap: 14px;
+  align-items: start;
 }
 
 .map-brand {
+  grid-column: 1;
+  grid-row: 1 / span 2;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -53,16 +55,20 @@ input {
 }
 
 .map-search-panel {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: stretch;
+  width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 94px;
-  gap: 9px;
-  transform: translate(175px, 38px);
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 10px;
+  position: relative;
 }
 
 .map-back-button {
-  position: absolute;
-  top: 8px;
-  right: 25px;
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
   width: 58px;
   height: 42px;
   min-width: 58px;
@@ -137,11 +143,12 @@ input {
 
 .search-results {
   position: absolute;
-  z-index: 2000;
-  top: 50px;
+  top: calc(100% + 7px);
   left: 0;
   width: 100%;
-  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid #294158;
   border-radius: 10px;
   background: #081a2a;
@@ -289,6 +296,9 @@ input {
   height: min(720px, calc(100vh - 190px));
   min-height: 560px;
   overflow: hidden;
+  /* Sandboxes the legend/controls/loading z-indexes below so they can
+     never escape and draw over the header/search dropdown. */
+  z-index: 1;
 }
 
 .disaster-intel-map {
@@ -843,23 +853,7 @@ input {
 
 @media (max-width: 1180px) {
   .india-map-header {
-    grid-template-columns: 1fr;
-    padding-right: 0;
-    gap: 14px;
-  }
-
-  .map-back-button {
-    position: static;
-    width: 58px;
-    min-width: 58px;
-    height: 42px;
-    padding: 0;
-    justify-self: end;
-  }
-
-  .map-search-panel {
-    max-width: 620px;
-    transform: none;
+    row-gap: 14px;
   }
 
   .india-map-layout {
@@ -878,12 +872,18 @@ input {
 
 @media (max-width: 720px) {
   .india-map-page {
-    padding: 10px;
+    padding: 24px 10px 10px;
+  }
+
+  .india-map-header {
+    grid-template-columns: 1fr auto;
   }
 
   .map-search-panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
     grid-template-columns: 1fr;
-    transform: none;
   }
 
   .map-stage {
@@ -1021,15 +1021,11 @@ input {
 .india-map-page {
   background: #061522;
   color: #eef6ff;
-  padding: 14px 16px 16px;
+  padding: 32px 16px 16px;
 }
 
 .india-map-header {
-  min-height: 100px;
   margin-bottom: 16px;
-  grid-template-columns: minmax(520px, 1fr) minmax(440px, 760px);
-  gap: 28px;
-  padding: 34px 250px 0 0;
 }
 
 .map-brand {
@@ -1526,10 +1522,6 @@ input {
     padding: 10px;
   }
 
-  .india-map-header {
-    grid-template-columns: 1fr;
-  }
-
   .map-search-panel {
     grid-template-columns: 1fr 92px;
   }
@@ -1577,26 +1569,9 @@ input {
 /* =========================
    HEADER BACK BUTTON
 ========================= */
-@media (max-width: 980px) {
-  .india-map-header {
-    grid-template-columns: 1fr auto;
-  }
-
-  .map-search-panel {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .map-back-button {
-    grid-column: 2;
-    grid-row: 1;
-  }
-}
-
 @media (max-width: 620px) {
   .india-map-header {
-    grid-template-columns: 1fr auto;
-    gap: 12px;
+    row-gap: 12px;
   }
 
   .map-back-button {
@@ -1615,42 +1590,6 @@ input {
   }
 }
 
-
-/* Final header spacing / back-button fit overrides */
-@media (max-width: 1250px) {
-  .india-map-header {
-    grid-template-columns: minmax(360px, 1fr) minmax(400px, 680px);
-    padding-right: 150px;
-  }
-
-  .map-back-button {
-    top: 8px;
-    right: 28px;
-    width: 58px;
-    min-width: 58px;
-    height: 42px;
-    padding: 0;
-  }
-}
-
-@media (max-width: 900px) {
-  .india-map-header {
-    min-height: auto;
-    padding: 24px 0 0;
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .map-back-button {
-    position: static;
-    width: 58px;
-    min-width: 58px;
-    height: 42px;
-    padding: 0;
-    order: 3;
-    justify-self: end;
-  }
-}
 
 /* =========================
    FINAL SIZE TUNING
@@ -1706,4 +1645,25 @@ input {
   .hazard-filter-hint {
     font-size: 12px;
   }
+}
+
+
+.india-map-header {
+  position: relative;
+  z-index: 50;
+}
+
+.map-search-panel {
+  position: relative;
+  z-index: 60;
+}
+
+.search-wrapper {
+  position: relative;
+  z-index: 70;
+}
+
+.search-results {
+  position: absolute;
+  z-index: 80;
 }

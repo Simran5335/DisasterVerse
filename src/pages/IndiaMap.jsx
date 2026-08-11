@@ -945,7 +945,13 @@ export default function IndiaMap() {
 
   return (
     <div className="india-map-page">
-      <header className="india-map-header">
+      <header 
+     className={`india-map-header ${
+    searchQuery.trim() && searchResults.length > 0
+      ? 'search-open'
+      : ''
+  }`}
+>
         <div className="map-brand">
           <div>
             <div className="brand-title">INDIA DISASTER MAP</div>
