@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import FlipCard from './FlipCard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // Load user data
   const [userName, setUserName] = useState(() => localStorage.getItem('userName') || 'Survivor');
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('userAvatar') || 'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [activeTab, setActiveTab] = useState('achievements');
 
-  // Profile edit states
   const [newName, setNewName] = useState(userName);
   const [newPassword, setNewPassword] = useState('');
   const [selectedAvatarOption, setSelectedAvatarOption] = useState(userAvatar);
@@ -26,7 +25,6 @@ const Dashboard = () => {
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma'
   ];
 
-  // Expanded Thematic XP-Based Ranks (User has 3,450 XP)
   const currentXP = 3450;
   const badgesList = [
     { id: 1, icon: '🌱', name: 'Preparedness Novice', xpRequired: 200, desc: 'Awarded for taking your first steps into emergency readiness education.', unlocked: currentXP >= 200 },
@@ -40,6 +38,117 @@ const Dashboard = () => {
   ];
 
   const [hoveredBadge, setHoveredBadge] = useState(null);
+
+  const disasterCards = [
+    {
+      title: '🌍 Earthquake',
+      image: '/earthquake.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Secure heavy furniture.', 'Keep an emergency kit ready.', 'Identify safe places.', 'Prepare an emergency plan.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Drop, Cover & Hold On.', 'Stay away from windows.', "Don't use elevators.", 'Move away from buildings if outdoors.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Check for injuries.', 'Watch for gas leaks and fires.', 'Expect aftershocks.', 'Follow official instructions.'] }
+      ]
+    },
+    {
+      title: '🌊 Flood',
+      image: '/flood.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Keep an emergency kit ready.', 'Know nearby safe/high-ground areas.', 'Protect important documents.', 'Follow weather warnings.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Move to higher ground.', 'Avoid walking or driving through floodwater.', 'Stay away from electrical wires.', 'Follow evacuation instructions.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid contaminated floodwater.', 'Check for damaged wires and gas leaks.', 'Return home only when declared safe.', 'Follow official recovery instructions.'] }
+      ]
+    },
+    {
+      title: '🔥 Forest Fire / Wildfire',
+      image: '/forestfire.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Clear dry vegetation near buildings.', 'Keep emergency supplies ready.', 'Know evacuation routes.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Evacuate when instructed.', 'Stay away from smoke and flames.', 'Keep windows and doors closed.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when declared safe.', 'Watch for hot spots and falling trees.', 'Check for property damage.'] }
+      ]
+    },
+    {
+      title: '🌪️ Cyclone',
+      image: '/cyclone.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Follow weather warnings.', 'Secure doors, windows, and loose objects.', 'Keep an emergency kit ready.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Stay indoors and away from windows.', 'Keep emergency supplies nearby.', 'Evacuate if instructed.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid fallen wires and debris.', 'Stay away from floodwater.', 'Return outside only when safe.'] }
+      ]
+    },
+    {
+      title: '⛰️ Landslide',
+      image: '/landslide.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Learn local landslide warning signs.', 'Avoid building near unstable slopes.', 'Know evacuation routes.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Move quickly to safer ground.', 'Stay away from slopes and debris.', 'Follow evacuation instructions.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid the affected area.', 'Watch for additional landslides.', 'Report damaged roads or utilities.'] }
+      ]
+    },
+    {
+      title: '🌊 Tsunami',
+      image: '/tsunami.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Know evacuation routes to higher ground.', 'Learn local tsunami warning signals.', 'Prepare an emergency kit.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Move immediately to higher ground.', 'Stay away from beaches and rivers.', 'Follow official evacuation orders.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Stay away until officials declare it safe.', 'Watch for additional waves.', 'Avoid damaged areas and debris.'] }
+      ]
+    },
+    {
+      title: '🌋 Volcanic Eruption',
+      image: '/volcano.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Know evacuation routes.', 'Prepare an emergency kit and mask.', 'Follow volcano alerts.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Evacuate when instructed.', 'Stay away from lava and ash.', 'Protect eyes and breathing from ash.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when authorities allow.', 'Avoid ash-covered areas.', 'Check water and food safety.'] }
+      ]
+    },
+    {
+      title: '⚡ Lightning',
+      image: '/lightning.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Check weather forecasts.', 'Identify a safe indoor shelter.', 'Avoid open areas during storms.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Go indoors immediately.', 'Stay away from windows and plumbing.', 'Never shelter under a tree.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Wait until the storm has passed.', 'Check for injuries and damage.', 'Stay alert for continuing storms.'] }
+      ]
+    },
+    {
+      title: '🏜️ Drought',
+      image: '/drought.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Store essential water.', 'Reduce unnecessary water use.', 'Follow local water restrictions.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Use water only when necessary.', 'Follow conservation guidelines.', 'Protect yourself from heat.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Continue conserving water.', 'Check water sources before use.', 'Support local recovery efforts.'] }
+      ]
+    },
+    {
+      title: '☣️ Chemical Leak',
+      image: '/chemical.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Know nearby chemical hazards.', 'Learn emergency alerts and evacuation routes.', 'Keep emergency contacts ready.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Move away from the affected area.', 'Follow evacuation or shelter instructions.', 'Avoid touching spilled substances.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when authorities declare it safe.', 'Avoid contaminated areas.', 'Seek medical help if exposed.'] }
+      ]
+    },
+    {
+      title: '☢️ Nuclear / Radiation Emergency',
+      image: '/nuclear.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Know emergency shelters.', 'Keep an emergency kit ready.', 'Learn official warning procedures.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Get indoors immediately.', 'Stay away from windows.', 'Follow official shelter instructions.'] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Remain indoors until officially cleared.', 'Avoid contaminated food or water.', 'Follow radiation-safety instructions.'] }
+      ]
+    },
+    {
+      title: '💥 Bomb Explosion / Blast',
+      image: '/bomb.png',
+      protocols: [
+        { stage: '🟢 Before', color: '#4ade80', items: ['Report suspicious objects or threats.', 'Know emergency exits and safe areas.', 'Follow security instructions.'] },
+        { stage: '🟠 During', color: '#fbbf24', items: ['Move away from the blast area.', 'Take cover and protect your head.', 'Avoid touching suspicious objects.', "Follow emergency responders' instructions."] },
+        { stage: '🔵 After', color: '#60a5fa', items: ['Move to a safe location if possible.', 'Avoid damaged areas and suspicious objects.', 'Help injured people only when safe.', 'Follow official instructions and evacuation orders.'] }
+      ]
+    }
+  ];
 
   useEffect(() => {
     localStorage.setItem('userName', userName);
@@ -63,7 +172,7 @@ const Dashboard = () => {
   return (
     <div style={styles.dashboardContainer}>
 
-      {/* 1. LEFT SIDEBAR */}
+      {/* LEFT SIDEBAR */}
       <aside style={styles.sidebar}>
         <div>
           <div style={styles.logoArea}>
@@ -76,9 +185,9 @@ const Dashboard = () => {
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
             <button onClick={() => navigate('/mountain-scout')} style={styles.navBtn}>🏔️ Mountain Scout</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
-            <button onClick={() => navigate('/emergency-kit-builder')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
-            <button onClick={() => navigate('/earthquake-balance-builder')} style={{ ...styles.navBtn }}>🏗️ Earthquake Builder</button>
             <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
+            <button onClick={() => setActiveTab('flip-prepare')} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
+            <button onClick={() => setActiveTab('know2survive')} style={{ ...styles.navBtn, ...(activeTab === 'know2survive' ? styles.activeNavBtn : {}) }}>🧠 Know2Survive</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
             <button onClick={() => setActiveTab('plan')} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
@@ -91,10 +200,9 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* 2. MIDDLE CONTENT AREA */}
+      {/* MAIN CONTENT AREA */}
       <main style={styles.mainContent}>
 
-        {/* Top Header */}
         <header style={styles.topBar}>
           <div>
             <h1 style={styles.welcomeTitle}>Hello, {userName} 👋</h1>
@@ -113,7 +221,6 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Dynamic Center Panel */}
         {activeTab === 'achievements' && (
           <div style={styles.tabContentCard}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -181,28 +288,36 @@ const Dashboard = () => {
           </div>
         )}
 
-        {activeTab === 'map' && (
+        {activeTab === 'flip-prepare' && (
           <div style={styles.tabContentCard}>
-            <h2>🗺️ India Disaster Risk Map</h2>
-            <p style={{ color: '#9ca3af' }}>Select any region or state to inspect active hazard indices, flood-prone zones, and seismic activity ratings.</p>
+            <h2>🃏 Flip & Prepare</h2>
+            <p style={{ color: '#9ca3af', marginBottom: '25px' }}>Click any card below to flip between the illustration and survival protocols.</p>
+            
+            <div style={styles.flipGrid}>
+              {disasterCards.map((card, index) => (
+                <FlipCard 
+                  key={index}
+                  title={card.title}
+                  imageSrc={card.image}
+                  protocols={card.protocols}
+                />
+              ))}
+            </div>
           </div>
         )}
 
-        {activeTab === 'kit' && (
+        {activeTab === 'know2survive' && (
           <div style={styles.tabContentCard}>
-            <h2>🎒 Emergency Kit Builder</h2>
-            <p style={{ color: '#9ca3af' }}>Pick survival gear items (water filters, first aid, rations, flashlights) and test your readiness score.</p>
+            <h2>🧠 Know2Survive (Disaster Quiz Challenge)</h2>
+            <p style={{ color: '#9ca3af', marginBottom: '20px' }}>Test your survival knowledge, earn XP, and prove your emergency expertise.</p>
+            <div style={styles.gameBox}>
+              <h3>Survival Trivia Quiz</h3>
+              <p style={styles.gameDesc}>Answer situational questions on earthquakes, floods, fires, and first aid to test your readiness.</p>
+              <button style={styles.actionBtn} onClick={() => alert('Launching Know2Survive Quiz...')}>Start Quiz</button>
+            </div>
           </div>
         )}
 
-        {activeTab === 'hazard' && (
-          <div style={styles.tabContentCard}>
-            <h2>🔍 Hazard Spotter</h2>
-            <p style={{ color: '#9ca3af' }}>
-              Inspect virtual rooms in homes and offices to spot electrical hazards and blocked exits.
-            </p>
-          </div>
-        )}
         {activeTab === 'checklist' && (
           <div style={styles.tabContentCard}>
             <h2>📋 Preparedness Checklist & Readiness Score</h2>
@@ -226,10 +341,8 @@ const Dashboard = () => {
 
       </main>
 
-      {/* 3. RIGHT SIDEBAR */}
+      {/* RIGHT SIDEBAR */}
       <aside style={styles.rightSidebar}>
-
-        {/* XP Card */}
         <div style={styles.rightCard}>
           <div style={styles.xpHeader}>
             <span style={{ fontSize: '13px', color: '#9ca3af' }}>Total XP</span>
@@ -242,7 +355,6 @@ const Dashboard = () => {
           <span style={styles.xpNextLevel}>550 XP to Level 5</span>
         </div>
 
-        {/* Badges Section with Hover Tooltips */}
         <div style={styles.rightCard}>
           <h3 style={styles.rightCardTitle}>🏅 Milestone Ranks</h3>
           <div style={styles.badgesGrid}>
@@ -263,7 +375,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Badge Tooltip Detail Box */}
           {hoveredBadge ? (
             <div style={styles.badgeTooltip}>
               <strong style={{ color: '#fca5a5' }}>{hoveredBadge.name}</strong>
@@ -279,7 +390,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Leaderboard */}
         <div style={styles.rightCard}>
           <h3 style={styles.rightCardTitle}>🏆 Leaderboard</h3>
           <div style={styles.leaderboardList}>
@@ -301,10 +411,9 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
       </aside>
 
-      {/* 4. SETTINGS MODAL */}
+      {/* SETTINGS MODAL */}
       {showSettingsModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -312,7 +421,6 @@ const Dashboard = () => {
             <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar.</p>
 
             <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-
               <div>
                 <label style={styles.modalLabel}>Display Name</label>
                 <input
@@ -336,7 +444,7 @@ const Dashboard = () => {
               </div>
 
               <div>
-                <label style={styles.modalLabel}>Choose Avatar (Boys, Girls & Bots)</label>
+                <label style={styles.modalLabel}>Choose Avatar</label>
                 <div style={styles.avatarPickerGrid}>
                   {avatarOptions.map((av, index) => (
                     <img
@@ -358,7 +466,6 @@ const Dashboard = () => {
                 <button type="button" onClick={handleSwitchAccount} style={styles.switchAccountBtn}>Switch Account / Logout</button>
                 <button type="button" onClick={() => setShowSettingsModal(false)} style={styles.cancelBtn}>Close</button>
               </div>
-
             </form>
           </div>
         </div>
@@ -368,7 +475,6 @@ const Dashboard = () => {
   );
 };
 
-// Styles
 const styles = {
   dashboardContainer: {
     display: 'flex',
@@ -504,6 +610,12 @@ const styles = {
     border: '1px solid #241e1c',
     padding: '30px',
     borderRadius: '20px',
+  },
+  flipGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '20px',
+    marginTop: '15px',
   },
   xpStatusPill: {
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
