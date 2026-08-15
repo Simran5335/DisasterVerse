@@ -1,9 +1,9 @@
-/* School-specific variables and styles */
+/* School Environment Theme Overrides */
 .hazard-page.school {
-  --primary-accent: #14b8a6; /* Vibrant Teal */
-  --primary-accent-hover: #0d9488;
-  --primary-accent-rgb: 20, 184, 166;
-  --bg-color: #041a18; /* Deep green-teal base */
-  --card-bg: rgba(13, 35, 33, 0.6);
-  --border-color: rgba(20, 184, 166, 0.12);
+  --primary-accent: #38BDF8;
+  --primary-accent-hover: #0EA5E9;
+  --primary-accent-rgb: 56, 189, 248;
+  --bg-color: #08131A;
+  --card-bg: rgba(20, 34, 44, 0.6);
+  --border-color: rgba(125, 211, 252, 0.10);
 }

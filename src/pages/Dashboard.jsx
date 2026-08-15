@@ -74,6 +74,7 @@ const Dashboard = () => {
           <nav style={styles.navLinks}>
             <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
+            <button onClick={() => navigate('/mountain-scout')} style={styles.navBtn}>🏔️ Mountain Scout</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
             <button onClick={() => navigate('/emergency-kit-builder')} style={{ ...styles.navBtn, ...(activeTab === 'kit' ? styles.activeNavBtn : {}) }}>🎒 Emergency Kit</button>
             <button onClick={() => navigate('/earthquake-balance-builder')} style={{ ...styles.navBtn }}>🏗️ Earthquake Builder</button>
@@ -157,17 +158,22 @@ const Dashboard = () => {
             <h2>🎮 Interactive Disaster Simulations</h2>
             <div style={styles.gameGrid}>
               <div style={styles.gameBox}>
-                <h3>1. Earthquake – "Balance Builder"</h3>
+                <h3>1. Landslide – "Mountain Scout"</h3>
+                <p style={styles.gameDesc}>Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/mountain-scout')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>2. Earthquake – "Balance Builder"</h3>
                 <p style={styles.gameDesc}>Build houses selecting foundations, pillars, and roofs, then test against earthquakes (4.5–8.5 magnitude).</p>
                 <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>2. Flood – "River Defender"</h3>
+                <h3>3. Flood – "River Defender"</h3>
                 <p style={styles.gameDesc}>Place sandbags, flood barriers, pumps, and wetlands to stop urban flooding.</p>
                 <button style={styles.actionBtn} onClick={() => alert('Starting River Defender...')}>Play Simulation</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>3. Fire – "Smoke Vision"</h3>
+                <h3>4. Fire – "Smoke Vision"</h3>
                 <p style={styles.gameDesc}>Navigate a low-visibility smoke maze by crawling and feeling walls.</p>
                 <button style={styles.actionBtn} onClick={() => alert('Starting Smoke Vision...')}>Play Simulation</button>
               </div>

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { homeHazards } from "../data/homeHazards";
-import { schoolHazards } from "../data/schoolHazards";
-import { officeHazards } from "../data/officeHazards";
+import { hazardSpotterLevels } from "../data/hazardSpotterLevels";
 
 import "../styles/hazard/HazardSpotter.css";
 import "../styles/hazard/Home.css";
@@ -14,41 +12,72 @@ const ENVIRONMENTS = {
     id: "home",
     name: "Home",
     icon: "🏠",
-    video: "/videos/hazard/home.mp4",
-    hazards: homeHazards,
-    desc: "Scan a family home to find open flames, tripping risks, and hazard blockages."
+    desc: "Scan a family home across 5 progressive levels to identify household risks."
   },
   school: {
     id: "school",
     name: "School",
     icon: "🏫",
-    video: "/videos/hazard/school.mp4",
-    hazards: schoolHazards,
-    desc: "Examine classrooms and science labs to detect exit blocks and exposed sockets."
+    desc: "Inspect classrooms, labs, and grounds across 5 levels to detect school hazards."
   },
   office: {
     id: "office",
     name: "Office",
     icon: "🏢",
-    video: "/videos/hazard/office.mp4",
-    hazards: officeHazards,
-    desc: "Inspect corporate workspaces for electrical overloads and cabling concerns."
+    desc: "Examine corporate workspaces across 5 levels for electrical & ergonomic concerns."
+  },
+  outdoors: {
+    id: "outdoors",
+    name: "Outdoors",
+    icon: "🌳",
+    desc: "Inspect public outdoor areas across 5 levels to spot structural & environmental hazards."
   }
 };
 
+const NEAR_MISS_MESSAGES = [
+  "👀 Very close!",
+  "🔎 You're looking in the right area!",
+  "✨ So close! Look a little closer.",
+  "🔥 Almost! Check around here.",
+  "🧐 Warm! Take a closer look right here."
+];
+
+const WRONG_MESSAGES = [
+  "🔎 Good try! Keep looking.",
+  "👀 Not quite — keep scanning.",
+  "💡 Keep searching!",
+  "🧐 Take another look around.",
+  "✨ Good observation! But that area is safe.",
+  "🔍 Keep looking carefully."
+];
+
 const DEBUG_HOTSPOTS = false;
+
+// Pick a random message without repeating the previous toast consecutively
+function getRandomMessage(msgArray, lastMsg) {
+  const filtered = msgArray.filter((m) => m !== lastMsg);
+  const choices = filtered.length > 0 ? filtered : msgArray;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
 
 export default function HazardSpotter() {
   const navigate = useNavigate();
   
-  const [env, setEnv] = useState(null); // 'home', 'school', 'office' or null
+  const [env, setEnv] = useState(null); // 'home', 'school', 'office', 'outdoors' or null
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0); // 0 to 4 (Level 1 to 5)
   const [foundHazards, setFoundHazards] = useState([]);
   const [selectedHazard, setSelectedHazard] = useState(null);
   const [wrongClicks, setWrongClicks] = useState(0);
-  const [videoError, setVideoError] = useState(false);
-  const [showWrongToast, setShowWrongToast] = useState(false);
+  
+  // Toast Notification States
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("wrong"); // 'wrong' or 'near-miss'
+  const [showToast, setShowToast] = useState(false);
+  const [animateCounter, setAnimateCounter] = useState(false);
+  const [totalScore, setTotalScore] = useState(0);
   
   const toastTimeoutRef = useRef(null);
+  const lastToastRef = useRef("");
 
   // Clean up timers on unmount
   useEffect(() => {
@@ -59,64 +88,134 @@ export default function HazardSpotter() {
     };
   }, []);
 
-  // Reset states when environment changes
+  // Handle environment selection
   const handleSelectEnvironment = (selectedEnv) => {
     setEnv(selectedEnv);
+    setCurrentLevelIndex(0);
     setFoundHazards([]);
     setSelectedHazard(null);
     setWrongClicks(0);
-    setVideoError(false);
-    setShowWrongToast(false);
+    setShowToast(false);
   };
 
   const currentEnv = env ? ENVIRONMENTS[env] : null;
-  const currentHazards = currentEnv ? currentEnv.hazards : [];
-  
+  const envLevels = env ? hazardSpotterLevels[env] : [];
+  const currentLevel = envLevels[currentLevelIndex] || null;
+  const currentHazards = currentLevel ? currentLevel.hazards : [];
+
   const handleHazardClick = (hazard) => {
     if (foundHazards.includes(hazard.id)) {
-      // If already found, still allow looking at the explanation modal
-      setSelectedHazard(hazard);
+      // Re-clicking an already found hazard still opens explanation modal without re-incrementing score
+      setSelectedHazard({
+        ...hazard,
+        modalTitle: "Hazard Already Identified"
+      });
       return;
     }
 
+    const nextFoundCount = foundHazards.length + 1;
+    let modalTitle = "🎯 Hazard Found!";
+    if (nextFoundCount === currentHazards.length) {
+      modalTitle = "🏆 Final Hazard Found!";
+    } else if (nextFoundCount >= currentHazards.length - 1) {
+      modalTitle = "🔥 You're on a Roll!";
+    } else if (nextFoundCount > 1) {
+      modalTitle = "👏 Great Spotting!";
+    }
+
     setFoundHazards((prev) => [...prev, hazard.id]);
-    setSelectedHazard(hazard);
+    setSelectedHazard({
+      ...hazard,
+      modalTitle
+    });
+
+    // Trigger counter pop animation
+    setAnimateCounter(true);
+    setTimeout(() => setAnimateCounter(false), 400);
   };
 
+  // Proximity & Near Miss Click Handler
   const handleSceneClick = (event) => {
-    // If clicked a hotspot, do nothing
-    if (event.target.closest(".hazard-hotspot")) {
+    // If clicked inside an actual hotspot button, hotspot handler takes over
+    if (event.target.closest(".hazard-hotspot-container")) {
       return;
     }
 
     setWrongClicks((prev) => prev + 1);
-    setShowWrongToast(true);
+
+    // Calculate percentage coordinates of the click relative to scene container
+    const rect = event.currentTarget.getBoundingClientRect();
+    const clickX = ((event.clientX - rect.left) / rect.width) * 100;
+    const clickY = ((event.clientY - rect.top) / rect.height) * 100;
+
+    // Find distance to all undiscovered hazards
+    const undiscovered = currentHazards.filter((h) => !foundHazards.includes(h.id));
+    let minDistance = Infinity;
+
+    undiscovered.forEach((h) => {
+      const dx = clickX - h.x;
+      const dy = clickY - h.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < minDistance) {
+        minDistance = dist;
+      }
+    });
+
+    // If within 14% percentage radius of an undiscovered hazard -> VERY CLOSE!
+    if (minDistance <= 14) {
+      const msg = getRandomMessage(NEAR_MISS_MESSAGES, lastToastRef.current);
+      lastToastRef.current = msg;
+      setToastMessage(msg);
+      setToastType("near-miss");
+    } else {
+      const msg = getRandomMessage(WRONG_MESSAGES, lastToastRef.current);
+      lastToastRef.current = msg;
+      setToastMessage(msg);
+      setToastType("wrong");
+    }
+
+    setShowToast(true);
 
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
     toastTimeoutRef.current = setTimeout(() => {
-      setShowWrongToast(false);
-    }, 1500);
+      setShowToast(false);
+    }, 1600);
   };
 
-  const handleTryAgain = () => {
+  const handleNextLevel = () => {
+    const levelScore = Math.max(foundHazards.length * 20 - wrongClicks * 2, 0);
+    setTotalScore((prev) => prev + levelScore);
+
+    if (currentLevelIndex < envLevels.length - 1) {
+      setCurrentLevelIndex((prev) => prev + 1);
+      setFoundHazards([]);
+      setSelectedHazard(null);
+      setWrongClicks(0);
+      setShowToast(false);
+    } else {
+      setEnv(null);
+    }
+  };
+
+  const handleReplayLevel = () => {
     setFoundHazards([]);
     setSelectedHazard(null);
     setWrongClicks(0);
-    setShowWrongToast(false);
+    setShowToast(false);
   };
 
   const handleChooseAnother = () => {
     setEnv(null);
   };
 
-  const score = Math.max(foundHazards.length * 20 - wrongClicks * 2, 0);
+  const currentLevelScore = Math.max(foundHazards.length * 20 - wrongClicks * 2, 0);
   const progress = currentHazards.length > 0 
     ? (foundHazards.length / currentHazards.length) * 100 
     : 0;
 
-  const isComplete = currentHazards.length > 0 && foundHazards.length === currentHazards.length;
+  const isLevelComplete = currentHazards.length > 0 && foundHazards.length === currentHazards.length;
 
   // Environment Selector Screen
   if (!env) {
@@ -138,7 +237,7 @@ export default function HazardSpotter() {
           <section className="env-selector">
             <h2 className="env-selector-title">Choose an environment</h2>
             <p className="env-selector-subtitle">
-              Inspect different locations to identify and learn about real-world hazards.
+              Inspect 4 real-world environments across 20 progressive difficulty levels to spot hidden safety hazards.
             </p>
             
             <div className="env-cards-grid">
@@ -146,7 +245,7 @@ export default function HazardSpotter() {
                 <button
                   key={e.id}
                   onClick={() => handleSelectEnvironment(e.id)}
-                  className="env-card"
+                  className={`env-card ${env === e.id ? "selected" : ""}`}
                   type="button"
                 >
                   <span className="env-card-icon">{e.icon}</span>
@@ -155,39 +254,14 @@ export default function HazardSpotter() {
                 </button>
               ))}
             </div>
+
+            {totalScore > 0 && (
+              <div style={{ marginTop: "2.5rem", display: "inline-block", background: "rgba(255,255,255,0.03)", padding: "0.85rem 1.75rem", borderRadius: "14px", border: "1px solid var(--border-color)" }}>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Total Training Points: </span>
+                <span style={{ fontSize: "1.2rem", fontWeight: "800", color: "var(--primary-accent)", marginLeft: "0.5rem" }}>{totalScore} XP</span>
+              </div>
+            )}
           </section>
-        </main>
-      </div>
-    );
-  }
-
-  // Error/Coming Soon state if video file is missing
-  if (videoError) {
-    return (
-      <div className={`hazard-page ${env}`}>
-        <header className="hazard-header">
-          <div className="header-container">
-            <div className="header-title-section">
-              <p className="header-category">Safety Training</p>
-              <h1 className="header-title">Hazard Spotter</h1>
-            </div>
-            <button className="exit-btn" onClick={handleChooseAnother}>
-              ← Select Environment
-            </button>
-          </div>
-        </header>
-
-        <main className="hazard-main">
-          <div className="error-screen">
-            <span className="error-icon">🚧</span>
-            <h2 className="error-title">{currentEnv.name} Environment Coming Soon</h2>
-            <p className="error-desc">
-              The hazard training video simulation for the {currentEnv.name} scene is not available in the assets folder yet.
-            </p>
-            <button className="error-btn" onClick={handleChooseAnother}>
-              Choose Another Environment
-            </button>
-          </div>
         </main>
       </div>
     );
@@ -200,7 +274,7 @@ export default function HazardSpotter() {
       <header className="hazard-header">
         <div className="header-container">
           <div className="header-title-section">
-            <p className="header-category">Safety Training — {currentEnv.name}</p>
+            <p className="header-category">SAFETY TRAINING — {currentEnv.name.toUpperCase()}</p>
             <h1 className="header-title">Hazard Spotter</h1>
             <p className="header-subtitle">
               Scan the room and click on items or areas that present a safety risk.
@@ -208,13 +282,21 @@ export default function HazardSpotter() {
           </div>
 
           <div className="header-controls">
-            {!isComplete && (
-              <div className="header-stat">
-                <p className="stat-label">Hazards Found</p>
-                <p className="stat-val">
-                  {foundHazards.length} <span className="stat-val-total">/ {currentHazards.length}</span>
-                </p>
-              </div>
+            {!isLevelComplete && (
+              <>
+                <div className="header-stat" style={{ marginRight: "0.5rem" }}>
+                  <p className="stat-label">Level {currentLevel.levelNumber} / 5</p>
+                  <p className="stat-val" style={{ fontSize: "1.1rem", color: "var(--primary-accent)" }}>
+                    {currentLevel.difficulty}
+                  </p>
+                </div>
+                <div className="header-stat">
+                  <p className="stat-label">Hazards Found</p>
+                  <p className={`stat-val ${animateCounter ? "pop-animate" : ""}`}>
+                    {foundHazards.length} <span className="stat-val-total">/ {currentHazards.length}</span>
+                  </p>
+                </div>
+              </>
             )}
             <button className="exit-btn" onClick={handleChooseAnother}>
               ← Change Room
@@ -225,13 +307,17 @@ export default function HazardSpotter() {
 
       {/* MAIN GAMEPLAY CONTENT */}
       <main className="hazard-main">
-        {isComplete ? (
-          /* COMPLETION SCREEN */
+        {isLevelComplete ? (
+          /* LEVEL COMPLETION SCREEN */
           <div className="completion-screen">
             <span className="completion-icon">🎉</span>
-            <h2 className="completion-title">Hazard Spotter Complete</h2>
+            <h2 className="completion-title">
+              {currentLevelIndex === envLevels.length - 1 ? `${currentEnv.name} Environment Mastered!` : `Level ${currentLevel.levelNumber} Complete!`}
+            </h2>
             <p className="completion-desc">
-              Excellent! You successfully identified all potential hazards in the {currentEnv.name} environment.
+              {currentLevelIndex === envLevels.length - 1 
+                ? `Outstanding! You successfully identified all potential safety hazards across all 5 levels in the ${currentEnv.name} scene.`
+                : `Great job! You found all ${currentHazards.length} hazards in Level ${currentLevel.levelNumber} (${currentLevel.difficulty}). Ready for the next challenge?`}
             </p>
 
             <div className="completion-stats">
@@ -242,18 +328,31 @@ export default function HazardSpotter() {
                 </span>
               </div>
               <div className="completion-stat-box">
-                <span className="completion-stat-lbl">Final Score</span>
-                <span className="completion-stat-val">{score} XP</span>
+                <span className="completion-stat-lbl">Level Score</span>
+                <span className="completion-stat-val">{currentLevelScore} XP</span>
               </div>
             </div>
 
             <div className="completion-actions">
-              <button className="btn-primary" onClick={handleTryAgain}>
-                Try Again
-              </button>
-              <button className="btn-secondary" onClick={handleChooseAnother}>
-                Choose Another Environment
-              </button>
+              {currentLevelIndex < envLevels.length - 1 ? (
+                <>
+                  <button className="btn-primary" onClick={handleNextLevel}>
+                    Next Level (Level {currentLevel.levelNumber + 1}) →
+                  </button>
+                  <button className="btn-secondary" onClick={handleReplayLevel}>
+                    Replay Level
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn-primary" onClick={handleChooseAnother}>
+                    Choose Another Environment
+                  </button>
+                  <button className="btn-secondary" onClick={handleReplayLevel}>
+                    Replay Level 5
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -263,9 +362,9 @@ export default function HazardSpotter() {
             {/* STATS PANEL */}
             <div className="stats-grid">
               <div className="stat-card">
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <p className="stat-card-title">Progress</p>
-                  <p className="stat-card-title" style={{ color: "var(--primary-accent)", fontWeight: "600" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <p className="stat-card-title">Progress — Level {currentLevel.levelNumber} ({currentLevel.difficulty})</p>
+                  <p className="stat-card-title" style={{ color: "var(--primary-accent)", fontWeight: "700" }}>
                     {Math.round(progress)}%
                   </p>
                 </div>
@@ -276,20 +375,16 @@ export default function HazardSpotter() {
 
               <div className="stat-card">
                 <p className="stat-card-title">Current Score</p>
-                <p className="stat-card-number">{score} XP</p>
+                <p className="stat-card-number">{currentLevelScore} XP</p>
               </div>
             </div>
 
-            {/* VIDEO VIEWPORT CONTAINER */}
+            {/* STATIC IMAGE VIEWPORT CONTAINER */}
             <div className="scene-container" onClick={handleSceneClick}>
-              <video
-                src={currentEnv.video}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="scene-video"
-                onError={() => setVideoError(true)}
+              <img
+                src={currentLevel.image}
+                alt={`${currentEnv.name} Level ${currentLevel.levelNumber}`}
+                className="scene-image"
               />
 
               {/* HOTSPOT LAYER */}
@@ -341,10 +436,10 @@ export default function HazardSpotter() {
                 })}
               </div>
 
-              {/* INCORRECT CLICK SUBTLE NOTIFICATION */}
-              {showWrongToast && (
-                <div className="wrong-click-toast">
-                  No hazard here — keep looking.
+              {/* ENCOURAGING / NEAR MISS TOAST NOTIFICATION */}
+              {showToast && (
+                <div className={toastType === "near-miss" ? "near-miss-toast" : "wrong-click-toast"}>
+                  {toastMessage}
                 </div>
               )}
             </div>
@@ -354,7 +449,7 @@ export default function HazardSpotter() {
               <span style={{ fontSize: "1.2rem" }}>🔍</span>
               <p className="instructions-text">
                 <span className="instructions-accent">Hover</span> over areas of interest to spot minor irregularities. 
-                Click on the objects to check if they present a safety hazard.
+                Click on objects to check if they present a safety hazard.
               </p>
             </div>
           </section>
@@ -376,7 +471,12 @@ export default function HazardSpotter() {
 
             <div className="modal-header">
               <p className="modal-category">{selectedHazard.category}</p>
-              <h2 className="modal-title">{selectedHazard.name}</h2>
+              <h2 className="modal-title">{selectedHazard.modalTitle || selectedHazard.name}</h2>
+              {selectedHazard.modalTitle && selectedHazard.name && (
+                <p style={{ fontSize: "1.1rem", fontWeight: "700", margin: "0.35rem 0 0 0", color: "#fff" }}>
+                  {selectedHazard.name}
+                </p>
+              )}
             </div>
 
             <div className="modal-risk-box">

@@ -1,9 +1,9 @@
-/* Office-specific variables and styles */
+/* Office Environment Theme Overrides */
 .hazard-page.office {
-  --primary-accent: #3b82f6; /* Slate Blue */
-  --primary-accent-hover: #2563eb;
-  --primary-accent-rgb: 59, 130, 246;
-  --bg-color: #0b0f19; /* Deep navy base */
-  --card-bg: rgba(17, 24, 39, 0.6);
-  --border-color: rgba(59, 130, 246, 0.12);
+  --primary-accent: #A78BFA;
+  --primary-accent-hover: #8B5CF6;
+  --primary-accent-rgb: 167, 139, 250;
+  --bg-color: #0D0B16;
+  --card-bg: rgba(30, 26, 48, 0.6);
+  --border-color: rgba(196, 181, 253, 0.10);
 }

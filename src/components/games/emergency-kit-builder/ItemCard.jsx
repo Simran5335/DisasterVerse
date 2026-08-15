@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
 
-export default function ItemCard({ item, isPacked, onAddItem, onDragStart }) {
+function ItemCard({ item, isPacked, onAddItem, onDragStart }) {
   const handleDragStart = (e) => {
     if (isPacked) {
       e.preventDefault();
@@ -40,3 +41,17 @@ export default function ItemCard({ item, isPacked, onAddItem, onDragStart }) {
     </div>
   );
 }
+
+ItemCard.propTypes = {
+  item: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    icon: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+  }).isRequired,
+  isPacked: PropTypes.bool.isRequired,
+  onAddItem: PropTypes.func.isRequired,
+  onDragStart: PropTypes.func,
+};
+
+export default memo(ItemCard);

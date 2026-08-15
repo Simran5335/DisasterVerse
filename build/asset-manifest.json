@@ -1,23 +1,11 @@
 {
   "files": {
-<<<<<<< Updated upstream
-    "main.css": "/static/css/main.d8be4497.css",
-    "main.js": "/static/js/main.41b380f2.js",
-    "index.html": "/index.html",
-    "main.d8be4497.css.map": "/static/css/main.d8be4497.css.map",
-    "main.41b380f2.js.map": "/static/js/main.41b380f2.js.map"
-  },
-  "entrypoints": [
-    "static/css/main.d8be4497.css",
-    "static/js/main.41b380f2.js"
-=======
-    "main.css": "/static/css/main.e7cf76e7.css",
-    "main.js": "/static/js/main.a3110ff1.js",
+    "main.css": "/static/css/main.00c9cbf7.css",
+    "main.js": "/static/js/main.ed461b3d.js",
     "index.html": "/index.html"
   },
   "entrypoints": [
-    "static/css/main.e7cf76e7.css",
-    "static/js/main.a3110ff1.js"
->>>>>>> Stashed changes
+    "static/css/main.00c9cbf7.css",
+    "static/js/main.ed461b3d.js"
   ]
 }

@@ -1,0 +1,758 @@
+/* MOUNTAIN SCOUT — ENHANCED GAME STYLES */
+
+.mountain-scout-game {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 16px;
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  user-select: none;
+}
+
+/* TOP HUD BAR */
+.ms-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 18px;
+  padding: 12px 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ms-hud-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
+.ms-hud-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.ms-hud-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 20px;
+  font-weight: 900;
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 6px 14px;
+  border-radius: 12px;
+  color: #34d399;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.ms-hud-timer.warning {
+  color: #fbbf24;
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.ms-hud-timer.urgent {
+  color: #f43f5e;
+  border-color: #f43f5e;
+  background: rgba(244, 63, 94, 0.2);
+  animation: timerPulse 0.6s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.ms-hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ms-stat-chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ms-combo-chip {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 900;
+  animation: bounce 0.6s infinite alternate;
+}
+
+.ms-action-icon-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.ms-action-icon-btn:hover {
+  background: #334155;
+  border-color: #38bdf8;
+}
+
+.ms-action-icon-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+
+/* TOOLBAR & EXPLORATION CONTROL ROW */
+.ms-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ms-zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ms-tool-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ms-tool-btn:hover {
+  background: #334155;
+  color: #fff;
+}
+
+/* MAIN GAME BODY GRID */
+.ms-game-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+}
+
+@media (max-width: 940px) {
+  .ms-game-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SCENE & VIEWPORT CONTAINER */
+.ms-scene-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #090d16;
+  border-radius: 20px;
+  border: 2px solid #334155;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+}
+
+.ms-scene-wrapper.investigate-mode {
+  cursor: crosshair;
+}
+
+.ms-scene-wrapper.panning {
+  cursor: grabbing;
+}
+
+.ms-scene-viewport {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+}
+
+.ms-svg-scene {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* BINOCULAR LENS MASK OVERLAY */
+.ms-binocular-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 25;
+  background: radial-gradient(circle at center, transparent 160px, rgba(0, 0, 0, 0.88) 180px);
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+}
+
+.ms-binocular-tag {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+  z-index: 26;
+}
+
+/* MINIMAP VIEWPORT OVERLAY */
+.ms-minimap-box {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 120px;
+  height: 70px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.ms-minimap-bg {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  position: relative;
+}
+
+.ms-minimap-viewport-rect {
+  position: absolute;
+  border: 1.5px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+  border-radius: 2px;
+}
+
+/* DYNAMIC OBSERVE NOTICE */
+.ms-observe-event-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(245, 158, 11, 0.95);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.6);
+  z-index: 30;
+  pointer-events: none;
+  animation: pulse 1s infinite alternate;
+}
+
+/* HOTSPOTS OVERLAY */
+.ms-hotspot {
+  position: absolute;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+}
+
+/* DISCOVERED HAZARD INDICATOR */
+.ms-discovered-indicator {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.ms-ping-ring {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 3px solid #38bdf8;
+  border-radius: 50%;
+  animation: pingAnimation 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes pingAnimation {
+  75%, 100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.ms-indicator-badge {
+  width: 36px;
+  height: 36px;
+  background: #0284c7;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.6);
+  z-index: 2;
+}
+
+.ms-indicator-label {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #38bdf8;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* MISSED HAZARD INDICATOR (FOR TIME UP) */
+.ms-missed-indicator {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.ms-missed-badge {
+  width: 36px;
+  height: 36px;
+  background: #dc2626;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.8);
+  animation: pulse 1s infinite alternate;
+}
+
+.ms-missed-label {
+  background: rgba(220, 38, 38, 0.9);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* WRONG CLICK TOAST */
+.ms-wrong-toast {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #f43f5e;
+  color: #fda4af;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  z-index: 30;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* SIDEBAR CHECKLIST & CLUE PANEL */
+.ms-sidebar {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.ms-sidebar-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #38bdf8;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ms-checklist-progress {
+  font-size: 11px;
+  font-weight: 800;
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.ms-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ms-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+}
+
+.ms-check-item.found {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.ms-check-icon {
+  font-size: 16px;
+}
+
+/* CONTEXTUAL CLUE BOX */
+.ms-clue-display-box {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid #f59e0b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fef08a;
+  line-height: 1.4;
+}
+
+/* OVERLAY MODALS */
+.ms-modal-backdrop {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(9, 13, 22, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+.ms-card-modal {
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+}
+
+.ms-card-header-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.ms-card-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #38bdf8;
+  margin: 0 0 10px 0;
+}
+
+.ms-educational-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #334155;
+  margin-bottom: 16px;
+}
+
+.ms-edu-section-title {
+  font-size: 11px;
+  font-weight: 900;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ms-edu-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.ms-card-btn {
+  width: 100%;
+  padding: 14px;
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ms-card-btn:hover {
+  background: #0369a1;
+}
+
+/* START SCREEN MODAL */
+.ms-start-card {
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 28px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9);
+}
+
+.ms-start-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: #38bdf8;
+  margin: 10px 0 4px 0;
+  letter-spacing: 1px;
+}
+
+.ms-start-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+
+.ms-start-instructions {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: left;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.ms-start-btn {
+  width: 100%;
+  padding: 16px;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.ms-start-btn:hover {
+  transform: translateY(-2px);
+  background: #059669;
+}
+
+/* WIN & TIME-UP END SCREENS */
+.ms-end-card {
+  background: #0f172a;
+  border: 2px solid #34d399;
+  border-radius: 28px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9);
+}
+
+.ms-end-card.timeup {
+  border-color: #f43f5e;
+}
+
+.ms-rating-badge {
+  display: inline-block;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid #fbbf24;
+  color: #fbbf24;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 900;
+  margin: 10px 0;
+}
+
+.ms-score-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.ms-score-chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.ms-score-chip strong {
+  font-size: 15px;
+  color: #fff;
+  margin-top: 2px;
+}
+
+.ms-end-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ms-btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ms-btn-secondary {
+  width: 100%;
+  padding: 12px;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* LEARNING QUIZ MODAL */
+.ms-quiz-card {
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 520px;
+  width: 100%;
+  text-align: left;
+}
+
+.ms-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.ms-quiz-opt-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ms-quiz-opt-btn:hover {
+  background: #334155;
+  border-color: #38bdf8;
+}
+
+.ms-quiz-opt-btn.correct {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.ms-quiz-opt-btn.wrong {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: #f43f5e;
+  color: #f87171;
+}

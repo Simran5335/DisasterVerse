@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import ItemCard from './ItemCard';
 import FirstAidKitBox from './FirstAidKitBox';
 import SmileyBuddy from './SmileyBuddy';
@@ -42,7 +42,7 @@ export default function KitInterface() {
     if (distractorsCount === 1) return 'concerned';
     if (essentialsCount >= 4) return 'super_happy';
     return 'happy';
-  }, [packedItems]);
+  }, [packedItems, smileyAnim]); // Add smileyAnim dependency if it should reset emotion
 
   // Trigger brief micro-animation on smiley buddy
   const triggerSmileyAnim = (animType) => {
@@ -53,7 +53,7 @@ export default function KitInterface() {
   };
 
   // Toggle Lid Open/Close
-  const handleToggleLid = () => {
+  const handleToggleLid = useCallback(() => {
     const nextState = !isLidOpen;
     setIsLidOpen(nextState);
     if (nextState) {
@@ -62,10 +62,10 @@ export default function KitInterface() {
     } else {
       setFeedbackText('First Aid Kit lid closed. All packed supplies remain safely stored inside!');
     }
-  };
+  }, [isLidOpen]);
 
   // Add Item to Kit Tray
-  const handleAddItem = (id, targetIndex = null) => {
+  const handleAddItem = useCallback((id, targetIndex = null) => {
     if (evaluation) return;
 
     if (packedIds.includes(id)) {
@@ -109,10 +109,10 @@ export default function KitInterface() {
         triggerSmileyAnim('shake');
       }
     }
-  };
+  }, [evaluation, packedIds, isLidOpen]);
 
   // Remove Item from Kit Tray
-  const handleRemoveItem = (id) => {
+  const handleRemoveItem = useCallback((id) => {
     if (evaluation) return;
 
     const itemDef = ITEMS_CONFIG.find(i => i.id === id);
@@ -122,36 +122,34 @@ export default function KitInterface() {
       setFeedbackText(`Removed ${itemDef.name} from the tray.`);
       triggerSmileyAnim('bounce');
     }
-  };
+  }, [evaluation]);
 
   // Submit Kit for Evaluation
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (packedIds.length === 0) return;
 
     const totalEssentials = ITEMS_CONFIG.filter(item => item.isEssential).length;
-    let selectedEssentialsCount = 0;
-    let selectedUnnecessaryCount = 0;
 
-    const feedback = [];
-    const packedSet = new Set(packedIds);
-
-    for (const id of packedIds) {
-      const itemDef = ITEMS_CONFIG.find(i => i.id === id);
-      if (itemDef) {
-        if (itemDef.isEssential) {
-          selectedEssentialsCount++;
+    const { selectedEssentialsCount, selectedUnnecessaryCount, feedback } = packedItems.reduce(
+      (acc, item) => {
+        if (item.isEssential) {
+          acc.selectedEssentialsCount++;
         } else {
-          selectedUnnecessaryCount++;
+          acc.selectedUnnecessaryCount++;
         }
-        feedback.push({
-          itemId: itemDef.id,
-          name: itemDef.name,
-          icon: itemDef.icon,
-          isCorrect: itemDef.isEssential,
-          explanation: itemDef.explanation
+        acc.feedback.push({
+          itemId: item.id,
+          name: item.name,
+          icon: item.icon,
+          isCorrect: item.isEssential,
+          explanation: item.explanation,
         });
-      }
-    }
+        return acc;
+      },
+      { selectedEssentialsCount: 0, selectedUnnecessaryCount: 0, feedback: [] }
+    );
+
+    const packedSet = new Set(packedIds);
 
     const missingEssentials = ITEMS_CONFIG
       .filter(item => item.isEssential && !packedSet.has(item.id))
@@ -170,15 +168,15 @@ export default function KitInterface() {
       feedback,
       missingEssentials
     });
-  };
+  }, [packedIds, packedItems]);
 
   // Reset/Rebuild Kit
-  const handleRebuild = () => {
+  const handleRebuild = useCallback(() => {
     setPackedIds([]);
     setEvaluation(null);
     setFeedbackText('First Aid Kit reset. Select supplies to start fresh!');
     triggerSmileyAnim('bounce');
-  };
+  }, []);
 
   return (
     <div className="kit-builder-layout">

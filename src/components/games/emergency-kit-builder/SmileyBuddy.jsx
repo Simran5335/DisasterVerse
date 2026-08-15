@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
 
-export default function SmileyBuddy({ state, feedbackText, animClass }) {
+function SmileyBuddy({ state, feedbackText, animClass }) {
   const getEmotionDetails = () => {
     switch (state) {
       case 'super_happy':
@@ -47,3 +48,11 @@ export default function SmileyBuddy({ state, feedbackText, animClass }) {
     </div>
   );
 }
+
+SmileyBuddy.propTypes = {
+  state: PropTypes.oneOf(['neutral', 'happy', 'super_happy', 'concerned', 'sad']).isRequired,
+  feedbackText: PropTypes.string,
+  animClass: PropTypes.string,
+};
+
+export default memo(SmileyBuddy);

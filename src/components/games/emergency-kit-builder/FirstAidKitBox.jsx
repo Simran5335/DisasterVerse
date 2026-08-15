@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { MAX_KIT_CAPACITY } from './config';
 
-export default function FirstAidKitBox({
-  isOpen,
+const FirstAidKitBox = ({
+    isOpen,
   onToggleLid,
   packedItems,
   onDropItem,
   onRemoveItem
-}) {
+}) => {
   const [isDragOverTray, setIsDragOverTray] = useState(false);
   const [dragOverSlotIndex, setDragOverSlotIndex] = useState(null);
 
@@ -77,10 +77,6 @@ export default function FirstAidKitBox({
             <button
               type="button"
               className="open-lid-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleLid();
-              }}
             >
               🔓 Tap / Click Lid to Open
             </button>
@@ -147,3 +143,5 @@ export default function FirstAidKitBox({
     </div>
   );
 }
+
+export default memo(FirstAidKitBox);
