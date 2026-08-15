@@ -183,9 +183,7 @@ const Dashboard = () => {
           <nav style={styles.navLinks}>
             <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
-            <button onClick={() => navigate('/mountain-scout')} style={styles.navBtn}>🏔️ Mountain Scout</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
-            <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
             <button onClick={() => setActiveTab('flip-prepare')} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
             <button onClick={() => setActiveTab('know2survive')} style={{ ...styles.navBtn, ...(activeTab === 'know2survive' ? styles.activeNavBtn : {}) }}>🧠 Know2Survive</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
@@ -262,25 +260,43 @@ const Dashboard = () => {
 
         {activeTab === 'games' && (
           <div style={styles.tabContentCard}>
-            <h2>🎮 Interactive Disaster Simulations</h2>
+            <h2>🎮 Interactive Disaster Simulations & Games</h2>
+            <p style={{ color: '#9ca3af', marginBottom: '20px' }}>
+              Select a game simulation to test your survival readiness, hazard recognition, and engineering skills.
+            </p>
             <div style={styles.gameGrid}>
               <div style={styles.gameBox}>
-                <h3>1. Landslide – "Mountain Scout"</h3>
+                <h3>1. Emergency Kit – "72hr Kit Builder"</h3>
+                <p style={styles.gameDesc}>Pack essential medical and survival supplies into a first-aid kit before disaster strikes.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/emergency-kit-builder')}>Play Game</button>
+              </div>
+
+              <div style={styles.gameBox}>
+                <h3>2. Landslide – "Mountain Scout"</h3>
                 <p style={styles.gameDesc}>Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.</p>
                 <button style={styles.actionBtn} onClick={() => navigate('/mountain-scout')}>Play Game</button>
               </div>
+
               <div style={styles.gameBox}>
-                <h3>2. Earthquake – "Balance Builder"</h3>
+                <h3>3. Hazard Spotter – "Spot the Risk"</h3>
+                <p style={styles.gameDesc}>Scan 4 real-world environments across 20 levels to spot hidden safety hazards and structural risks.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/hazard-spotter')}>Play Game</button>
+              </div>
+
+              <div style={styles.gameBox}>
+                <h3>4. Earthquake – "Balance Builder"</h3>
                 <p style={styles.gameDesc}>Build houses selecting foundations, pillars, and roofs, then test against earthquakes (4.5–8.5 magnitude).</p>
                 <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
               </div>
+
               <div style={styles.gameBox}>
-                <h3>3. Flood – "River Defender"</h3>
+                <h3>5. Flood – "River Defender"</h3>
                 <p style={styles.gameDesc}>Place sandbags, flood barriers, pumps, and wetlands to stop urban flooding.</p>
                 <button style={styles.actionBtn} onClick={() => alert('Starting River Defender...')}>Play Simulation</button>
               </div>
+
               <div style={styles.gameBox}>
-                <h3>4. Fire – "Smoke Vision"</h3>
+                <h3>6. Fire – "Smoke Vision"</h3>
                 <p style={styles.gameDesc}>Navigate a low-visibility smoke maze by crawling and feeling walls.</p>
                 <button style={styles.actionBtn} onClick={() => alert('Starting Smoke Vision...')}>Play Simulation</button>
               </div>
