@@ -185,7 +185,7 @@ const Dashboard = () => {
             <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
             <button onClick={() => setActiveTab('flip-prepare')} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
-            <button onClick={() => setActiveTab('know2survive')} style={{ ...styles.navBtn, ...(activeTab === 'know2survive' ? styles.activeNavBtn : {}) }}>🧠 Know2Survive</button>
+            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Know2Survive</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
             <button onClick={() => setActiveTab('plan')} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
@@ -318,18 +318,6 @@ const Dashboard = () => {
                   protocols={card.protocols}
                 />
               ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'know2survive' && (
-          <div style={styles.tabContentCard}>
-            <h2>🧠 Know2Survive (Disaster Quiz Challenge)</h2>
-            <p style={{ color: '#9ca3af', marginBottom: '20px' }}>Test your survival knowledge, earn XP, and prove your emergency expertise.</p>
-            <div style={styles.gameBox}>
-              <h3>Survival Trivia Quiz</h3>
-              <p style={styles.gameDesc}>Answer situational questions on earthquakes, floods, fires, and first aid to test your readiness.</p>
-              <button style={styles.actionBtn} onClick={() => alert('Launching Know2Survive Quiz...')}>Start Quiz</button>
             </div>
           </div>
         )}
