@@ -73,7 +73,7 @@ const RiverDefender = () => {
   const [hoverCell, setHoverCell] = useState(null);
 
   // Modals & Panels
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
   const [showObjectives, setShowObjectives] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -357,6 +357,7 @@ const RiverDefender = () => {
             scenario={currentScenario}
             isTrainingMode={isTrainingMode}
             trainingTask={activeTrainingTask}
+            onOpenTutorial={() => setShowTutorial(true)}
             onOpenObjectives={() => setShowObjectives(true)}
             onOpenSettings={() => setShowSettings(true)}
             onOpenAchievements={() => setShowAchievements(true)}

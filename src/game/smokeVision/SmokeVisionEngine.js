@@ -1,4 +1,4 @@
-// Core Game Engine & Logic for Smoke Vision
+// Core Game Engine for Smoke Vision
 import { BuildingLayout } from './BuildingLayout.js';
 import { SmokeEngine } from './SmokeEngine.js';
 import { FireEngine } from './FireEngine.js';
@@ -30,9 +30,10 @@ export class SmokeVisionEngine {
 
     this.checkedDoors = new Set();
     this.helpedNPCs = new Set();
-    this.routeHistory = []; // Tracks player (x,z) positions for 2D disaster replay
+    this.routeHistory = [];
     this.userScoreXP = 0;
     this.decisionLogs = [];
+    this.toastNotification = null; // { message, type: 'success'|'warning'|'xp' }
   }
 
   reset() {
@@ -62,6 +63,11 @@ export class SmokeVisionEngine {
     this.routeHistory = [{ x: 4, z: 4, t: 0, status: 'START' }];
     this.userScoreXP = 0;
     this.decisionLogs = [];
+    this.toastNotification = null;
+  }
+
+  showToast(message, type = 'success') {
+    this.toastNotification = { message, type, id: Date.now() };
   }
 
   movePlayer(dx, dz) {
@@ -88,6 +94,7 @@ export class SmokeVisionEngine {
       awardXP(30, 'CRAWL_THROUGH_SMOKE');
       this.userScoreXP += 30;
       this.decisionLogs.push('✓ Stayed low under smoke layer (+30 XP)');
+      this.showToast('🧎 STAYING LOW IN SMOKE (+30 XP)', 'success');
     }
   }
 
@@ -101,7 +108,7 @@ export class SmokeVisionEngine {
     const px = this.player.x;
     const pz = this.player.z;
 
-    // 1. Check Nearby Door
+    // 1. Check Door
     for (let door of this.layout.doors) {
       const dist = Math.sqrt((px - door.x) ** 2 + (pz - door.z) ** 2);
       if (dist <= 2.2) {
@@ -113,15 +120,18 @@ export class SmokeVisionEngine {
           awardXP(40, 'CORRECTLY_CHECKED_DOOR');
           this.userScoreXP += 40;
           this.decisionLogs.push(`✓ Checked ${door.label}: COOL & SAFE (+40 XP)`);
+          this.showToast(`🚪 CHECKED DOOR: SAFE (+40 XP)`, 'success');
         } else if (tempState === 'VERY_HOT') {
-          this.decisionLogs.push(`⚠️ Checked ${door.label}: VERY HOT! Avoided opening fire door!`);
+          this.userScoreXP += 40; // Rewarded for avoiding dangerous door!
+          this.decisionLogs.push(`⚠️ Checked ${door.label}: VERY HOT! Avoided fire door (+40 XP)`);
+          this.showToast(`🔴 VERY HOT DOOR! AVOID OPENING! (+40 XP)`, 'warning');
         }
 
         return { type: 'DOOR_CHECK', door, tempState };
       }
     }
 
-    // 2. Check Nearby NPC
+    // 2. Check NPC
     for (let npc of this.layout.npcs) {
       const dist = Math.sqrt((px - npc.x) ** 2 + (pz - npc.z) ** 2);
       if (dist <= 2.5 && !this.helpedNPCs.has(npc.id)) {
@@ -130,16 +140,20 @@ export class SmokeVisionEngine {
         awardXP(50, 'HELP_NPC');
         this.userScoreXP += 50;
         this.decisionLogs.push(`✓ Rescued ${npc.name} (+50 XP)`);
+        this.showToast(`🤝 RESCUED ${npc.name}! (+50 XP)`, 'success');
         return { type: 'NPC_HELP', npc };
       }
     }
 
-    // 3. Check Primary/Secondary Exits
+    // 3. Check Exits
     for (let exit of this.layout.exits) {
       const dist = Math.sqrt((px - exit.x) ** 2 + (pz - exit.z) ** 2);
       if (dist <= 2.5) {
         if (exit.isBlocked) {
-          this.decisionLogs.push(`❌ Attempted blocked exit ${exit.name}`);
+          awardXP(40, 'AVOIDED_BLOCKED_EXIT');
+          this.userScoreXP += 40;
+          this.decisionLogs.push(`❌ Avoided blocked exit ${exit.name} (+40 XP)`);
+          this.showToast(`❌ BLOCKED EXIT! FIND ANOTHER ROUTE (+40 XP)`, 'warning');
           return { type: 'EXIT_BLOCKED', exit };
         } else {
           this.triggerVictory(exit);
@@ -158,17 +172,26 @@ export class SmokeVisionEngine {
     this.smokeEngine.update(dt, this.fireEngine.fireOrigin);
     this.fireEngine.update(dt);
 
-    // Flashlight Battery Drain
+    // Battery Drain
     if (this.player.flashlightOn && this.player.batteryPct > 0) {
       this.player.batteryPct = Math.max(0, this.player.batteryPct - dt * 0.8);
+      if (Math.round(this.player.batteryPct) === 25) {
+        this.showToast('🔋 FLASHLIGHT BATTERY LOW (25%)', 'warning');
+      }
     }
 
-    // Health Drain based on Smoke Exposure
+    // Damage & Crouching Health System
     const currentSmoke = this.smokeEngine.getSmokeAt(this.player.x, this.player.z);
     const damageRate = this.smokeEngine.getDamageRate(currentSmoke, this.player.isCrouching);
 
     if (damageRate > 0) {
       this.player.health = Math.max(0, this.player.health - damageRate * dt);
+      if (!this.player.isCrouching && currentSmoke !== 'LOW') {
+        if (Math.floor(this.timerSeconds) % 5 === 0) {
+          this.showToast('🧎 STAY LOW! PRESS C TO CROUCH UNDER SMOKE!', 'warning');
+        }
+      }
+
       if (this.player.health <= 0) {
         this.triggerDefeat('You spent too long in heavy smoke. Remember to stay low and find a safe exit.');
       }
@@ -183,6 +206,7 @@ export class SmokeVisionEngine {
     awardXP(100, 'SAFE_EVACUATION_EXIT');
     this.userScoreXP += 100;
     this.decisionLogs.push(`🎉 Reached safe exit ${exit.name}! (+100 XP)`);
+    this.showToast(`🎉 EVACUATION SUCCESSFUL! (+100 XP)`, 'success');
   }
 
   triggerDefeat(reason) {

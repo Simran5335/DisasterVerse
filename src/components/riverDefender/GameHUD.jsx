@@ -10,6 +10,7 @@ const GameHUD = ({
   scenario,
   isTrainingMode,
   trainingTask,
+  onOpenTutorial,
   onOpenObjectives,
   onOpenSettings,
   onOpenAchievements,
@@ -85,6 +86,7 @@ const GameHUD = ({
               🌊 START FLOOD NOW ({prepTimeRemaining}s)
             </button>
           )}
+          <button style={styles.iconBtn} onClick={onOpenTutorial} title="How to Play / Instruction Manual">❓</button>
           <button style={styles.iconBtn} title="Pause Simulation">⏸️</button>
           <button style={styles.iconBtn} title="Fast Forward">⏩</button>
           <button style={styles.iconBtn} onClick={onOpenSettings} title="Settings">⚙️</button>

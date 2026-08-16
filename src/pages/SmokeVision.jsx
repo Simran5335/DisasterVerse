@@ -33,6 +33,7 @@ const SmokeVision = () => {
   const [smokeLevel, setSmokeLevel] = useState('LOW');
   const [currentObjective, setCurrentObjective] = useState('Find a safe evacuation exit.');
   const [activeDoorData, setActiveDoorData] = useState(null);
+  const [toastNotif, setToastNotif] = useState(null);
 
   // Initialize Game Session
   const initGame = () => {
@@ -101,6 +102,7 @@ const SmokeVision = () => {
       if (engine) {
         engine.update(dt);
         setPlayerState({ ...engine.player });
+        setToastNotif(engine.toastNotification);
 
         const sLevel = engine.smokeEngine.getSmokeAt(engine.player.x, engine.player.z);
         setSmokeLevel(sLevel);
@@ -141,8 +143,9 @@ const SmokeVision = () => {
         ref={canvasRef}
         style={{
           display: phase === GAME_PHASES.ESCAPE_SIMULATION ? 'block' : 'none',
-          width: '100vw',
-          height: '100vh'
+          width: '100%',
+          height: '100vh',
+          height: '100svh'
         }}
       />
 
@@ -152,6 +155,8 @@ const SmokeVision = () => {
           player={playerState}
           smokeLevel={smokeLevel}
           objective={currentObjective}
+          toastNotification={toastNotif}
+          onMove={(dx, dz) => engineRef.current && engineRef.current.movePlayer(dx, dz)}
           onToggleCrouch={() => engineRef.current && engineRef.current.toggleCrouch()}
           onToggleFlashlight={() => engineRef.current && engineRef.current.toggleFlashlight()}
           onInteract={() => {
@@ -205,8 +210,9 @@ const SmokeVision = () => {
 
 const styles = {
   container: {
-    width: '100vw',
-    height: '100vh',
+    width: '100%',
+    minHeight: '100vh',
+    minHeight: '100svh',
     overflow: 'hidden',
     position: 'relative',
     background: '#090d16',

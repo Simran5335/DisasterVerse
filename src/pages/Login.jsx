@@ -24,7 +24,6 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isRegister) {
-      // Grab the name from the input field during registration
       const nameInput = e.target.elements[0].value; 
       localStorage.setItem('userName', nameInput);
 
@@ -34,6 +33,7 @@ const Login = () => {
       navigate('/dashboard'); 
     }
   };
+
   return (
     <div style={styles.container}>
       {/* Background Video */}
@@ -67,7 +67,6 @@ const Login = () => {
               <div style={styles.blushRight}></div>
               <div style={styles.smile}></div>
             </div>
-            {/* Peeking Little Hands */}
             <div style={styles.handLeft}></div>
             <div style={styles.handRight}></div>
           </div>
@@ -133,21 +132,21 @@ const Login = () => {
   );
 };
 
-// Polished styling with glowing heading
 const styles = {
   container: {
     position: 'relative',
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
+    width: '100%',
+    minHeight: '100vh',
+    minHeight: '100svh',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: '10%',
+    alignItems: 'center',
+    padding: '80px 20px 40px 20px',
     fontFamily: 'sans-serif',
     color: '#fff',
     boxSizing: 'border-box',
+    overflowY: 'auto'
   },
   video: {
     position: 'absolute',
@@ -169,25 +168,27 @@ const styles = {
   },
   headingContainer: {
     position: 'absolute',
-    top: '30px',
+    top: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
     zIndex: 10,
     textAlign: 'center',
+    width: '90%',
+    maxWidth: '800px'
   },
   mainHeading: {
-    fontSize: '42px',
+    fontSize: 'clamp(1.6rem, 4vw, 2.5rem)',
     fontWeight: '800',
-    letterSpacing: '1.2px',
+    letterSpacing: '1px',
     margin: 0,
     color: '#ffffff',
     textShadow: '0 0 10px rgba(220, 38, 38, 0.8), 0 0 20px rgba(220, 38, 38, 0.5), 0 0 30px rgba(220, 38, 38, 0.3)',
   },
   headingUnderline: {
-    width: '90px',
+    width: '80px',
     height: '3px',
     backgroundColor: '#dc2626',
-    margin: '8px auto 0 auto',
+    margin: '6px auto 0 auto',
     borderRadius: '2px',
     boxShadow: '0 0 10px #dc2626',
   },
@@ -196,17 +197,19 @@ const styles = {
     zIndex: 2,
     width: '100%',
     maxWidth: '420px',
-    marginTop: '40px',
+    marginTop: '30px',
   },
   card: {
     width: '100%',
     backgroundColor: 'rgba(18, 15, 14, 0.92)',
     border: '1px solid rgba(153, 27, 27, 0.4)',
-    padding: '30px',
+    padding: '28px 24px',
     borderRadius: '20px',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
     position: 'relative',
-    marginTop: '45px',
+    marginTop: '35px',
+    backdropFilter: 'blur(10px)',
+    boxSizing: 'border-box'
   },
   cloudWrapper: {
     position: 'absolute',
