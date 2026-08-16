@@ -1,25 +1,39 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import HazardSpotter from "./pages/HazardSpotter";
-import EarthquakeBuilder from "./pages/EarthquakeBuilder";
-import EmergencyKitBuilder from "./pages/EmergencyKitBuilder";
-import MountainScout from "./pages/MountainScout";
-import IndiaMap from "./pages/IndiaMap";
+import HazardSpotter from './pages/HazardSpotter';
+import EarthquakeBuilder from './pages/EarthquakeBuilder';
+import EmergencyKitBuilder from './pages/EmergencyKitBuilder';
+import MountainScout from './pages/MountainScout';
+import IndiaMap from './pages/IndiaMap';
+import RiverDefender from './pages/RiverDefender';
+import SmokeVision from './pages/SmokeVision';
+import CrisisArchive from './pages/CrisisArchive';
+import Quiz from './pages/Quiz';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/hazard-spotter" element={<HazardSpotter />} />
-        <Route path="/mountain-scout" element={<MountainScout />} />
-        <Route path="/india-map" element={<IndiaMap />} />
-        <Route path="/earthquake-balance-builder" element={<EarthquakeBuilder />} />
-        <Route path="/emergency-kit-builder" element={<EmergencyKitBuilder />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/hazard-spotter" element={<HazardSpotter />} />
+          <Route path="/mountain-scout" element={<MountainScout />} />
+          <Route path="/india-map" element={<IndiaMap />} />
+          <Route path="/river-defender" element={<RiverDefender />} />
+          <Route path="/smoke-vision" element={<SmokeVision />} />
+          <Route path="/earthquake-balance-builder" element={<EarthquakeBuilder />} />
+          <Route path="/emergency-kit-builder" element={<EmergencyKitBuilder />} />
+          <Route path="/crisis-archive" element={<CrisisArchive />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

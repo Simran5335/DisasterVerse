@@ -2,10 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -18,4 +21,34 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Global Modern Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #120f0e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2422;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
+}
+
+/* Sidebar thin scrollbars */
+aside::-webkit-scrollbar {
+  width: 4px;
+}
+aside::-webkit-scrollbar-thumb {
+  background: #1f1a18;
+}
+aside:hover::-webkit-scrollbar-thumb {
+  background: #372e2b;
 }

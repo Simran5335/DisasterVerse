@@ -182,11 +182,11 @@ const Dashboard = () => {
 
           <nav style={styles.navLinks}>
             <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
-            <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
+            <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games & Sims</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
-            <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
+            <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
+            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Disaster Quiz</button>
             <button onClick={() => setActiveTab('flip-prepare')} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
-            <button onClick={() => setActiveTab('know2survive')} style={{ ...styles.navBtn, ...(activeTab === 'know2survive' ? styles.activeNavBtn : {}) }}>🧠 Know2Survive</button>
             <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
             <button onClick={() => setActiveTab('plan')} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
@@ -261,22 +261,42 @@ const Dashboard = () => {
 
         {activeTab === 'games' && (
           <div style={styles.tabContentCard}>
-            <h2>🎮 Interactive Disaster Simulations</h2>
+            <h2>🎮 Interactive Disaster Simulations & Modules</h2>
             <div style={styles.gameGrid}>
               <div style={styles.gameBox}>
-                <h3>1. Earthquake – "Balance Builder"</h3>
-                <p style={styles.gameDesc}>Build houses selecting foundations, pillars, and roofs, then test against earthquakes (4.5–8.5 magnitude).</p>
+                <h3>🔥 Smoke Vision — 3D Fire Escape</h3>
+                <p style={styles.gameDesc}>Navigate a 3D school during a fire emergency! Check door handles, stay low in smoke, use your flashlight, and find safe exits.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/smoke-vision')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🌊 River Defender — Flood Management</h3>
+                <p style={styles.gameDesc}>Command city flood defenses! Place sandbags, flood walls, pumps, and wetlands to stop rising floodwaters.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/river-defender')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🧱 Earthquake – "Balance Builder"</h3>
+                <p style={styles.gameDesc}>Build structural foundations, pillars, and roofs, then test against 4.5–8.5 magnitude earthquakes.</p>
                 <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>2. Flood – "River Defender"</h3>
-                <p style={styles.gameDesc}>Place sandbags, flood barriers, pumps, and wetlands to stop urban flooding.</p>
-                <button style={styles.actionBtn} onClick={() => alert('Starting River Defender...')}>Play Simulation</button>
+                <h3>🧰 72hr Emergency Kit Builder</h3>
+                <p style={styles.gameDesc}>Pack essential medical and survival supplies into an emergency first-aid kit before disaster strikes.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/emergency-kit-builder')}>Play Game</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>3. Fire – "Smoke Vision"</h3>
-                <p style={styles.gameDesc}>Navigate a low-visibility smoke maze by crawling and feeling walls.</p>
-                <button style={styles.actionBtn} onClick={() => alert('Starting Smoke Vision...')}>Play Simulation</button>
+                <h3>🔍 Hazard Spotter – "Spot The Risk"</h3>
+                <p style={styles.gameDesc}>Scan 4 real-world environments across 20 levels to spot hidden safety hazards and structural risks.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/hazard-spotter')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🏞️ Landslide – "Mountain Scout"</h3>
+                <p style={styles.gameDesc}>Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/mountain-scout')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🗺️ India Disaster Risk Map</h3>
+                <p style={styles.gameDesc}>Interactive GIS map of India showing regional disaster vulnerability zones, seismic activity, and safety protocols.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/india-map')}>Explore Map</button>
               </div>
             </div>
           </div>
