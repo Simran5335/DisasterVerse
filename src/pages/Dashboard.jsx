@@ -1,19 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlipCard from './FlipCard';
+import FirstAid from './FirstAid';
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const [userName, setUserName] = useState(() => localStorage.getItem('userName') || 'Survivor');
-  const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('userAvatar') || 'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse');
+  const [userName, setUserName] = useState(
+    () => localStorage.getItem('userName') || 'Survivor'
+  );
+
+  const [userAvatar, setUserAvatar] = useState(
+    () =>
+      localStorage.getItem('userAvatar') ||
+      'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse'
+  );
+
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [activeTab, setActiveTab] = useState('achievements');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [newName, setNewName] = useState(userName);
   const [newPassword, setNewPassword] = useState('');
-  const [selectedAvatarOption, setSelectedAvatarOption] = useState(userAvatar);
+  const [selectedAvatarOption, setSelectedAvatarOption] =
+    useState(userAvatar);
+
+  /* =========================
+     FIRST AID
+
+     The dashboard now uses the dedicated FirstAid page component
+     for the first-aid tab. This removes the old injury-selection
+     popup and keeps the dashboard itself unchanged.
+  ========================= */
 
   const avatarOptions = [
     'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse',
@@ -26,16 +44,76 @@ const Dashboard = () => {
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma'
   ];
 
-  const currentXP = parseInt(localStorage.getItem('userXP') || '3450', 10);
+  const currentXP = parseInt(
+    localStorage.getItem('userXP') || '3450',
+    10
+  );
+
   const badgesList = [
-    { id: 1, icon: '🌱', name: 'Preparedness Novice', xpRequired: 200, desc: 'Awarded for taking your first steps into emergency readiness education.', unlocked: currentXP >= 200 },
-    { id: 2, icon: '🛡️', name: 'Shield Apprentice', xpRequired: 600, desc: 'Mastered basic household safety audits and hazard identification.', unlocked: currentXP >= 600 },
-    { id: 3, icon: '⚡', name: 'Crisis Navigator', xpRequired: 1200, desc: 'Successfully navigated multi-hazard response drills and emergency kits.', unlocked: currentXP >= 1200 },
-    { id: 4, icon: '🏗️', name: 'Structural Guardian', xpRequired: 2200, desc: 'Demonstrated resilience in engineering and earthquake-resistant simulations.', unlocked: currentXP >= 2200 },
-    { id: 5, icon: '🔥', name: 'Flame & Flood Defender', xpRequired: 3500, desc: 'Conquered smoke-vision navigation and river flood defense operations.', unlocked: currentXP >= 3500 },
-    { id: 6, icon: '🧭', name: 'Master Survivalist', xpRequired: 5500, desc: 'Achieved elite disaster preparedness knowledge across all regional maps.', unlocked: currentXP >= 5500 },
-    { id: 7, icon: '👑', name: 'DisasterVerse Vanguard', xpRequired: 8000, desc: 'Stands among the top tier emergency leaders on the leaderboard.', unlocked: currentXP >= 8000 },
-    { id: 8, icon: '🌟', name: 'Legendary Apex Hero', xpRequired: 12000, desc: 'The ultimate pinnacle of absolute crisis mastery and safety excellence.', unlocked: currentXP >= 12000 }
+    {
+      id: 1,
+      icon: '🌱',
+      name: 'Preparedness Novice',
+      xpRequired: 200,
+      desc: 'Awarded for taking your first steps into emergency readiness education.',
+      unlocked: currentXP >= 200
+    },
+    {
+      id: 2,
+      icon: '🛡️',
+      name: 'Shield Apprentice',
+      xpRequired: 600,
+      desc: 'Mastered basic household safety audits and hazard identification.',
+      unlocked: currentXP >= 600
+    },
+    {
+      id: 3,
+      icon: '⚡',
+      name: 'Crisis Navigator',
+      xpRequired: 1200,
+      desc: 'Successfully navigated multi-hazard response drills and emergency kits.',
+      unlocked: currentXP >= 1200
+    },
+    {
+      id: 4,
+      icon: '🏗️',
+      name: 'Structural Guardian',
+      xpRequired: 2200,
+      desc: 'Demonstrated resilience in engineering and earthquake-resistant simulations.',
+      unlocked: currentXP >= 2200
+    },
+    {
+      id: 5,
+      icon: '🔥',
+      name: 'Flame & Flood Defender',
+      xpRequired: 3500,
+      desc: 'Conquered smoke-vision navigation and river flood defense operations.',
+      unlocked: currentXP >= 3500
+    },
+    {
+      id: 6,
+      icon: '🧭',
+      name: 'Master Survivalist',
+      xpRequired: 5500,
+      desc: 'Achieved elite disaster preparedness knowledge across all regional maps.',
+      unlocked: currentXP >= 5500
+    },
+    {
+      id: 7,
+      icon: '👑',
+      name: 'DisasterVerse Vanguard',
+      xpRequired: 8000,
+      desc: 'Stands among the top tier emergency leaders on the leaderboard.',
+      unlocked: currentXP >= 8000
+    },
+    {
+      id: 8,
+      icon: '🌟',
+      name: 'Legendary Apex Hero',
+      xpRequired: 12000,
+      desc: 'The ultimate pinnacle of absolute crisis mastery and safety excellence.',
+      unlocked: currentXP >= 12000
+    }
   ];
 
   const [hoveredBadge, setHoveredBadge] = useState(null);
@@ -45,54 +123,204 @@ const Dashboard = () => {
       title: '🌍 Earthquake',
       image: '/earthquake.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Secure heavy furniture.', 'Keep an emergency kit ready.', 'Identify safe places.', 'Prepare an emergency plan.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Drop, Cover & Hold On.', 'Stay away from windows.', "Don't use elevators.", 'Move away from buildings if outdoors.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Check for injuries.', 'Watch for gas leaks and fires.', 'Expect aftershocks.', 'Follow official instructions.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Secure heavy furniture.',
+            'Keep an emergency kit ready.',
+            'Identify safe places.',
+            'Prepare an emergency plan.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Drop, Cover & Hold On.',
+            'Stay away from windows.',
+            "Don't use elevators.",
+            'Move away from buildings if outdoors.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Check for injuries.',
+            'Watch for gas leaks and fires.',
+            'Expect aftershocks.',
+            'Follow official instructions.'
+          ]
+        }
       ]
     },
     {
       title: '🌊 Flood',
       image: '/flood.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Keep an emergency kit ready.', 'Know nearby safe/high-ground areas.', 'Protect important documents.', 'Follow weather warnings.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move to higher ground.', 'Avoid walking or driving through floodwater.', 'Stay away from electrical wires.', 'Follow evacuation instructions.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid contaminated floodwater.', 'Check for damaged wires and gas leaks.', 'Return home only when declared safe.', 'Follow official recovery instructions.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Keep an emergency kit ready.',
+            'Know nearby safe/high-ground areas.',
+            'Protect important documents.',
+            'Follow weather warnings.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move to higher ground.',
+            'Avoid walking or driving through floodwater.',
+            'Stay away from electrical wires.',
+            'Follow evacuation instructions.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Avoid contaminated floodwater.',
+            'Check for damaged wires and gas leaks.',
+            'Return home only when declared safe.',
+            'Follow official recovery instructions.'
+          ]
+        }
       ]
     },
     {
       title: '🔥 Forest Fire / Wildfire',
       image: '/forestfire.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Clear dry vegetation near buildings.', 'Keep emergency supplies ready.', 'Know evacuation routes.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Evacuate when instructed.', 'Stay away from smoke and flames.', 'Keep windows and doors closed.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when declared safe.', 'Watch for hot spots and falling trees.', 'Check for property damage.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Clear dry vegetation near buildings.',
+            'Keep emergency supplies ready.',
+            'Know evacuation routes.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Evacuate when instructed.',
+            'Stay away from smoke and flames.',
+            'Keep windows and doors closed.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Return only when declared safe.',
+            'Watch for hot spots and falling trees.',
+            'Check for property damage.'
+          ]
+        }
       ]
     },
     {
       title: '🌪️ Cyclone',
       image: '/cyclone.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Follow weather warnings.', 'Secure doors, windows, and loose objects.', 'Keep an emergency kit ready.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Stay indoors and away from windows.', 'Keep emergency supplies nearby.', 'Evacuate if instructed.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid fallen wires and debris.', 'Stay away from floodwater.', 'Return outside only when safe.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Follow weather warnings.',
+            'Secure doors, windows, and loose objects.',
+            'Keep an emergency kit ready.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Stay indoors and away from windows.',
+            'Keep emergency supplies nearby.',
+            'Evacuate if instructed.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Avoid fallen wires and debris.',
+            'Stay away from floodwater.',
+            'Return outside only when safe.'
+          ]
+        }
       ]
     },
     {
       title: '⛰️ Landslide',
       image: '/landslide.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Learn local landslide warning signs.', 'Avoid building near unstable slopes.', 'Know evacuation routes.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move quickly to safer ground.', 'Stay away from slopes and debris.', 'Follow evacuation instructions.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Avoid the affected area.', 'Watch for additional landslides.', 'Report damaged roads or utilities.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Learn local landslide warning signs.',
+            'Avoid building near unstable slopes.',
+            'Know evacuation routes.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move quickly to safer ground.',
+            'Stay away from slopes and debris.',
+            'Follow evacuation instructions.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Avoid the affected area.',
+            'Watch for additional landslides.',
+            'Report damaged roads or utilities.'
+          ]
+        }
       ]
     },
     {
       title: '🌊 Tsunami',
       image: '/tsunami.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Know evacuation routes to higher ground.', 'Learn local tsunami warning signals.', 'Prepare an emergency kit.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move immediately to higher ground.', 'Stay away from beaches and rivers.', 'Follow official evacuation orders.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Stay away until officials declare it safe.', 'Watch for additional waves.', 'Avoid damaged areas and debris.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Know evacuation routes to higher ground.',
+            'Learn local tsunami warning signals.',
+            'Prepare an emergency kit.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move immediately to higher ground.',
+            'Stay away from beaches and rivers.',
+            'Follow official evacuation orders.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Stay away until officials declare it safe.',
+            'Watch for additional waves.',
+            'Avoid damaged areas and debris.'
+          ]
+        }
       ]
     }
   ];
@@ -104,11 +332,15 @@ const Dashboard = () => {
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
+
     setUserName(newName);
     setUserAvatar(selectedAvatarOption);
+
     localStorage.setItem('userName', newName);
     localStorage.setItem('userAvatar', selectedAvatarOption);
+
     setShowSettingsModal(false);
+
     alert('Profile updated successfully!');
   };
 
@@ -117,322 +349,984 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={styles.dashboardContainer} className="dv-dashboard-root">
-      
-      {/* MOBILE TOGGLE HEADER BAR */}
+    <div
+      style={styles.dashboardContainer}
+      className="dv-dashboard-root"
+    >
+
+      {/* MOBILE HEADER */}
+
       <div className="dv-mobile-header">
+
         <div style={styles.logoArea}>
-          <div style={styles.logoIcon}>🛡️</div>
-          <span style={styles.logoText}>DisasterVerse</span>
+
+          <div style={styles.logoIcon}>
+            🛡️
+          </div>
+
+          <span style={styles.logoText}>
+            DisasterVerse
+          </span>
+
         </div>
-        <button className="dv-menu-toggle-btn" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+
+        <button
+          className="dv-menu-toggle-btn"
+          onClick={() => setMobileNavOpen(!mobileNavOpen)}
+        >
           {mobileNavOpen ? '✕ Close' : '☰ Menu'}
         </button>
+
       </div>
 
+
       {/* LEFT SIDEBAR */}
-      <aside className={`dv-sidebar ${mobileNavOpen ? 'mobile-open' : ''}`} style={styles.sidebar}>
+
+      <aside
+        className={`dv-sidebar ${
+          mobileNavOpen ? 'mobile-open' : ''
+        }`}
+        style={styles.sidebar}
+      >
+
         <div>
-          <div style={styles.logoArea} className="dv-desktop-logo">
-            <div style={styles.logoIcon}>🛡️</div>
-            <span style={styles.logoText}>DisasterVerse</span>
+
+          <div
+            style={styles.logoArea}
+            className="dv-desktop-logo"
+          >
+            <div style={styles.logoIcon}>
+              🛡️
+            </div>
+
+            <span style={styles.logoText}>
+              DisasterVerse
+            </span>
           </div>
+
 
           <nav style={styles.navLinks}>
-            <button onClick={() => { setActiveTab('achievements'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
-            <button onClick={() => { setActiveTab('games'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games & Sims</button>
-            <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
-            <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
-            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Disaster Quiz</button>
-            <button onClick={() => { setActiveTab('flip-prepare'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
-            <button onClick={() => { setActiveTab('checklist'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
-            <button onClick={() => { setActiveTab('firstaid'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
-            <button onClick={() => { setActiveTab('plan'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
+
+            <button
+              onClick={() => {
+                setActiveTab('achievements');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'achievements'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              🏅 Badges & Progress
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('games');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'games'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              🎮 Disaster Games & Sims
+            </button>
+
+            <button
+              onClick={() => navigate('/india-map')}
+              style={styles.navBtn}
+            >
+              🗺️ India Disaster Map
+            </button>
+
+            <button
+              onClick={() => navigate('/crisis-archive')}
+              style={styles.navBtn}
+            >
+              📰 Crisis Archive
+            </button>
+
+            <button
+              onClick={() => navigate('/quiz')}
+              style={styles.navBtn}
+            >
+              🧠 Disaster Quiz
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('flip-prepare');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'flip-prepare'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              🃏 Flip & Prepare
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('checklist');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'checklist'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              📋 Readiness Checklist
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('firstaid');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'firstaid'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              🩹 First Aid Guide
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab('plan');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'plan'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              📑 Safety Plan
+            </button>
+
           </nav>
+
         </div>
 
-        <div style={styles.sidebarPromo} onClick={() => { setShowSettingsModal(true); setMobileNavOpen(false); }}>
-          <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#fca5a5' }}>⚙️ Profile Settings</p>
-          <span style={{ fontSize: '11px', color: '#9ca3af' }}>Customize avatar, name & password</span>
+
+        <div
+          style={styles.sidebarPromo}
+          onClick={() => {
+            setShowSettingsModal(true);
+            setMobileNavOpen(false);
+          }}
+        >
+          <p
+            style={{
+              margin: '0 0 4px 0',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              color: '#fca5a5'
+            }}
+          >
+            ⚙️ Profile Settings
+          </p>
+
+          <span
+            style={{
+              fontSize: '11px',
+              color: '#9ca3af'
+            }}
+          >
+            Customize avatar, name & password
+          </span>
         </div>
+
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main style={styles.mainContent} className="dv-main-content">
 
-        <header style={styles.topBar} className="dv-top-bar">
+      {/* MAIN CONTENT */}
+
+      <main
+        style={styles.mainContent}
+        className="dv-main-content"
+      >
+
+        <header
+          style={styles.topBar}
+          className="dv-top-bar"
+        >
+
           <div>
-            <h1 style={styles.welcomeTitle}>Hello, {userName} 👋</h1>
-            <p style={styles.welcomeSubtitle}>Your command center for emergency readiness and interactive survival training.</p>
+
+            <h1 style={styles.welcomeTitle}>
+              Hello, {userName} 👋
+            </h1>
+
+            <p style={styles.welcomeSubtitle}>
+              Your command center for emergency readiness and interactive survival training.
+            </p>
+
           </div>
+
 
           <div style={styles.topRightControls}>
-            <div style={styles.searchBox} className="dv-search-box">
-              <span style={{ color: '#9ca3af' }}>🔍</span>
-              <input type="text" placeholder="Search modules..." style={styles.searchInput} />
+
+            <div
+              style={styles.searchBox}
+              className="dv-search-box"
+            >
+              <span style={{ color: '#9ca3af' }}>
+                🔍
+              </span>
+
+              <input
+                type="text"
+                placeholder="Search modules..."
+                style={styles.searchInput}
+              />
             </div>
 
-            <div style={styles.profileBadge} onClick={() => setShowSettingsModal(true)} title="Open Profile Settings">
-              <img src={userAvatar} alt="avatar" style={styles.avatarImg} />
+
+            <div
+              style={styles.profileBadge}
+              onClick={() => setShowSettingsModal(true)}
+              title="Open Profile Settings"
+            >
+
+              <img
+                src={userAvatar}
+                alt="avatar"
+                style={styles.avatarImg}
+              />
+
             </div>
+
           </div>
+
         </header>
 
+
+        {/* ACHIEVEMENTS */}
+
         {activeTab === 'achievements' && (
+
           <div style={styles.tabContentCard}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}
+            >
+
               <div>
-                <h2 style={{ margin: 0, fontSize: '22px' }}>🏅 DisasterVerse Ranks & Achievements</h2>
-                <p style={{ color: '#9ca3af', fontSize: '13px', margin: '4px 0 0 0' }}>Earn XP through simulations, checklists, and safety training to unlock exclusive ranks.</p>
+
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: '22px'
+                  }}
+                >
+                  🏅 DisasterVerse Ranks & Achievements
+                </h2>
+
+                <p
+                  style={{
+                    color: '#9ca3af',
+                    fontSize: '13px',
+                    margin: '4px 0 0 0'
+                  }}
+                >
+                  Earn XP through simulations, checklists, and safety training to unlock exclusive ranks.
+                </p>
+
               </div>
+
+
               <div style={styles.xpStatusPill}>
-                <span>Current XP: <strong>{currentXP} XP</strong></span>
+                Current XP: <strong>{currentXP} XP</strong>
               </div>
+
             </div>
 
-            <div style={styles.badgeDetailsGrid} className="dv-fluid-grid">
+
+            <div
+              style={styles.badgeDetailsGrid}
+              className="dv-fluid-grid"
+            >
+
               {badgesList.map((item) => (
+
                 <div
                   key={item.id}
                   style={{
                     ...styles.badgeDetailBox,
-                    borderColor: item.unlocked ? '#dc2626' : '#2a2422',
-                    backgroundColor: item.unlocked ? '#161211' : '#120f0e'
+                    borderColor: item.unlocked
+                      ? '#dc2626'
+                      : '#2a2422',
+                    backgroundColor: item.unlocked
+                      ? '#161211'
+                      : '#120f0e'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <span style={{ fontSize: '32px' }}>{item.icon}</span>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '14px'
+                    }}
+                  >
+
+                    <span style={{ fontSize: '32px' }}>
+                      {item.icon}
+                    </span>
+
                     <div>
-                      <h4 style={{ margin: 0, fontSize: '16px', color: item.unlocked ? '#fff' : '#9ca3af' }}>{item.name}</h4>
-                      <span style={{ fontSize: '12px', color: '#fca5a5', fontWeight: 'bold' }}>Required XP: {item.xpRequired}</span>
+
+                      <h4
+                        style={{
+                          margin: 0,
+                          fontSize: '16px',
+                          color: item.unlocked
+                            ? '#fff'
+                            : '#9ca3af'
+                        }}
+                      >
+                        {item.name}
+                      </h4>
+
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#fca5a5',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Required XP: {item.xpRequired}
+                      </span>
+
                     </div>
+
                   </div>
-                  <p style={{ color: '#9ca3af', fontSize: '13px', margin: '12px 0 0 0' }}>{item.desc}</p>
-                  <div style={{ marginTop: '12px', fontSize: '12px', fontWeight: 'bold', color: item.unlocked ? '#4ade80' : '#f87171' }}>
-                    {item.unlocked ? '✓ Unlocked' : `🔒 Locked (${item.xpRequired - currentXP} XP needed)`}
+
+
+                  <p
+                    style={{
+                      color: '#9ca3af',
+                      fontSize: '13px',
+                      margin: '12px 0 0 0'
+                    }}
+                  >
+                    {item.desc}
+                  </p>
+
+
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: item.unlocked
+                        ? '#4ade80'
+                        : '#f87171'
+                    }}
+                  >
+                    {item.unlocked
+                      ? '✓ Unlocked'
+                      : `🔒 Locked (${item.xpRequired - currentXP} XP needed)`}
                   </div>
+
                 </div>
+
               ))}
+
             </div>
+
           </div>
+
         )}
+
+
+        {/* GAMES */}
 
         {activeTab === 'games' && (
+
           <div style={styles.tabContentCard}>
-            <h2>🎮 Interactive Disaster Simulations & Modules</h2>
-            <div style={styles.gameGrid} className="dv-fluid-grid">
+
+            <h2>
+              🎮 Interactive Disaster Simulations & Modules
+            </h2>
+
+            <div
+              style={styles.gameGrid}
+              className="dv-fluid-grid"
+            >
+
               <div style={styles.gameBox}>
                 <h3>🔥 Smoke Vision — 3D Fire Escape</h3>
-                <p style={styles.gameDesc}>Navigate a 3D school during a fire emergency! Check door handles, stay low in smoke, use your flashlight, and find safe exits.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/smoke-vision')}>Play Game</button>
+
+                <p style={styles.gameDesc}>
+                  Navigate a 3D school during a fire emergency! Check door handles, stay low in smoke, use your flashlight, and find safe exits.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => navigate('/smoke-vision')}
+                >
+                  Play Game
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🌊 River Defender — Flood Management</h3>
-                <p style={styles.gameDesc}>Command city flood defenses! Place sandbags, flood walls, pumps, and wetlands to stop rising floodwaters.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/river-defender')}>Play Game</button>
+
+                <p style={styles.gameDesc}>
+                  Command city flood defenses! Place sandbags, flood walls, pumps, and wetlands to stop rising floodwaters.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => navigate('/river-defender')}
+                >
+                  Play Game
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🧱 Earthquake – "Balance Builder"</h3>
-                <p style={styles.gameDesc}>Build structural foundations, pillars, and roofs, then test against 4.5–8.5 magnitude earthquakes.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
+
+                <p style={styles.gameDesc}>
+                  Build structural foundations, pillars, and roofs, then test against 4.5–8.5 magnitude earthquakes.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() =>
+                    navigate('/earthquake-balance-builder')
+                  }
+                >
+                  Play Simulation
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🧰 72hr Emergency Kit Builder</h3>
-                <p style={styles.gameDesc}>Pack essential medical and survival supplies into an emergency first-aid kit before disaster strikes.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/emergency-kit-builder')}>Play Game</button>
+
+                <p style={styles.gameDesc}>
+                  Pack essential medical and survival supplies into an emergency first-aid kit before disaster strikes.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() =>
+                    navigate('/emergency-kit-builder')
+                  }
+                >
+                  Play Game
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🔍 Hazard Spotter – "Spot The Risk"</h3>
-                <p style={styles.gameDesc}>Scan 4 real-world environments across 20 levels to spot hidden safety hazards and structural risks.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/hazard-spotter')}>Play Game</button>
+
+                <p style={styles.gameDesc}>
+                  Scan 4 real-world environments across 20 levels to spot hidden safety hazards and structural risks.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => navigate('/hazard-spotter')}
+                >
+                  Play Game
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🏞️ Landslide – "Mountain Scout"</h3>
-                <p style={styles.gameDesc}>Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/mountain-scout')}>Play Game</button>
+
+                <p style={styles.gameDesc}>
+                  Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => navigate('/mountain-scout')}
+                >
+                  Play Game
+                </button>
               </div>
+
+
               <div style={styles.gameBox}>
                 <h3>🗺️ India Disaster Risk Map</h3>
-                <p style={styles.gameDesc}>Interactive GIS map of India showing regional disaster vulnerability zones, seismic activity, and safety protocols.</p>
-                <button style={styles.actionBtn} onClick={() => navigate('/india-map')}>Explore Map</button>
+
+                <p style={styles.gameDesc}>
+                  Interactive GIS map of India showing regional disaster vulnerability zones, seismic activity, and safety protocols.
+                </p>
+
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => navigate('/india-map')}
+                >
+                  Explore Map
+                </button>
               </div>
+
             </div>
+
           </div>
+
         )}
 
+
+        {/* FLIP & PREPARE */}
+
         {activeTab === 'flip-prepare' && (
+
           <div style={styles.tabContentCard}>
+
             <h2>🃏 Flip & Prepare</h2>
-            <p style={{ color: '#9ca3af', marginBottom: '25px' }}>Click any card below to flip between the illustration and survival protocols.</p>
-            
-            <div style={styles.flipGrid} className="dv-fluid-grid">
+
+            <p
+              style={{
+                color: '#9ca3af',
+                marginBottom: '25px'
+              }}
+            >
+              Click any card below to flip between the illustration and survival protocols.
+            </p>
+
+
+            <div
+              style={styles.flipGrid}
+              className="dv-fluid-grid"
+            >
+
               {disasterCards.map((card, index) => (
-                <FlipCard 
+
+                <FlipCard
                   key={index}
                   title={card.title}
                   imageSrc={card.image}
                   protocols={card.protocols}
                 />
+
               ))}
+
             </div>
+
           </div>
+
         )}
+
+
+        {/* CHECKLIST */}
 
         {activeTab === 'checklist' && (
+
           <div style={styles.tabContentCard}>
-            <h2>📋 Preparedness Checklist & Readiness Score</h2>
-            <p style={{ color: '#9ca3af' }}>Answer a few quick household questions to compute your overall disaster resilience score.</p>
+
+            <h2>
+              📋 Preparedness Checklist & Readiness Score
+            </h2>
+
+            <p style={{ color: '#9ca3af' }}>
+              Answer a few quick household questions to compute your overall disaster resilience score.
+            </p>
+
           </div>
+
         )}
+
+
+        {/* FIRST AID */}
 
         {activeTab === 'firstaid' && (
-          <div style={styles.tabContentCard}>
-            <h2>🩹 First Aid Treatment Guide</h2>
-            <p style={{ color: '#9ca3af' }}>Select an injury category (Burns, Fractures, Bleeding, Choking) for instant emergency protocols.</p>
+
+          <div style={styles.firstAidDashboardCard}>
+            <FirstAid />
           </div>
+
         )}
 
+
+        {/* SAFETY PLAN */}
+
         {activeTab === 'plan' && (
+
           <div style={styles.tabContentCard}>
-            <h2>📑 Personalized Safety Plan Generator</h2>
-            <p style={{ color: '#9ca3af' }}>Enter your family details and location coordinates to auto-generate a custom family evacuation plan.</p>
+
+            <h2>
+              📑 Personalized Safety Plan Generator
+            </h2>
+
+            <p style={{ color: '#9ca3af' }}>
+              Enter your family details and location coordinates to auto-generate a custom family evacuation plan.
+            </p>
+
           </div>
+
         )}
 
       </main>
 
+
       {/* RIGHT SIDEBAR */}
-      <aside style={styles.rightSidebar} className="dv-right-sidebar">
+
+      <aside
+        style={styles.rightSidebar}
+        className="dv-right-sidebar"
+      >
+
         <div style={styles.rightCard}>
+
           <div style={styles.xpHeader}>
-            <span style={{ fontSize: '13px', color: '#9ca3af' }}>Total XP</span>
-            <span style={styles.xpBadge}>Level 4 Survivor</span>
+
+            <span
+              style={{
+                fontSize: '13px',
+                color: '#9ca3af'
+              }}
+            >
+              Total XP
+            </span>
+
+            <span style={styles.xpBadge}>
+              Level 4 Survivor
+            </span>
+
           </div>
-          <h2 style={styles.xpCount}>{currentXP} XP</h2>
+
+          <h2 style={styles.xpCount}>
+            {currentXP} XP
+          </h2>
+
           <div style={styles.progressBarBg}>
             <div style={styles.progressBarFill}></div>
           </div>
-          <span style={styles.xpNextLevel}>550 XP to Level 5</span>
+
+          <span style={styles.xpNextLevel}>
+            550 XP to Level 5
+          </span>
+
         </div>
 
+
         <div style={styles.rightCard}>
-          <h3 style={styles.rightCardTitle}>🏅 Milestone Ranks</h3>
+
+          <h3 style={styles.rightCardTitle}>
+            🏅 Milestone Ranks
+          </h3>
+
           <div style={styles.badgesGrid}>
+
             {badgesList.map((item) => (
+
               <div
                 key={item.id}
                 style={{
                   ...styles.badgeItem,
                   opacity: item.unlocked ? 1 : 0.4,
-                  borderColor: hoveredBadge?.id === item.id ? '#dc2626' : '#2a2422'
+                  borderColor:
+                    hoveredBadge?.id === item.id
+                      ? '#dc2626'
+                      : '#2a2422'
                 }}
-                onMouseEnter={() => setHoveredBadge(item)}
-                onMouseLeave={() => setHoveredBadge(null)}
-                onClick={() => setActiveTab('achievements')}
+                onMouseEnter={() =>
+                  setHoveredBadge(item)
+                }
+                onMouseLeave={() =>
+                  setHoveredBadge(null)
+                }
+                onClick={() =>
+                  setActiveTab('achievements')
+                }
               >
                 {item.icon}
               </div>
+
             ))}
+
           </div>
+
 
           {hoveredBadge ? (
+
             <div style={styles.badgeTooltip}>
-              <strong style={{ color: '#fca5a5' }}>{hoveredBadge.name}</strong>
-              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#d1d5db' }}>{hoveredBadge.desc}</p>
-              <span style={{ fontSize: '10px', color: hoveredBadge.unlocked ? '#4ade80' : '#f87171' }}>
-                {hoveredBadge.unlocked ? '✓ Unlocked' : `🔒 Unlocks at ${hoveredBadge.xpRequired} XP`}
+
+              <strong
+                style={{
+                  color: '#fca5a5'
+                }}
+              >
+                {hoveredBadge.name}
+              </strong>
+
+              <p
+                style={{
+                  margin: '4px 0 0 0',
+                  fontSize: '11px',
+                  color: '#d1d5db'
+                }}
+              >
+                {hoveredBadge.desc}
+              </p>
+
+              <span
+                style={{
+                  fontSize: '10px',
+                  color: hoveredBadge.unlocked
+                    ? '#4ade80'
+                    : '#f87171'
+                }}
+              >
+                {hoveredBadge.unlocked
+                  ? '✓ Unlocked'
+                  : `🔒 Unlocks at ${hoveredBadge.xpRequired} XP`}
               </span>
+
             </div>
+
           ) : (
-            <p style={{ fontSize: '11px', color: '#9ca3af', margin: '10px 0 0 0', textAlign: 'center' }}>
+
+            <p
+              style={{
+                fontSize: '11px',
+                color: '#9ca3af',
+                margin: '10px 0 0 0',
+                textAlign: 'center'
+              }}
+            >
               Hover over badges for details.
             </p>
+
           )}
+
         </div>
+
 
         <div style={styles.rightCard}>
-          <h3 style={styles.rightCardTitle}>🏆 Leaderboard</h3>
+
+          <h3 style={styles.rightCardTitle}>
+            🏆 Leaderboard
+          </h3>
+
           <div style={styles.leaderboardList}>
+
             <div style={styles.leaderboardRow}>
               <span>1. Aarav Sharma</span>
-              <span style={styles.lbXp}>4,820 XP</span>
+              <span style={styles.lbXp}>
+                4,820 XP
+              </span>
             </div>
+
             <div style={styles.leaderboardRow}>
               <span>2. Priya Verma</span>
-              <span style={styles.lbXp}>4,150 XP</span>
+              <span style={styles.lbXp}>
+                4,150 XP
+              </span>
             </div>
-            <div style={{ ...styles.leaderboardRow, color: '#fca5a5', fontWeight: 'bold' }}>
-              <span>3. {userName} (You)</span>
-              <span style={styles.lbXp}>{currentXP} XP</span>
+
+            <div
+              style={{
+                ...styles.leaderboardRow,
+                color: '#fca5a5',
+                fontWeight: 'bold'
+              }}
+            >
+              <span>
+                3. {userName} (You)
+              </span>
+
+              <span style={styles.lbXp}>
+                {currentXP} XP
+              </span>
             </div>
+
             <div style={styles.leaderboardRow}>
               <span>4. Rohan Mehta</span>
-              <span style={styles.lbXp}>3,100 XP</span>
+              <span style={styles.lbXp}>
+                3,100 XP
+              </span>
             </div>
+
           </div>
+
         </div>
+
       </aside>
 
-      {/* SETTINGS MODAL */}
-      {showSettingsModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h2 style={{ marginTop: 0, color: '#fff' }}>⚙️ Profile & Account Settings</h2>
-            <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar.</p>
 
-            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+      {/* SETTINGS MODAL */}
+
+      {showSettingsModal && (
+
+        <div style={styles.modalOverlay}>
+
+          <div style={styles.modalContent}>
+
+            <h2
+              style={{
+                marginTop: 0,
+                color: '#fff'
+              }}
+            >
+              ⚙️ Profile & Account Settings
+            </h2>
+
+            <p
+              style={{
+                color: '#9ca3af',
+                fontSize: '13px'
+              }}
+            >
+              Update your registered name, password, or choose a custom avatar.
+            </p>
+
+
+            <form
+              onSubmit={handleSaveProfile}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+                marginTop: '20px'
+              }}
+            >
+
               <div>
-                <label style={styles.modalLabel}>Display Name</label>
+
+                <label style={styles.modalLabel}>
+                  Display Name
+                </label>
+
                 <input
                   type="text"
                   value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  onChange={(e) =>
+                    setNewName(e.target.value)
+                  }
                   style={styles.modalInput}
                   required
                 />
+
               </div>
 
+
               <div>
-                <label style={styles.modalLabel}>New Password</label>
+
+                <label style={styles.modalLabel}>
+                  New Password
+                </label>
+
                 <input
                   type="password"
                   placeholder="Leave blank to keep current"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) =>
+                    setNewPassword(e.target.value)
+                  }
                   style={styles.modalInput}
                 />
+
               </div>
 
+
               <div>
-                <label style={styles.modalLabel}>Choose Avatar</label>
+
+                <label style={styles.modalLabel}>
+                  Choose Avatar
+                </label>
+
                 <div style={styles.avatarPickerGrid}>
+
                   {avatarOptions.map((av, index) => (
+
                     <img
                       key={index}
                       src={av}
-                      alt="option"
+                      alt="avatar option"
                       style={{
                         ...styles.avatarOptionImg,
-                        border: selectedAvatarOption === av ? '2px solid #dc2626' : '2px solid transparent'
+                        border:
+                          selectedAvatarOption === av
+                            ? '2px solid #dc2626'
+                            : '2px solid transparent'
                       }}
-                      onClick={() => setSelectedAvatarOption(av)}
+                      onClick={() =>
+                        setSelectedAvatarOption(av)
+                      }
                     />
+
                   ))}
+
                 </div>
+
               </div>
+
 
               <div style={styles.modalButtons}>
-                <button type="submit" style={styles.saveBtn}>Save Changes</button>
-                <button type="button" onClick={handleSwitchAccount} style={styles.switchAccountBtn}>Switch Account / Logout</button>
-                <button type="button" onClick={() => setShowSettingsModal(false)} style={styles.cancelBtn}>Close</button>
+
+                <button
+                  type="submit"
+                  style={styles.saveBtn}
+                >
+                  Save Changes
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSwitchAccount}
+                  style={styles.switchAccountBtn}
+                >
+                  Switch Account / Logout
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowSettingsModal(false)
+                  }
+                  style={styles.cancelBtn}
+                >
+                  Close
+                </button>
+
               </div>
+
             </form>
+
           </div>
+
         </div>
+
       )}
 
-      {/* Responsive Inline CSS Styles Injection */}
+
+      {/* RESPONSIVE CSS */}
+
       <style>{`
+
         .dv-dashboard-root {
           display: flex;
           width: 100%;
@@ -451,24 +1345,33 @@ const Dashboard = () => {
 
         .dv-fluid-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+          grid-template-columns: repeat(
+            auto-fit,
+            minmax(min(100%, 280px), 1fr)
+          );
           gap: 16px;
         }
 
         @media (max-width: 1024px) {
+
           .dv-dashboard-root {
             flex-direction: column;
           }
+
           .dv-right-sidebar {
             width: 100% !important;
             border-left: none !important;
             border-top: 1px solid #241e1c !important;
             display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            grid-template-columns:
+              repeat(auto-fit, minmax(280px, 1fr))
+              !important;
           }
+
         }
 
         @media (max-width: 768px) {
+
           .dv-mobile-header {
             display: flex;
             justify-content: space-between;
@@ -519,14 +1422,22 @@ const Dashboard = () => {
           .dv-search-box {
             width: 100% !important;
           }
+
         }
+
       `}</style>
 
     </div>
   );
 };
 
+
+/* =========================
+   STYLES
+========================= */
+
 const styles = {
+
   dashboardContainer: {
     display: 'flex',
     width: '100%',
@@ -537,6 +1448,7 @@ const styles = {
     fontFamily: 'sans-serif',
     boxSizing: 'border-box'
   },
+
   sidebar: {
     width: '260px',
     backgroundColor: '#161211',
@@ -547,6 +1459,7 @@ const styles = {
     justifyContent: 'space-between',
     overflowY: 'auto'
   },
+
   logoArea: {
     display: 'flex',
     alignItems: 'center',
@@ -554,22 +1467,26 @@ const styles = {
     marginBottom: '20px',
     paddingLeft: '5px'
   },
+
   logoIcon: {
     fontSize: '22px',
     backgroundColor: '#1f1a18',
     padding: '8px',
     borderRadius: '10px'
   },
+
   logoText: {
     fontSize: '18px',
     fontWeight: 'bold',
     color: '#fca5a5'
   },
+
   navLinks: {
     display: 'flex',
     flexDirection: 'column',
     gap: '6px'
   },
+
   navBtn: {
     color: '#9ca3af',
     backgroundColor: 'transparent',
@@ -582,11 +1499,13 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s'
   },
+
   activeNavBtn: {
     backgroundColor: '#241e1c',
     color: '#fff',
     borderLeft: '4px solid #dc2626'
   },
+
   sidebarPromo: {
     backgroundColor: '#1f1a18',
     border: '1px solid #2a2422',
@@ -595,6 +1514,7 @@ const styles = {
     cursor: 'pointer',
     marginTop: '20px'
   },
+
   mainContent: {
     flex: 1,
     padding: '30px 40px',
@@ -603,27 +1523,32 @@ const styles = {
     flexDirection: 'column',
     gap: '25px'
   },
+
   topBar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+
   welcomeTitle: {
     fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
     fontWeight: 'bold',
     margin: 0
   },
+
   welcomeSubtitle: {
     color: '#9ca3af',
     fontSize: '13px',
     margin: '4px 0 0 0'
   },
+
   topRightControls: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
     flexWrap: 'wrap'
   },
+
   searchBox: {
     display: 'flex',
     alignItems: 'center',
@@ -633,6 +1558,7 @@ const styles = {
     borderRadius: '12px',
     gap: '10px'
   },
+
   searchInput: {
     backgroundColor: 'transparent',
     border: 'none',
@@ -640,6 +1566,7 @@ const styles = {
     outline: 'none',
     fontSize: '13px'
   },
+
   profileBadge: {
     width: '42px',
     height: '42px',
@@ -652,22 +1579,26 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
+
   avatarImg: {
     width: '100%',
     height: '100%',
     objectFit: 'cover'
   },
+
   tabContentCard: {
     backgroundColor: '#161211',
     border: '1px solid #241e1c',
     padding: '24px',
     borderRadius: '20px'
   },
+
   flipGrid: {
     display: 'grid',
     gap: '20px',
     marginTop: '15px'
   },
+
   xpStatusPill: {
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
     border: '1px solid #dc2626',
@@ -676,21 +1607,25 @@ const styles = {
     fontSize: '13px',
     color: '#fca5a5'
   },
+
   badgeDetailsGrid: {
     display: 'grid',
     gap: '16px',
     marginTop: '20px'
   },
+
   badgeDetailBox: {
     border: '1px solid #2a2422',
     padding: '20px',
     borderRadius: '14px'
   },
+
   gameGrid: {
     display: 'grid',
     gap: '15px',
     marginTop: '20px'
   },
+
   gameBox: {
     backgroundColor: '#1f1a18',
     border: '1px solid #2a2422',
@@ -700,11 +1635,13 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'space-between'
   },
+
   gameDesc: {
     color: '#9ca3af',
     fontSize: '12px',
     margin: '10px 0 15px 0'
   },
+
   actionBtn: {
     backgroundColor: '#dc2626',
     color: '#fff',
@@ -715,6 +1652,7 @@ const styles = {
     cursor: 'pointer',
     fontSize: '12px'
   },
+
   rightSidebar: {
     width: '280px',
     backgroundColor: '#161211',
@@ -725,18 +1663,21 @@ const styles = {
     gap: '20px',
     overflowY: 'auto'
   },
+
   rightCard: {
     backgroundColor: '#1f1a18',
     border: '1px solid #2a2422',
     padding: '20px',
     borderRadius: '16px'
   },
+
   xpHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '8px'
   },
+
   xpBadge: {
     fontSize: '11px',
     color: '#fca5a5',
@@ -744,11 +1685,13 @@ const styles = {
     padding: '2px 8px',
     borderRadius: '10px'
   },
+
   xpCount: {
     fontSize: '24px',
     fontWeight: 'bold',
     margin: '0 0 12px 0'
   },
+
   progressBarBg: {
     width: '100%',
     height: '6px',
@@ -757,24 +1700,29 @@ const styles = {
     overflow: 'hidden',
     marginBottom: '6px'
   },
+
   progressBarFill: {
     width: '75%',
     height: '100%',
     backgroundColor: '#dc2626'
   },
+
   xpNextLevel: {
     fontSize: '11px',
     color: '#9ca3af'
   },
+
   rightCardTitle: {
     fontSize: '15px',
     margin: '0 0 14px 0'
   },
+
   badgesGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '8px'
   },
+
   badgeItem: {
     width: '40px',
     height: '40px',
@@ -788,6 +1736,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s'
   },
+
   badgeTooltip: {
     marginTop: '12px',
     padding: '10px',
@@ -796,11 +1745,13 @@ const styles = {
     borderRadius: '8px',
     fontSize: '12px'
   },
+
   leaderboardList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px'
   },
+
   leaderboardRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -809,10 +1760,28 @@ const styles = {
     padding: '6px 0',
     borderBottom: '1px solid #2a2422'
   },
+
   lbXp: {
     color: '#9ca3af',
     fontWeight: 'bold'
   },
+
+
+  /* =========================
+     FIRST AID
+  ========================= */
+
+  firstAidDashboardCard: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: '16px'
+  },
+
+
+  /* =========================
+     SETTINGS
+  ========================= */
+
   modalOverlay: {
     position: 'fixed',
     top: 0,
@@ -825,6 +1794,7 @@ const styles = {
     justifyContent: 'center',
     zIndex: 100
   },
+
   modalContent: {
     backgroundColor: '#161211',
     border: '1px solid #2a2422',
@@ -836,12 +1806,14 @@ const styles = {
     overflowY: 'auto',
     boxShadow: '0 25px 50px rgba(0,0,0,0.8)'
   },
+
   modalLabel: {
     fontSize: '12px',
     color: '#9ca3af',
     display: 'block',
     marginBottom: '6px'
   },
+
   modalInput: {
     width: '100%',
     padding: '10px 12px',
@@ -853,12 +1825,14 @@ const styles = {
     boxSizing: 'border-box',
     fontSize: '14px'
   },
+
   avatarPickerGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
     marginTop: '8px'
   },
+
   avatarOptionImg: {
     width: '48px',
     height: '48px',
@@ -866,12 +1840,14 @@ const styles = {
     cursor: 'pointer',
     backgroundColor: '#1f1a18'
   },
+
   modalButtons: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
     marginTop: '15px'
   },
+
   saveBtn: {
     backgroundColor: '#dc2626',
     color: '#fff',
@@ -881,6 +1857,7 @@ const styles = {
     fontWeight: 'bold',
     cursor: 'pointer'
   },
+
   switchAccountBtn: {
     backgroundColor: '#1f1a18',
     border: '1px solid #2a2422',
@@ -890,6 +1867,7 @@ const styles = {
     fontWeight: 'bold',
     cursor: 'pointer'
   },
+
   cancelBtn: {
     backgroundColor: 'transparent',
     border: 'none',
@@ -897,6 +1875,7 @@ const styles = {
     padding: '8px',
     cursor: 'pointer'
   }
+
 };
 
 export default Dashboard;

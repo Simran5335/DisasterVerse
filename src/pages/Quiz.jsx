@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   X, Trophy, Sparkles, ArrowRight, Flame as FireIcon, RotateCcw, Home,
-  Timer as TimerIcon, PartyPopper, HeartCrack, Play, Coins
+  Timer as TimerIcon, PartyPopper, HeartCrack, Play
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -212,7 +212,6 @@ const DIFFICULTY_STYLES = {
 };
 
 const DIFFICULTY_XP_BASE = { Easy: 70, Medium: 100, Hard: 140 };
-const DIFFICULTY_COINS_BASE = { Easy: 6, Medium: 10, Hard: 16 };
 
 const LEVELS = [
   { id: "Easy", emoji: "🟢", label: "Easy", desc: "Basics & prep", activeClasses: "border-emerald-500 bg-emerald-500/10 text-emerald-400" },
@@ -280,7 +279,7 @@ function ConfettiBurst({ trigger }) {
   );
 }
 
-function AnswerPopup({ isCorrect, message, remaining, xpEarned, coinsEarned, fact, onContinue, isLast }) {
+function AnswerPopup({ isCorrect, message, remaining, xpEarned, fact, onContinue, isLast }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-6 popup-backdrop">
       <div
@@ -317,9 +316,6 @@ function AnswerPopup({ isCorrect, message, remaining, xpEarned, coinsEarned, fac
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-sm font-bold">
               <Sparkles className="w-3.5 h-3.5" /> +{xpEarned} XP
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/15 text-yellow-400 text-sm font-bold">
-              <Coins className="w-3.5 h-3.5" /> +{coinsEarned} Coins
-            </div>
           </div>
         )}
 
@@ -340,7 +336,7 @@ function AnswerPopup({ isCorrect, message, remaining, xpEarned, coinsEarned, fac
   );
 }
 
-export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
+export default function Quiz({ onExit, onXPEarned }) {
   const allQuestions = useMemo(
     () =>
       CATEGORIES.flatMap((cat) =>
@@ -373,7 +369,6 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [xpGained, setXpGained] = useState(0);
-  const [coinsGained, setCoinsGained] = useState(0);
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
   const [confettiKey, setConfettiKey] = useState(0);
   const [popup, setPopup] = useState(null);
@@ -391,7 +386,6 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
     setStreak(0);
     setBestStreak(0);
     setXpGained(0);
-    setCoinsGained(0);
     setSelected(null);
     setLocked(false);
     setPopup(null);
@@ -438,27 +432,21 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
     if (isCorrect) {
       const diff = current.difficulty || "Medium";
       const xpBase = DIFFICULTY_XP_BASE[diff];
-      const coinBase = DIFFICULTY_COINS_BASE[diff];
 
       const speedBonus = Math.round((timeLeft / QUESTION_TIME) * 40);
       const newStreak = streak + 1;
       const comboBonus = Math.min(newStreak * 10, 50);
       const earned = xpBase + speedBonus + comboBonus;
 
-      const coinStreakBonus = Math.min(newStreak * 2, 20);
-      const coinsEarned = coinBase + coinStreakBonus;
-
       setStreak(newStreak);
       setBestStreak((b) => Math.max(b, newStreak));
       setScore((s) => s + 1);
       setXpGained((x) => x + earned);
-      setCoinsGained((c) => c + coinsEarned);
       setConfettiKey((k) => k + 1);
       onXPEarned?.(earned);
-      onCoinsEarned?.(coinsEarned);
 
       const msg = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
-      setPopup({ isCorrect: true, message: msg, xpEarned: earned, coinsEarned, remaining, fact: current.fact, isLast });
+      setPopup({ isCorrect: true, message: msg, xpEarned: earned, remaining, fact: current.fact, isLast });
     } else {
       setStreak(0);
       const msg = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
@@ -552,10 +540,9 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
             You cleared the full <span className="text-white font-semibold">Know2Survive</span> challenge
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          <div className="grid grid-cols-3 gap-3 mb-8">
             <StatBox label="Score" value={`${score}/${total}`} icon={<Trophy className="w-4 h-4" />} color="#f59e0b" />
             <StatBox label="XP Earned" value={`+${xpGained}`} icon={<Sparkles className="w-4 h-4" />} color="#ef4444" />
-            <StatBox label="Coins Earned" value={`+${coinsGained}`} icon={<Coins className="w-4 h-4" />} color="#eab308" />
             <StatBox label="Best Streak" value={`${bestStreak}🔥`} icon={<FireIcon className="w-4 h-4" />} color="#38bdf8" />
           </div>
 
@@ -600,7 +587,6 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
           message={popup.message}
           remaining={popup.remaining}
           xpEarned={popup.xpEarned}
-          coinsEarned={popup.coinsEarned}
           fact={popup.fact}
           isLast={popup.isLast}
           onContinue={goNext}
@@ -634,13 +620,8 @@ export default function Quiz({ onExit, onXPEarned, onCoinsEarned }) {
         </div>
         <div className="flex items-center justify-between text-xs text-zinc-500 mb-6">
           <span>Question {qIndex + 1} of {total}</span>
-          <span className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> {xpGained} XP
-            </span>
-            <span className="flex items-center gap-1">
-              <Coins className="w-3 h-3 text-yellow-400" /> {coinsGained}
-            </span>
+          <span className="flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-amber-400" /> {xpGained} XP
           </span>
         </div>
 
