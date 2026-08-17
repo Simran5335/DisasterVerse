@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlipCard from './FlipCard';
 import FirstAid from './FirstAid';
@@ -6,6 +6,7 @@ import FirstAid from './FirstAid';
 const Dashboard = () => {
   const navigate = useNavigate();
 
+<<<<<<< Updated upstream
   const [userName, setUserName] = useState(
     () => localStorage.getItem('userName') || 'Survivor'
   );
@@ -15,9 +16,29 @@ const Dashboard = () => {
       localStorage.getItem('userAvatar') ||
       'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse'
   );
+=======
+  const [userData] = useState(() => {
+    const email = localStorage.getItem('currentUserEmail');
+    if (email) {
+      const savedUser = localStorage.getItem(`user_${email}`);
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+    }
+    return {
+      name: 'Survivor',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse',
+      xp: 3450
+    };
+  });
+
+  const [userName, setUserName] = useState(userData.name);
+  const [userAvatar, setUserAvatar] = useState(userData.avatar);
+  const currentXP = userData.xp;
+>>>>>>> Stashed changes
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('achievements');
+  const [activeTab, setActiveTab] = useState('pokemon');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [newName, setNewName] = useState(userName);
@@ -33,21 +54,102 @@ const Dashboard = () => {
      popup and keeps the dashboard itself unchanged.
   ========================= */
 
-  const avatarOptions = [
-    'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=LeoBoy',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=MiaGirl',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Hero',
-    'https://api.dicebear.com/7.x/micah/svg?seed=Survivor',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=RescueBot',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma'
+  // Sound Mute/Unmute state
+  const [isMuted, setIsMuted] = useState(true);
+  const activeVideoRef = useRef(null);
+
+  // Evolution & Animation State
+  const [isEvolving, setIsEvolving] = useState(false);
+
+  // 9 Pokémon across 3 Rows
+  const allPokemonList = [
+    // Row 1: Electric Line
+    { name: 'Pichu', video: '/pichu.mp4', minXp: 0, row: 1, type: 'electric', desc: 'Starter electric companion.' },
+    { name: 'Pikachu', video: '/pikachu.mp4', minXp: 1200, row: 1, type: 'electric', desc: 'Evolves at 1,200 XP. Fast and agile.' },
+    { name: 'Raichu', video: '/raichu.mp4', minXp: 5000, row: 1, type: 'electric', desc: 'Evolves at 5,000 XP. Absolute crisis master.' },
+    // Row 2: Water Line
+    { name: 'Squirtle', video: '/squirtle.mp4', minXp: 0, row: 2, type: 'water', desc: 'Starter water companion.' },
+    { name: 'Wartortle', video: '/wortortle.mp4', minXp: 2000, row: 2, type: 'water', desc: 'Evolves at 2,000 XP. Tactical defender.' },
+    { name: 'Blastoise', video: '/blastoise.mp4', minXp: 7000, row: 2, type: 'water', desc: 'Evolves at 7,000 XP. Massive hydro power.' },
+    // Row 3: Fire Line
+    { name: 'Charmander', video: '/charmander.mp4', minXp: 0, row: 3, type: 'fire', desc: 'Starter fire companion.' },
+    { name: 'Charmeleon', video: '/charmeleon.mp4', minXp: 3000, row: 3, type: 'fire', desc: 'Evolves at 3,000 XP. Fiery spirit.' },
+    { name: 'Charizard', video: '/charizard.mp4', minXp: 10000, row: 3, type: 'fire', desc: 'Evolves at 10,000 XP. Legendary apex flame master.' }
   ];
 
+<<<<<<< Updated upstream
   const currentXP = parseInt(
     localStorage.getItem('userXP') || '3450',
     10
   );
+=======
+  const [selectedPokemonName, setSelectedPokemonName] = useState(() => {
+    if (currentXP >= 5000) return 'Raichu';
+    if (currentXP >= 1200) return 'Pikachu';
+    return 'Pichu';
+  });
+
+  const currentPokemon = allPokemonList.find(p => p.name === selectedPokemonName) || allPokemonList[0];
+
+  // Dynamic Mild & Peaceful Background Colors based on Pokémon Type
+  const getDynamicCardBackground = (type) => {
+    if (type === 'electric') return 'linear-gradient(135deg, #242217 0%, #161211 100%)';
+    if (type === 'water') return 'linear-gradient(135deg, #172128 0%, #161211 100%)';
+    if (type === 'fire') return 'linear-gradient(135deg, #281d18 0%, #161211 100%)';
+    return '#161211';
+  };
+
+  const getDynamicAccentColor = (type) => {
+    if (type === 'electric') return '#d4af37';
+    if (type === 'water') return '#5b92e5';
+    if (type === 'fire') return '#e07a5f';
+    return '#dc2626';
+  };
+
+  useEffect(() => {
+    const lastSeenXp = parseInt(localStorage.getItem('lastKnownXP') || currentXP, 10);
+    if (currentXP !== lastSeenXp) {
+      if (
+        (lastSeenXp < 1200 && currentXP >= 1200) ||
+        (lastSeenXp < 5000 && currentXP >= 5000)
+      ) {
+        setIsEvolving(true);
+        setTimeout(() => setIsEvolving(false), 2500);
+      }
+      localStorage.setItem('lastKnownXP', currentXP);
+    }
+  }, [currentXP]);
+
+  const avatarOptions = [
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=MiaGirl',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Sophia',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Chloe',
+    'https://api.dicebear.com/7.x/personas/svg?seed=Olivia',
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Zoe',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=LeoBoy',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Lucas',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Ethan',
+    'https://api.dicebear.com/7.x/personas/svg?seed=Mason',
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Liam',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Hero',
+    'https://api.dicebear.com/7.x/micah/svg?seed=Survivor',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=RescueBot'
+  ];
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedAvatarOption(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+>>>>>>> Stashed changes
 
   const badgesList = [
     {
@@ -325,19 +427,24 @@ const Dashboard = () => {
     }
   ];
 
-  useEffect(() => {
-    localStorage.setItem('userName', userName);
-    localStorage.setItem('userAvatar', userAvatar);
-  }, [userName, userAvatar]);
-
   const handleSaveProfile = (e) => {
     e.preventDefault();
 
     setUserName(newName);
     setUserAvatar(selectedAvatarOption);
 
+<<<<<<< Updated upstream
     localStorage.setItem('userName', newName);
     localStorage.setItem('userAvatar', selectedAvatarOption);
+=======
+    const email = localStorage.getItem('currentUserEmail');
+    if (email) {
+      const userKey = `user_${email}`;
+      const existingData = JSON.parse(localStorage.getItem(userKey) || '{}');
+      const updatedData = { ...existingData, name: newName, avatar: selectedAvatarOption };
+      localStorage.setItem(userKey, JSON.stringify(updatedData));
+    }
+>>>>>>> Stashed changes
 
     setShowSettingsModal(false);
 
@@ -345,6 +452,7 @@ const Dashboard = () => {
   };
 
   const handleSwitchAccount = () => {
+    localStorage.removeItem('currentUserEmail');
     navigate('/login');
   };
 
@@ -406,6 +514,7 @@ const Dashboard = () => {
 
 
           <nav style={styles.navLinks}>
+<<<<<<< Updated upstream
 
             <button
               onClick={() => {
@@ -518,6 +627,16 @@ const Dashboard = () => {
               📑 Safety Plan
             </button>
 
+=======
+            <button onClick={() => { setActiveTab('pokemon'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'pokemon' ? styles.activeNavBtn : {}) }}>⚡ Companion Pokémon</button>
+            <button onClick={() => { setActiveTab('games'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games & Sims</button>
+            <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
+            <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
+            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Disaster Quiz</button>
+            <button onClick={() => { setActiveTab('flip-prepare'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
+            <button onClick={() => { setActiveTab('firstaid'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
+            <button onClick={() => { setActiveTab('plan'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
+>>>>>>> Stashed changes
           </nav>
 
         </div>
@@ -580,6 +699,7 @@ const Dashboard = () => {
 
 
           <div style={styles.topRightControls}>
+<<<<<<< Updated upstream
 
             <div
               style={styles.searchBox}
@@ -609,12 +729,17 @@ const Dashboard = () => {
                 style={styles.avatarImg}
               />
 
+=======
+            <div style={styles.profileBadge} onClick={() => setShowSettingsModal(true)} title="Open Profile Settings">
+              <img src={userAvatar} alt="avatar" style={styles.avatarImg} />
+>>>>>>> Stashed changes
             </div>
 
           </div>
 
         </header>
 
+<<<<<<< Updated upstream
 
         {/* ACHIEVEMENTS */}
 
@@ -659,10 +784,59 @@ const Dashboard = () => {
 
               <div style={styles.xpStatusPill}>
                 Current XP: <strong>{currentXP} XP</strong>
+=======
+        {/* --- COMPANION POKÉMON MODULE TAB --- */}
+        {activeTab === 'pokemon' && (
+          <div 
+            style={{
+              ...styles.tabContentCard,
+              background: getDynamicCardBackground(currentPokemon.type),
+              borderColor: getDynamicAccentColor(currentPokemon.type)
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <span style={{ fontSize: '12px', color: getDynamicAccentColor(currentPokemon.type), fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>⚡ Evolution Sanctuary</span>
+              <h2 style={{ margin: '4px 0 2px 0', fontSize: '24px' }}>Your Pokémon Companion Hub</h2>
+              <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>Progress through evolutionary rows by earning XP to unlock powerful survival partners!</p>
+            </div>
+
+            {/* Extra Large Centered Active Partner Showcase */}
+            <div style={styles.extraLargeCompanionHero} className={isEvolving ? 'evolution-flash-anim' : ''}>
+              <div style={styles.heroTopRow}>
+                <span style={styles.activePartnerBadge}>Active Partner</span>
+                <button 
+                  onClick={() => setIsMuted(!isMuted)} 
+                  style={styles.soundToggleBtn}
+                  title={isMuted ? 'Enable Audio' : 'Mute Audio'}
+                >
+                  {isMuted ? '🔇 Sound Off' : '🔊 Sound On'}
+                </button>
+              </div>
+
+              <div style={styles.extraLargeHeroFrame}>
+                <video 
+                  ref={activeVideoRef}
+                  key={currentPokemon.name}
+                  autoPlay 
+                  loop 
+                  muted={isMuted} 
+                  playsInline 
+                  style={styles.extraLargeHeroVideo}
+                >
+                  <source src={currentPokemon.video} type="video/mp4" />
+                </video>
+              </div>
+
+              <div style={styles.extraLargeHeroTextContent}>
+                <h3 style={styles.extraLargeHeroTitle}>{currentPokemon.name}</h3>
+                <p style={styles.extraLargeHeroDesc}>{currentPokemon.desc}</p>
+                <div style={styles.extraLargeHeroXp}>Current XP: {currentXP} XP</div>
+>>>>>>> Stashed changes
               </div>
 
             </div>
 
+<<<<<<< Updated upstream
 
             <div
               style={styles.badgeDetailsGrid}
@@ -749,14 +923,72 @@ const Dashboard = () => {
                     {item.unlocked
                       ? '✓ Unlocked'
                       : `🔒 Locked (${item.xpRequired - currentXP} XP needed)`}
+=======
+            {/* Pokémon Evolution Roster Grouped by Rows */}
+            <h3 style={{ fontSize: '18px', marginTop: '35px', marginBottom: '14px', color: '#fff' }}>Pokémon Evolution Roster (Row-Based Progression)</h3>
+            
+            {[1, 2, 3].map((rowNum) => {
+              const rowPokemons = allPokemonList.filter(p => p.row === rowNum);
+              return (
+                <div key={rowNum} style={{ marginBottom: '25px' }}>
+                  <h4 style={{ fontSize: '13px', color: '#fbbf24', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>
+                    Evolution Path #{rowNum}
+                  </h4>
+                  <div style={styles.pokemon3Grid}>
+                    {rowPokemons.map((poke) => {
+                      const isUnlocked = currentXP >= poke.minXp;
+                      const isSelected = selectedPokemonName === poke.name;
+                      return (
+                        <div 
+                          key={poke.name}
+                          onClick={() => {
+                            if (isUnlocked) setSelectedPokemonName(poke.name);
+                          }}
+                          style={{
+                            ...styles.smallGalleryCard,
+                            borderColor: isSelected ? '#fbbf24' : (isUnlocked ? '#dc2626' : '#2a2422'),
+                            backgroundColor: isUnlocked ? '#1f1a18' : '#120f0e',
+                            cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                            boxShadow: isSelected ? '0 0 15px rgba(251, 191, 36, 0.3)' : 'none'
+                          }}
+                        >
+                          <div style={styles.smallGalleryVideoContainer}>
+                            <video 
+                              autoPlay 
+                              loop 
+                              muted={true} 
+                              playsInline 
+                              style={{
+                                ...styles.smallGalleryVideo,
+                                filter: isUnlocked ? 'none' : 'grayscale(100%) brightness(40%) contrast(120%)'
+                              }}
+                            >
+                              <source src={poke.video} type="video/mp4" />
+                            </video>
+                          </div>
+                          <div style={{ padding: '10px', textAlign: 'center' }}>
+                            <h4 style={{ margin: 0, fontSize: '14px', color: isUnlocked ? '#fff' : '#6b7280' }}>{poke.name}</h4>
+                            <span style={{ fontSize: '10px', color: isUnlocked ? (isSelected ? '#fbbf24' : '#4ade80') : '#f87171', fontWeight: 'bold', display: 'block', marginTop: '3px' }}>
+                              {isSelected ? '★ Active Partner' : (isUnlocked ? '✓ Unlocked' : `🔒 ${poke.minXp} XP`)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+>>>>>>> Stashed changes
                   </div>
 
                 </div>
+<<<<<<< Updated upstream
 
               ))}
 
             </div>
 
+=======
+              );
+            })}
+>>>>>>> Stashed changes
           </div>
 
         )}
@@ -875,6 +1107,7 @@ const Dashboard = () => {
                   Play Game
                 </button>
               </div>
+<<<<<<< Updated upstream
 
 
               <div style={styles.gameBox}>
@@ -892,6 +1125,8 @@ const Dashboard = () => {
                 </button>
               </div>
 
+=======
+>>>>>>> Stashed changes
             </div>
 
           </div>
@@ -939,6 +1174,7 @@ const Dashboard = () => {
 
         )}
 
+<<<<<<< Updated upstream
 
         {/* CHECKLIST */}
 
@@ -961,6 +1197,8 @@ const Dashboard = () => {
 
         {/* FIRST AID */}
 
+=======
+>>>>>>> Stashed changes
         {activeTab === 'firstaid' && (
 
           <div style={styles.firstAidDashboardCard}>
@@ -1052,6 +1290,7 @@ const Dashboard = () => {
                       ? '#dc2626'
                       : '#2a2422'
                 }}
+<<<<<<< Updated upstream
                 onMouseEnter={() =>
                   setHoveredBadge(item)
                 }
@@ -1061,6 +1300,10 @@ const Dashboard = () => {
                 onClick={() =>
                   setActiveTab('achievements')
                 }
+=======
+                onMouseEnter={() => setHoveredBadge(item)}
+                onMouseLeave={() => setHoveredBadge(null)}
+>>>>>>> Stashed changes
               >
                 {item.icon}
               </div>
@@ -1073,6 +1316,7 @@ const Dashboard = () => {
           {hoveredBadge ? (
 
             <div style={styles.badgeTooltip}>
+<<<<<<< Updated upstream
 
               <strong
                 style={{
@@ -1103,6 +1347,13 @@ const Dashboard = () => {
                 {hoveredBadge.unlocked
                   ? '✓ Unlocked'
                   : `🔒 Unlocks at ${hoveredBadge.xpRequired} XP`}
+=======
+              <strong style={{ color: '#fca5a5' }}>{hoveredBadge.name}</strong>
+              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#d1d5db' }}>{hoveredBadge.desc}</p>
+              <div style={{ marginTop: '4px', fontSize: '10px', color: '#fca5a5', fontWeight: 'bold' }}>Required XP: {hoveredBadge.xpRequired}</div>
+              <span style={{ fontSize: '10px', display: 'block', marginTop: '2px', color: hoveredBadge.unlocked ? '#4ade80' : '#f87171' }}>
+                {hoveredBadge.unlocked ? '✓ Unlocked' : `🔒 Locked (${hoveredBadge.xpRequired - currentXP} XP needed)`}
+>>>>>>> Stashed changes
               </span>
 
             </div>
@@ -1176,6 +1427,7 @@ const Dashboard = () => {
 
       </aside>
 
+<<<<<<< Updated upstream
 
       {/* SETTINGS MODAL */}
 
@@ -1214,6 +1466,16 @@ const Dashboard = () => {
               }}
             >
 
+=======
+      {/* SETTINGS MODAL */}
+      {showSettingsModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h2 style={{ marginTop: 0, color: '#fff' }}>⚙️ Profile & Account Settings</h2>
+            <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar / photo upload.</p>
+
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
+>>>>>>> Stashed changes
               <div>
 
                 <label style={styles.modalLabel}>
@@ -1253,11 +1515,25 @@ const Dashboard = () => {
 
 
               <div>
+<<<<<<< Updated upstream
 
                 <label style={styles.modalLabel}>
                   Choose Avatar
                 </label>
 
+=======
+                <label style={styles.modalLabel}>Upload Custom Photo</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileUpload} 
+                  style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '5px' }} 
+                />
+              </div>
+
+              <div>
+                <label style={styles.modalLabel}>Choose Avatar</label>
+>>>>>>> Stashed changes
                 <div style={styles.avatarPickerGrid}>
 
                   {avatarOptions.map((av, index) => (
@@ -1322,9 +1598,13 @@ const Dashboard = () => {
 
       )}
 
+<<<<<<< Updated upstream
 
       {/* RESPONSIVE CSS */}
 
+=======
+      {/* Responsive Inline CSS & Evolution Animation Injection */}
+>>>>>>> Stashed changes
       <style>{`
 
         .dv-dashboard-root {
@@ -1350,6 +1630,16 @@ const Dashboard = () => {
             minmax(min(100%, 280px), 1fr)
           );
           gap: 16px;
+        }
+
+        @keyframes evolveGlow {
+          0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #fbbf24); }
+          50% { transform: scale(1.05); filter: brightness(1.8) drop-shadow(0 0 35px #fbbf24); }
+          100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 0px #fbbf24); }
+        }
+
+        .evolution-flash-anim {
+          animation: evolveGlow 2.5s ease-in-out;
         }
 
         @media (max-width: 1024px) {
@@ -1418,11 +1708,14 @@ const Dashboard = () => {
             align-items: flex-start !important;
             gap: 12px;
           }
+<<<<<<< Updated upstream
 
           .dv-search-box {
             width: 100% !important;
           }
 
+=======
+>>>>>>> Stashed changes
         }
 
       `}</style>
@@ -1548,6 +1841,7 @@ const styles = {
     gap: '14px',
     flexWrap: 'wrap'
   },
+<<<<<<< Updated upstream
 
   searchBox: {
     display: 'flex',
@@ -1567,6 +1861,8 @@ const styles = {
     fontSize: '13px'
   },
 
+=======
+>>>>>>> Stashed changes
   profileBadge: {
     width: '42px',
     height: '42px',
@@ -1585,12 +1881,133 @@ const styles = {
     height: '100%',
     objectFit: 'cover'
   },
+<<<<<<< Updated upstream
 
+=======
+  // Extra Large Centered Hero Companion Styles (Using objectFit cover to completely fill box)
+  extraLargeCompanionHero: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    border: '2px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '24px',
+    padding: '35px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    maxWidth: '580px',
+    margin: '0 auto',
+    width: '100%',
+    boxSizing: 'border-box',
+    boxShadow: '0 20px 45px rgba(0, 0, 0, 0.4)'
+  },
+  heroTopRow: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  activePartnerBadge: {
+    fontSize: '12px',
+    backgroundColor: '#dc2626',
+    color: '#fff',
+    padding: '4px 12px',
+    borderRadius: '14px',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  },
+  soundToggleBtn: {
+    backgroundColor: '#2a2422',
+    color: '#fbbf24',
+    border: '1px solid #fbbf24',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  },
+  extraLargeHeroFrame: {
+    width: '100%',
+    maxWidth: '360px',
+    aspectRatio: '4 / 3',
+    borderRadius: '16px',
+    backgroundColor: '#161211',
+    border: '3px solid #fbbf24',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '20px'
+  },
+  extraLargeHeroVideo: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' // Fills the box completely
+  },
+  extraLargeHeroTextContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  extraLargeHeroTitle: {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    margin: 0,
+    color: '#fff'
+  },
+  extraLargeHeroDesc: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    margin: 0
+  },
+  extraLargeHeroXp: {
+    fontSize: '13px',
+    color: '#fbbf24',
+    fontWeight: 'bold',
+    marginTop: '6px'
+  },
+  // Pokemon 3-Grid Gallery Styles (Using objectFit cover)
+  pokemon3Grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '12px',
+    marginTop: '10px'
+  },
+  smallGalleryCard: {
+    border: '1px solid #2a2422',
+    borderRadius: '14px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingBottom: '8px',
+    transition: 'all 0.2s'
+  },
+  smallGalleryVideoContainer: {
+    width: '100%',
+    aspectRatio: '4 / 3',
+    backgroundColor: '#161211',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  smallGalleryVideo: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' // Fills the box completely
+  },
+>>>>>>> Stashed changes
   tabContentCard: {
     backgroundColor: '#161211',
     border: '1px solid #241e1c',
-    padding: '24px',
-    borderRadius: '20px'
+    padding: '28px',
+    borderRadius: '20px',
+    transition: 'background 0.5s ease, border-color 0.5s ease'
   },
 
   flipGrid: {
@@ -1598,6 +2015,7 @@ const styles = {
     gap: '20px',
     marginTop: '15px'
   },
+<<<<<<< Updated upstream
 
   xpStatusPill: {
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
@@ -1620,6 +2038,8 @@ const styles = {
     borderRadius: '14px'
   },
 
+=======
+>>>>>>> Stashed changes
   gameGrid: {
     display: 'grid',
     gap: '15px',
@@ -1830,7 +2250,9 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
-    marginTop: '8px'
+    marginTop: '8px',
+    maxHeight: '160px',
+    overflowY: 'auto'
   },
 
   avatarOptionImg: {

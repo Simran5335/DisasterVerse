@@ -1,11 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [eyeOffset, setEyeOffset] = useState(0);
   const typingTimeoutRef = useRef(null);
-  const navigate = useNavigate();
 
   const handleTyping = (e) => {
     const length = e.target.value.length;
@@ -20,29 +18,58 @@ const Login = () => {
     }, 800);
   };
 
-  // Handle form submission based on current tab
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isRegister) {
-      const nameInput = e.target.elements[0].value; 
-      localStorage.setItem('userName', nameInput);
+    const emailInput = e.target.elements.email?.value;
 
+    if (!emailInput) {
+      alert('Please enter a valid email.');
+      return;
+    }
+
+    if (isRegister) {
+      const nameInput = e.target.elements.fullName?.value || 'Survivor';
+      const ageInput = e.target.elements.age?.value || '20';
+
+      const userProfile = {
+        name: nameInput,
+        age: ageInput,
+        email: emailInput,
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(nameInput),
+        xp: 3450
+      };
+
+      localStorage.setItem(`user_${emailInput}`, JSON.stringify(userProfile));
       alert('Registration successful! Please login with your credentials.');
       setIsRegister(false);
     } else {
-      navigate('/dashboard'); 
+      let storedUser = localStorage.getItem(`user_${emailInput}`);
+      
+      if (!storedUser) {
+        const defaultName = emailInput.split('@')[0];
+        const userProfile = {
+          name: defaultName.charAt(0).toUpperCase() + defaultName.slice(1),
+          email: emailInput,
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(defaultName),
+          xp: 3450
+        };
+        localStorage.setItem(`user_${emailInput}`, JSON.stringify(userProfile));
+      }
+
+      localStorage.setItem('currentUserEmail', emailInput);
+      
+      // Force clean redirect to dashboard
+      window.location.href = '/dashboard';
     }
   };
 
   return (
     <div style={styles.container}>
-      {/* Background Video */}
       <video autoPlay loop muted playsInline style={styles.video}>
         <source src="/VID_20260809_182140.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      {/* Dark Overlay */}
       <div style={styles.overlay}></div>
 
       {/* Top Center Glowing Heading */}
@@ -51,11 +78,9 @@ const Login = () => {
         <div style={styles.headingUnderline}></div>
       </div>
 
-      {/* Main Content Layout */}
+      {/* Left-Aligned Login Box Container */}
       <div style={styles.contentContainer}>
         <div style={styles.card}>
-          
-          {/* Cloud Character with Peeking Little Hands */}
           <div style={styles.cloudWrapper}>
             <div style={styles.cloudPuff1}></div>
             <div style={styles.cloudPuff2}></div>
@@ -71,15 +96,16 @@ const Login = () => {
             <div style={styles.handRight}></div>
           </div>
 
-          {/* Tabs */}
           <div style={styles.tabContainer}>
             <button 
+              type="button"
               onClick={() => setIsRegister(false)} 
               style={{ ...styles.tabButton, borderBottom: !isRegister ? '2px solid #dc2626' : '2px solid transparent', color: !isRegister ? '#fff' : '#9ca3af' }}
             >
               Login
             </button>
             <button 
+              type="button"
               onClick={() => setIsRegister(true)} 
               style={{ ...styles.tabButton, borderBottom: isRegister ? '2px solid #dc2626' : '2px solid transparent', color: isRegister ? '#fff' : '#9ca3af' }}
             >
@@ -97,23 +123,24 @@ const Login = () => {
               <>
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>Full Name</label>
-                  <input type="text" placeholder="Enter your name" style={styles.input} required onChange={handleTyping} />
+                  <input name="fullName" type="text" placeholder="Enter your name" style={styles.input} required onChange={handleTyping} />
                 </div>
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>Age</label>
-                  <input type="number" placeholder="Enter your age" style={styles.input} required onChange={handleTyping} />
+                  <input name="age" type="number" placeholder="Enter your age" style={styles.input} required onChange={handleTyping} />
                 </div>
               </>
             )}
 
             <div style={styles.inputGroup}>
               <label style={styles.label}>Email</label>
-              <input type="email" placeholder="Enter your email" style={styles.input} required onChange={handleTyping} />
+              <input name="email" type="email" placeholder="Enter your email" style={styles.input} required onChange={handleTyping} />
             </div>
 
             <div style={styles.inputGroup}>
               <label style={styles.label}>Password</label>
               <input 
+                name="password"
                 type="password" 
                 placeholder="Enter your password" 
                 style={styles.input}
@@ -135,14 +162,14 @@ const Login = () => {
 const styles = {
   container: {
     position: 'relative',
-    width: '100%',
+    width: '100vw',
     minHeight: '100vh',
     minHeight: '100svh',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: '80px 20px 40px 20px',
+    alignItems: 'flex-start', // Pins box to the left
+    paddingLeft: '100px',     // Generous spacing from the left screen edge
     fontFamily: 'sans-serif',
     color: '#fff',
     boxSizing: 'border-box',
@@ -197,7 +224,7 @@ const styles = {
     zIndex: 2,
     width: '100%',
     maxWidth: '420px',
-    marginTop: '30px',
+    marginTop: '40px',
   },
   card: {
     width: '100%',
