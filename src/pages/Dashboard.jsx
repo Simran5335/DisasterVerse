@@ -9,6 +9,7 @@ const Dashboard = () => {
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem('userAvatar') || 'https://api.dicebear.com/7.x/bottts/svg?seed=DisasterVerse');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [activeTab, setActiveTab] = useState('achievements');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [newName, setNewName] = useState(userName);
   const [newPassword, setNewPassword] = useState('');
@@ -25,7 +26,7 @@ const Dashboard = () => {
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Emma'
   ];
 
-  const currentXP = 3450;
+  const currentXP = parseInt(localStorage.getItem('userXP') || '3450', 10);
   const badgesList = [
     { id: 1, icon: '🌱', name: 'Preparedness Novice', xpRequired: 200, desc: 'Awarded for taking your first steps into emergency readiness education.', unlocked: currentXP >= 200 },
     { id: 2, icon: '🛡️', name: 'Shield Apprentice', xpRequired: 600, desc: 'Mastered basic household safety audits and hazard identification.', unlocked: currentXP >= 600 },
@@ -93,60 +94,6 @@ const Dashboard = () => {
         { stage: '🟠 During', color: '#fbbf24', items: ['Move immediately to higher ground.', 'Stay away from beaches and rivers.', 'Follow official evacuation orders.'] },
         { stage: '🔵 After', color: '#60a5fa', items: ['Stay away until officials declare it safe.', 'Watch for additional waves.', 'Avoid damaged areas and debris.'] }
       ]
-    },
-    {
-      title: '🌋 Volcanic Eruption',
-      image: '/volcano.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Know evacuation routes.', 'Prepare an emergency kit and mask.', 'Follow volcano alerts.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Evacuate when instructed.', 'Stay away from lava and ash.', 'Protect eyes and breathing from ash.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when authorities allow.', 'Avoid ash-covered areas.', 'Check water and food safety.'] }
-      ]
-    },
-    {
-      title: '⚡ Lightning',
-      image: '/lightning.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Check weather forecasts.', 'Identify a safe indoor shelter.', 'Avoid open areas during storms.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Go indoors immediately.', 'Stay away from windows and plumbing.', 'Never shelter under a tree.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Wait until the storm has passed.', 'Check for injuries and damage.', 'Stay alert for continuing storms.'] }
-      ]
-    },
-    {
-      title: '🏜️ Drought',
-      image: '/drought.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Store essential water.', 'Reduce unnecessary water use.', 'Follow local water restrictions.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Use water only when necessary.', 'Follow conservation guidelines.', 'Protect yourself from heat.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Continue conserving water.', 'Check water sources before use.', 'Support local recovery efforts.'] }
-      ]
-    },
-    {
-      title: '☣️ Chemical Leak',
-      image: '/chemical.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Know nearby chemical hazards.', 'Learn emergency alerts and evacuation routes.', 'Keep emergency contacts ready.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move away from the affected area.', 'Follow evacuation or shelter instructions.', 'Avoid touching spilled substances.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Return only when authorities declare it safe.', 'Avoid contaminated areas.', 'Seek medical help if exposed.'] }
-      ]
-    },
-    {
-      title: '☢️ Nuclear / Radiation Emergency',
-      image: '/nuclear.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Know emergency shelters.', 'Keep an emergency kit ready.', 'Learn official warning procedures.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Get indoors immediately.', 'Stay away from windows.', 'Follow official shelter instructions.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Remain indoors until officially cleared.', 'Avoid contaminated food or water.', 'Follow radiation-safety instructions.'] }
-      ]
-    },
-    {
-      title: '💥 Bomb Explosion / Blast',
-      image: '/bomb.png',
-      protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Report suspicious objects or threats.', 'Know emergency exits and safe areas.', 'Follow security instructions.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move away from the blast area.', 'Take cover and protect your head.', 'Avoid touching suspicious objects.', "Follow emergency responders' instructions."] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Move to a safe location if possible.', 'Avoid damaged areas and suspicious objects.', 'Help injured people only when safe.', 'Follow official instructions and evacuation orders.'] }
-      ]
     }
   ];
 
@@ -170,46 +117,57 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={styles.dashboardContainer}>
+    <div style={styles.dashboardContainer} className="dv-dashboard-root">
+      
+      {/* MOBILE TOGGLE HEADER BAR */}
+      <div className="dv-mobile-header">
+        <div style={styles.logoArea}>
+          <div style={styles.logoIcon}>🛡️</div>
+          <span style={styles.logoText}>DisasterVerse</span>
+        </div>
+        <button className="dv-menu-toggle-btn" onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+          {mobileNavOpen ? '✕ Close' : '☰ Menu'}
+        </button>
+      </div>
 
       {/* LEFT SIDEBAR */}
-      <aside style={styles.sidebar}>
+      <aside className={`dv-sidebar ${mobileNavOpen ? 'mobile-open' : ''}`} style={styles.sidebar}>
         <div>
-          <div style={styles.logoArea}>
+          <div style={styles.logoArea} className="dv-desktop-logo">
             <div style={styles.logoIcon}>🛡️</div>
             <span style={styles.logoText}>DisasterVerse</span>
           </div>
 
           <nav style={styles.navLinks}>
-            <button onClick={() => setActiveTab('achievements')} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
-            <button onClick={() => setActiveTab('games')} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games</button>
+            <button onClick={() => { setActiveTab('achievements'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
+            <button onClick={() => { setActiveTab('games'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games & Sims</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
-            <button onClick={() => navigate('/hazard-spotter')} style={{ ...styles.navBtn, ...(activeTab === 'hazard' ? styles.activeNavBtn : {}) }}>🔍 Hazard Spotter</button>
-            <button onClick={() => setActiveTab('flip-prepare')} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
-            <button onClick={() => setActiveTab('know2survive')} style={{ ...styles.navBtn, ...(activeTab === 'know2survive' ? styles.activeNavBtn : {}) }}>🧠 Know2Survive</button>
-            <button onClick={() => setActiveTab('checklist')} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
-            <button onClick={() => setActiveTab('firstaid')} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
-            <button onClick={() => setActiveTab('plan')} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
+            <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
+            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Disaster Quiz</button>
+            <button onClick={() => { setActiveTab('flip-prepare'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
+            <button onClick={() => { setActiveTab('checklist'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
+            <button onClick={() => { setActiveTab('firstaid'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
+            <button onClick={() => { setActiveTab('plan'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
           </nav>
         </div>
 
-        <div style={styles.sidebarPromo} onClick={() => setShowSettingsModal(true)}>
+        <div style={styles.sidebarPromo} onClick={() => { setShowSettingsModal(true); setMobileNavOpen(false); }}>
           <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#fca5a5' }}>⚙️ Profile Settings</p>
           <span style={{ fontSize: '11px', color: '#9ca3af' }}>Customize avatar, name & password</span>
         </div>
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main style={styles.mainContent}>
+      <main style={styles.mainContent} className="dv-main-content">
 
-        <header style={styles.topBar}>
+        <header style={styles.topBar} className="dv-top-bar">
           <div>
             <h1 style={styles.welcomeTitle}>Hello, {userName} 👋</h1>
             <p style={styles.welcomeSubtitle}>Your command center for emergency readiness and interactive survival training.</p>
           </div>
 
           <div style={styles.topRightControls}>
-            <div style={styles.searchBox}>
+            <div style={styles.searchBox} className="dv-search-box">
               <span style={{ color: '#9ca3af' }}>🔍</span>
               <input type="text" placeholder="Search modules..." style={styles.searchInput} />
             </div>
@@ -222,7 +180,7 @@ const Dashboard = () => {
 
         {activeTab === 'achievements' && (
           <div style={styles.tabContentCard}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '22px' }}>🏅 DisasterVerse Ranks & Achievements</h2>
                 <p style={{ color: '#9ca3af', fontSize: '13px', margin: '4px 0 0 0' }}>Earn XP through simulations, checklists, and safety training to unlock exclusive ranks.</p>
@@ -232,7 +190,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div style={styles.badgeDetailsGrid}>
+            <div style={styles.badgeDetailsGrid} className="dv-fluid-grid">
               {badgesList.map((item) => (
                 <div
                   key={item.id}
@@ -261,22 +219,42 @@ const Dashboard = () => {
 
         {activeTab === 'games' && (
           <div style={styles.tabContentCard}>
-            <h2>🎮 Interactive Disaster Simulations</h2>
-            <div style={styles.gameGrid}>
+            <h2>🎮 Interactive Disaster Simulations & Modules</h2>
+            <div style={styles.gameGrid} className="dv-fluid-grid">
               <div style={styles.gameBox}>
-                <h3>1. Earthquake – "Balance Builder"</h3>
-                <p style={styles.gameDesc}>Build houses selecting foundations, pillars, and roofs, then test against earthquakes (4.5–8.5 magnitude).</p>
+                <h3>🔥 Smoke Vision — 3D Fire Escape</h3>
+                <p style={styles.gameDesc}>Navigate a 3D school during a fire emergency! Check door handles, stay low in smoke, use your flashlight, and find safe exits.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/smoke-vision')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🌊 River Defender — Flood Management</h3>
+                <p style={styles.gameDesc}>Command city flood defenses! Place sandbags, flood walls, pumps, and wetlands to stop rising floodwaters.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/river-defender')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🧱 Earthquake – "Balance Builder"</h3>
+                <p style={styles.gameDesc}>Build structural foundations, pillars, and roofs, then test against 4.5–8.5 magnitude earthquakes.</p>
                 <button style={styles.actionBtn} onClick={() => navigate('/earthquake-balance-builder')}>Play Simulation</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>2. Flood – "River Defender"</h3>
-                <p style={styles.gameDesc}>Place sandbags, flood barriers, pumps, and wetlands to stop urban flooding.</p>
-                <button style={styles.actionBtn} onClick={() => alert('Starting River Defender...')}>Play Simulation</button>
+                <h3>🧰 72hr Emergency Kit Builder</h3>
+                <p style={styles.gameDesc}>Pack essential medical and survival supplies into an emergency first-aid kit before disaster strikes.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/emergency-kit-builder')}>Play Game</button>
               </div>
               <div style={styles.gameBox}>
-                <h3>3. Fire – "Smoke Vision"</h3>
-                <p style={styles.gameDesc}>Navigate a low-visibility smoke maze by crawling and feeling walls.</p>
-                <button style={styles.actionBtn} onClick={() => alert('Starting Smoke Vision...')}>Play Simulation</button>
+                <h3>🔍 Hazard Spotter – "Spot The Risk"</h3>
+                <p style={styles.gameDesc}>Scan 4 real-world environments across 20 levels to spot hidden safety hazards and structural risks.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/hazard-spotter')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🏞️ Landslide – "Mountain Scout"</h3>
+                <p style={styles.gameDesc}>Inspect mountain slope landscapes to spot ground cracks, leaning trees, rockfalls, and water seepage.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/mountain-scout')}>Play Game</button>
+              </div>
+              <div style={styles.gameBox}>
+                <h3>🗺️ India Disaster Risk Map</h3>
+                <p style={styles.gameDesc}>Interactive GIS map of India showing regional disaster vulnerability zones, seismic activity, and safety protocols.</p>
+                <button style={styles.actionBtn} onClick={() => navigate('/india-map')}>Explore Map</button>
               </div>
             </div>
           </div>
@@ -287,7 +265,7 @@ const Dashboard = () => {
             <h2>🃏 Flip & Prepare</h2>
             <p style={{ color: '#9ca3af', marginBottom: '25px' }}>Click any card below to flip between the illustration and survival protocols.</p>
             
-            <div style={styles.flipGrid}>
+            <div style={styles.flipGrid} className="dv-fluid-grid">
               {disasterCards.map((card, index) => (
                 <FlipCard 
                   key={index}
@@ -324,7 +302,7 @@ const Dashboard = () => {
       </main>
 
       {/* RIGHT SIDEBAR */}
-      <aside style={styles.rightSidebar}>
+      <aside style={styles.rightSidebar} className="dv-right-sidebar">
         <div style={styles.rightCard}>
           <div style={styles.xpHeader}>
             <span style={{ fontSize: '13px', color: '#9ca3af' }}>Total XP</span>
@@ -453,6 +431,97 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Responsive Inline CSS Styles Injection */}
+      <style>{`
+        .dv-dashboard-root {
+          display: flex;
+          width: 100%;
+          min-height: 100vh;
+          min-height: 100svh;
+          background-color: #0f0d0c;
+          color: #fff;
+          font-family: sans-serif;
+          box-sizing: border-box;
+          overflow-x: hidden;
+        }
+
+        .dv-mobile-header {
+          display: none;
+        }
+
+        .dv-fluid-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+          gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+          .dv-dashboard-root {
+            flex-direction: column;
+          }
+          .dv-right-sidebar {
+            width: 100% !important;
+            border-left: none !important;
+            border-top: 1px solid #241e1c !important;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .dv-mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: #161211;
+            border-bottom: 1px solid #241e1c;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+          }
+
+          .dv-desktop-logo {
+            display: none !important;
+          }
+
+          .dv-menu-toggle-btn {
+            background: #241e1c;
+            color: #fca5a5;
+            border: 1px solid #dc2626;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+          }
+
+          .dv-sidebar {
+            display: none;
+            width: 100% !important;
+            border-right: none !important;
+            border-bottom: 1px solid #241e1c !important;
+          }
+
+          .dv-sidebar.mobile-open {
+            display: flex !important;
+          }
+
+          .dv-main-content {
+            padding: 16px !important;
+          }
+
+          .dv-top-bar {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px;
+          }
+
+          .dv-search-box {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
     </div>
   );
 };
@@ -460,13 +529,13 @@ const Dashboard = () => {
 const styles = {
   dashboardContainer: {
     display: 'flex',
-    width: '100vw',
-    height: '100vh',
+    width: '100%',
+    minHeight: '100vh',
+    minHeight: '100svh',
     backgroundColor: '#0f0d0c',
     color: '#fff',
     fontFamily: 'sans-serif',
-    overflow: 'hidden',
-    boxSizing: 'border-box',
+    boxSizing: 'border-box'
   },
   sidebar: {
     width: '260px',
@@ -476,30 +545,30 @@ const styles = {
     flexDirection: 'column',
     padding: '25px 15px',
     justifyContent: 'space-between',
-    overflowY: 'auto',
+    overflowY: 'auto'
   },
   logoArea: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     marginBottom: '20px',
-    paddingLeft: '5px',
+    paddingLeft: '5px'
   },
   logoIcon: {
     fontSize: '22px',
     backgroundColor: '#1f1a18',
     padding: '8px',
-    borderRadius: '10px',
+    borderRadius: '10px'
   },
   logoText: {
     fontSize: '18px',
     fontWeight: 'bold',
-    color: '#fca5a5',
+    color: '#fca5a5'
   },
   navLinks: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '6px'
   },
   navBtn: {
     color: '#9ca3af',
@@ -511,12 +580,12 @@ const styles = {
     fontSize: '13px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    transition: 'all 0.2s'
   },
   activeNavBtn: {
     backgroundColor: '#241e1c',
     color: '#fff',
-    borderLeft: '4px solid #dc2626',
+    borderLeft: '4px solid #dc2626'
   },
   sidebarPromo: {
     backgroundColor: '#1f1a18',
@@ -524,7 +593,7 @@ const styles = {
     padding: '12px',
     borderRadius: '12px',
     cursor: 'pointer',
-    marginTop: '20px',
+    marginTop: '20px'
   },
   mainContent: {
     flex: 1,
@@ -532,27 +601,28 @@ const styles = {
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: '25px',
+    gap: '25px'
   },
   topBar: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   welcomeTitle: {
-    fontSize: '26px',
+    fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
     fontWeight: 'bold',
-    margin: 0,
+    margin: 0
   },
   welcomeSubtitle: {
     color: '#9ca3af',
     fontSize: '13px',
-    margin: '4px 0 0 0',
+    margin: '4px 0 0 0'
   },
   topRightControls: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
+    gap: '14px',
+    flexWrap: 'wrap'
   },
   searchBox: {
     display: 'flex',
@@ -561,14 +631,14 @@ const styles = {
     border: '1px solid #241e1c',
     padding: '8px 14px',
     borderRadius: '12px',
-    gap: '10px',
+    gap: '10px'
   },
   searchInput: {
     backgroundColor: 'transparent',
     border: 'none',
     color: '#fff',
     outline: 'none',
-    fontSize: '13px',
+    fontSize: '13px'
   },
   profileBadge: {
     width: '42px',
@@ -580,24 +650,23 @@ const styles = {
     overflow: 'hidden',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   avatarImg: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'cover'
   },
   tabContentCard: {
     backgroundColor: '#161211',
     border: '1px solid #241e1c',
-    padding: '30px',
-    borderRadius: '20px',
+    padding: '24px',
+    borderRadius: '20px'
   },
   flipGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '20px',
-    marginTop: '15px',
+    marginTop: '15px'
   },
   xpStatusPill: {
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
@@ -605,24 +674,22 @@ const styles = {
     padding: '6px 14px',
     borderRadius: '20px',
     fontSize: '13px',
-    color: '#fca5a5',
+    color: '#fca5a5'
   },
   badgeDetailsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '16px',
-    marginTop: '20px',
+    marginTop: '20px'
   },
   badgeDetailBox: {
     border: '1px solid #2a2422',
     padding: '20px',
-    borderRadius: '14px',
+    borderRadius: '14px'
   },
   gameGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '15px',
-    marginTop: '20px',
+    marginTop: '20px'
   },
   gameBox: {
     backgroundColor: '#1f1a18',
@@ -631,12 +698,12 @@ const styles = {
     borderRadius: '14px',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   gameDesc: {
     color: '#9ca3af',
     fontSize: '12px',
-    margin: '10px 0 15px 0',
+    margin: '10px 0 15px 0'
   },
   actionBtn: {
     backgroundColor: '#dc2626',
@@ -646,7 +713,7 @@ const styles = {
     borderRadius: '6px',
     fontWeight: 'bold',
     cursor: 'pointer',
-    fontSize: '12px',
+    fontSize: '12px'
   },
   rightSidebar: {
     width: '280px',
@@ -656,31 +723,31 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    overflowY: 'auto',
+    overflowY: 'auto'
   },
   rightCard: {
     backgroundColor: '#1f1a18',
     border: '1px solid #2a2422',
     padding: '20px',
-    borderRadius: '16px',
+    borderRadius: '16px'
   },
   xpHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '8px',
+    marginBottom: '8px'
   },
   xpBadge: {
     fontSize: '11px',
     color: '#fca5a5',
     backgroundColor: 'rgba(220, 38, 38, 0.15)',
     padding: '2px 8px',
-    borderRadius: '10px',
+    borderRadius: '10px'
   },
   xpCount: {
     fontSize: '24px',
     fontWeight: 'bold',
-    margin: '0 0 12px 0',
+    margin: '0 0 12px 0'
   },
   progressBarBg: {
     width: '100%',
@@ -688,25 +755,25 @@ const styles = {
     backgroundColor: '#2a2422',
     borderRadius: '3px',
     overflow: 'hidden',
-    marginBottom: '6px',
+    marginBottom: '6px'
   },
   progressBarFill: {
     width: '75%',
     height: '100%',
-    backgroundColor: '#dc2626',
+    backgroundColor: '#dc2626'
   },
   xpNextLevel: {
     fontSize: '11px',
-    color: '#9ca3af',
+    color: '#9ca3af'
   },
   rightCardTitle: {
     fontSize: '15px',
-    margin: '0 0 14px 0',
+    margin: '0 0 14px 0'
   },
   badgesGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '8px',
+    gap: '8px'
   },
   badgeItem: {
     width: '40px',
@@ -719,7 +786,7 @@ const styles = {
     justifyContent: 'center',
     fontSize: '18px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
+    transition: 'all 0.2s'
   },
   badgeTooltip: {
     marginTop: '12px',
@@ -727,12 +794,12 @@ const styles = {
     backgroundColor: '#161211',
     border: '1px solid #dc2626',
     borderRadius: '8px',
-    fontSize: '12px',
+    fontSize: '12px'
   },
   leaderboardList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
+    gap: '10px'
   },
   leaderboardRow: {
     display: 'flex',
@@ -740,11 +807,11 @@ const styles = {
     fontSize: '13px',
     color: '#d1d5db',
     padding: '6px 0',
-    borderBottom: '1px solid #2a2422',
+    borderBottom: '1px solid #2a2422'
   },
   lbXp: {
     color: '#9ca3af',
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   modalOverlay: {
     position: 'fixed',
@@ -756,21 +823,24 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 100,
+    zIndex: 100
   },
   modalContent: {
     backgroundColor: '#161211',
     border: '1px solid #2a2422',
-    padding: '30px',
+    padding: '24px',
     borderRadius: '20px',
-    width: '420px',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.8)',
+    width: '90%',
+    maxWidth: '440px',
+    maxHeight: 'calc(100vh - 32px)',
+    overflowY: 'auto',
+    boxShadow: '0 25px 50px rgba(0,0,0,0.8)'
   },
   modalLabel: {
     fontSize: '12px',
     color: '#9ca3af',
     display: 'block',
-    marginBottom: '6px',
+    marginBottom: '6px'
   },
   modalInput: {
     width: '100%',
@@ -781,53 +851,52 @@ const styles = {
     color: '#fff',
     outline: 'none',
     boxSizing: 'border-box',
-    fontSize: '14px',
+    fontSize: '14px'
   },
   avatarPickerGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
-    marginTop: '6px',
+    marginTop: '8px'
   },
   avatarOptionImg: {
-    width: '50px',
-    height: '50px',
+    width: '48px',
+    height: '48px',
     borderRadius: '50%',
     cursor: 'pointer',
-    backgroundColor: '#1f1a18',
-    padding: '4px',
+    backgroundColor: '#1f1a18'
   },
   modalButtons: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
-    marginTop: '20px',
+    marginTop: '15px'
   },
   saveBtn: {
-    padding: '12px',
     backgroundColor: '#dc2626',
     color: '#fff',
     border: 'none',
+    padding: '10px',
     borderRadius: '8px',
     fontWeight: 'bold',
-    cursor: 'pointer',
+    cursor: 'pointer'
   },
   switchAccountBtn: {
-    padding: '10px',
-    backgroundColor: 'transparent',
+    backgroundColor: '#1f1a18',
+    border: '1px solid #2a2422',
     color: '#fca5a5',
-    border: '1px solid #dc2626',
+    padding: '10px',
     borderRadius: '8px',
     fontWeight: 'bold',
-    cursor: 'pointer',
+    cursor: 'pointer'
   },
   cancelBtn: {
-    padding: '8px',
     backgroundColor: 'transparent',
-    color: '#9ca3af',
     border: 'none',
-    cursor: 'pointer',
-  },
+    color: '#9ca3af',
+    padding: '8px',
+    cursor: 'pointer'
+  }
 };
 
 export default Dashboard;

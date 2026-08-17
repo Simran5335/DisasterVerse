@@ -1667,3 +1667,20 @@ input {
   position: absolute;
   z-index: 80;
 }
+
+@media (max-width: 768px) {
+  .india-map-header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .map-brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .map-search-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}
