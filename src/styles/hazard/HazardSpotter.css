@@ -272,7 +272,7 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.5fr 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
@@ -324,20 +324,25 @@
 .viewport-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000000;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #080b10;
   border-radius: 20px;
   border: 1px solid var(--border-color);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   cursor: crosshair;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .scene-video,
 .scene-image {
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
   display: block;
   pointer-events: none;
 }
@@ -372,9 +377,9 @@
 }
 
 .hazard-hotspot-container:hover .hazard-hotspot-visual {
-  border-color: rgba(var(--primary-accent-rgb), 0.65);
-  box-shadow: 0 0 14px rgba(var(--primary-accent-rgb), 0.35);
-  background: rgba(var(--primary-accent-rgb), 0.04);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .hazard-hotspot-container.found {
@@ -845,5 +850,123 @@
 
   .modal-content {
     padding: 1.25rem;
+  }
+}
+
+/* ==================================================
+   NEW STYLES FOR HINTS, PROXIMITY, AND DEBUGS
+   ================================================== */
+
+/* Proximity Debug Circle */
+.debug-proximity-circle {
+  border: 1.5px dashed rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Hint Overlay */
+.hint-overlay {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(17, 22, 29, 0.95);
+  border: 1.5px solid var(--primary-accent);
+  border-radius: 14px;
+  padding: 0.85rem 1.2rem;
+  max-width: 320px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 35;
+  color: #FFFFFF;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  pointer-events: none;
+  animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hint-overlay-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hint-overlay-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary-accent);
+  font-weight: 700;
+  margin: 0;
+}
+
+.hint-overlay-text {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* Hint Card in Stats Grid */
+.stat-card.hint-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.hint-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  width: 100%;
+}
+
+.hint-icon {
+  font-size: 1.35rem;
+  opacity: 0.6;
+}
+
+.hint-msg {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.hint-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: linear-gradient(135deg, rgba(var(--primary-accent-rgb), 0.15), rgba(var(--primary-accent-rgb), 0.05));
+  color: var(--primary-accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 16px;
+}
+
+.hint-btn:hover {
+  background: linear-gradient(135deg, rgba(var(--primary-accent-rgb), 0.25), rgba(var(--primary-accent-rgb), 0.1));
+  color: #FFFFFF;
+  box-shadow: 0 0 15px rgba(var(--primary-accent-rgb), 0.2);
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
