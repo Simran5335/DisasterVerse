@@ -469,23 +469,7 @@ const Dashboard = () => {
             <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
             <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Know2Survive</button>
             <button onClick={() => { setActiveTab('flip-prepare'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
-            <button onClick={() => { setActiveTab('checklist'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => { setActiveTab('firstaid'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
-            <button onClick={() => { setActiveTab('plan'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
-            <button
-              onClick={() => {
-                setActiveTab('achievements');
-                setMobileNavOpen(false);
-              }}
-              style={{
-                ...styles.navBtn,
-                ...(activeTab === 'achievements'
-                  ? styles.activeNavBtn
-                  : {})
-              }}
-            >
-              🏅 Badges & Progress
-            </button>
 
           </nav>
         </div>
@@ -538,34 +522,21 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div style={styles.topRightControls}>
-            <div
-              style={styles.searchBox}
-              className="dv-search-box"
-            >
-              <span style={{ color: '#9ca3af' }}>
-                🔍
-              </span>
+          {/* PROFILE AVATAR — in the dashboard header, NOT the right sidebar */}
+          <button
+            type="button"
+            style={styles.headerProfileButton}
+            onClick={() => setShowSettingsModal(true)}
+            title="Open Profile Settings"
+            aria-label="Open Profile Settings"
+          >
+            <img
+              src={userAvatar}
+              alt="Profile avatar"
+              style={styles.headerAvatarImg}
+            />
+          </button>
 
-              <input
-                type="text"
-                placeholder="Search modules..."
-                style={styles.searchInput}
-              />
-            </div>
-
-            <div
-              style={styles.profileBadge}
-              onClick={() => setShowSettingsModal(true)}
-              title="Open Profile Settings"
-            >
-              <img
-                src={userAvatar}
-                alt="avatar"
-                style={styles.avatarImg}
-              />
-            </div>
-          </div>
         </header>
 
         {/* --- COMPANION POKÉMON MODULE TAB --- */}
@@ -1350,9 +1321,18 @@ const Dashboard = () => {
           }
 
           .dv-top-bar {
-            flex-direction: column;
+            flex-direction: row;
             align-items: flex-start !important;
             gap: 12px;
+          }
+
+          .dv-top-bar > div:first-child {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .dv-top-bar button {
+            flex-shrink: 0;
           }
         }
       `}</style>
@@ -1451,7 +1431,32 @@ const styles = {
   topBar: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    width: '100%',
+    gap: '20px'
+  },
+
+  headerProfileButton: {
+    width: '48px',
+    height: '48px',
+    minWidth: '48px',
+    borderRadius: '50%',
+    backgroundColor: '#1f1a18',
+    border: '2px solid #dc2626',
+    padding: 0,
+    cursor: 'pointer',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 0 0 3px rgba(220, 38, 38, 0.08)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+  },
+
+  headerAvatarImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
   },
 
   welcomeTitle: {
@@ -1466,49 +1471,7 @@ const styles = {
     margin: '4px 0 0 0'
   },
 
-  topRightControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    flexWrap: 'wrap'
-  },
 
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#161211',
-    border: '1px solid #241e1c',
-    padding: '8px 14px',
-    borderRadius: '12px',
-    gap: '10px'
-  },
-
-  searchInput: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#fff',
-    outline: 'none',
-    fontSize: '13px'
-  },
-
-  profileBadge: {
-    width: '42px',
-    height: '42px',
-    borderRadius: '50%',
-    backgroundColor: '#1f1a18',
-    border: '2px solid #dc2626',
-    cursor: 'pointer',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-
-  avatarImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover'
-  },
   extraLargeCompanionHero: {
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
     border: '2px solid rgba(255, 255, 255, 0.1)',
