@@ -1,0 +1,268 @@
+#river-defender-game {
+  --sky:#bfe8ff;
+  --grass:#63c264;
+  --grass-dark:#3d9749;
+  --water:#169fe8;
+  --panel:#0f4d58;
+  --panel-2:#1d6758;
+  --cream:#fff8d8;
+  --gold:#ffd15c;
+  --ink:#123238;
+  --ok:#42d66d;
+  --danger:#ef5d4c;
+  position:relative;
+  width:100%;
+  min-height:720px;
+  height:min(88vh,900px);
+  overflow:hidden;
+  background:linear-gradient(#bfe8ff 0%,#e8f8ff 43%,#9bdc7b 44%,#55ad50 100%);
+  color:var(--ink);
+  font-family:"Trebuchet MS",Verdana,sans-serif;
+  isolation:isolate;
+}
+
+#river-defender-game #world{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  z-index:1;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#river-defender-game #world.dragging{cursor:grabbing}
+#river-defender-game #world.placing{cursor:crosshair}
+
+#river-defender-game .hidden{display:none!important}
+#river-defender-game .screen{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.18),rgba(8,53,61,.34));
+}
+#river-defender-game .screen.active{display:flex}
+
+#river-defender-game button{
+  border:0;
+  border-radius:12px;
+  font:inherit;
+  font-weight:900;
+  color:var(--ink);
+  background:var(--gold);
+  cursor:pointer;
+  box-shadow:0 5px 0 #c98d24,0 12px 22px rgba(18,50,56,.22);
+  transition:transform .15s ease,filter .15s ease,opacity .15s ease;
+}
+#river-defender-game button:hover{filter:brightness(1.04);transform:translateY(-1px)}
+#river-defender-game button:active{transform:translateY(2px);box-shadow:0 3px 0 #c98d24}
+#river-defender-game button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+#river-defender-game .logo,
+#river-defender-game .tutorial-card,
+#river-defender-game .report-card{text-align:center;color:var(--ink)}
+#river-defender-game .logo span,
+#river-defender-game .game-logo strong{display:block;font-weight:900}
+#river-defender-game .logo span{font-size:clamp(56px,9vw,118px);line-height:.82;text-shadow:0 3px 0 #fff1a9,0 8px 18px rgba(12,57,63,.25)}
+#river-defender-game .logo small{display:block;margin-top:14px;color:#fff8d8;font-weight:900;text-shadow:0 2px 6px rgba(12,57,63,.55)}
+#river-defender-game .start-actions{display:flex;gap:16px;justify-content:center;margin-top:38px;flex-wrap:wrap}
+#river-defender-game .start-actions button,
+#river-defender-game .tutorial-card button,
+#river-defender-game .report-card button{padding:14px 24px;min-width:140px}
+
+#river-defender-game .tutorial-card,
+#river-defender-game .report-card{
+  width:min(560px,calc(100% - 40px));
+  padding:30px;
+  border:2px solid rgba(255,255,255,.75);
+  border-radius:20px;
+  background:rgba(255,248,216,.96);
+  box-shadow:0 20px 60px rgba(21,61,68,.3),0 5px 0 rgba(112,134,60,.25);
+}
+#river-defender-game .tutorial-card h1,
+#river-defender-game .report-card h1{margin:0 0 14px;font-size:32px;line-height:1}
+#river-defender-game .tutorial-card p{margin:0 0 20px;font-weight:700;line-height:1.5}
+#river-defender-game .steps{display:grid;gap:10px;margin:22px 0;text-align:left}
+#river-defender-game .steps strong{padding:11px 13px;border-radius:10px;background:rgba(60,154,108,.12)}
+
+/* HUD */
+#river-defender-game .hud{position:absolute;inset:0;z-index:20;pointer-events:none}
+#river-defender-game .hud>*{pointer-events:auto}
+
+#river-defender-game .topbar{
+  position:absolute;
+  top:12px;
+  left:14px;
+  right:14px;
+  height:68px;
+  display:grid;
+  grid-template-columns:190px minmax(420px,1fr) 92px;
+  gap:10px;
+  align-items:center;
+  z-index:30;
+  pointer-events:none;
+}
+#river-defender-game .game-logo{
+  padding:8px 12px;
+  border-radius:14px;
+  background:rgba(255,248,216,.86);
+  box-shadow:0 8px 22px rgba(18,50,56,.15);
+}
+#river-defender-game .game-logo strong{font-size:25px;line-height:.83;letter-spacing:-1px;color:#123238}
+#river-defender-game .game-logo span{display:block;margin-top:8px;font-size:9px;font-weight:900;color:#2a6948;letter-spacing:.7px}
+
+#river-defender-game .stats{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:8px;pointer-events:none}
+#river-defender-game .stats div{
+  min-height:50px;
+  padding:7px 12px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  color:#fff;
+  background:linear-gradient(145deg,rgba(12,69,78,.94),rgba(28,94,72,.88));
+  box-shadow:0 9px 22px rgba(18,50,56,.18),inset 0 1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(8px);
+}
+#river-defender-game .stats span{display:block;font-size:9px;font-weight:900;color:#dff8ff;letter-spacing:.4px}
+#river-defender-game .stats strong{display:block;margin-top:3px;font-size:19px}
+#river-defender-game .pause{min-width:92px;padding:11px 14px;pointer-events:auto}
+
+#river-defender-game .mission{
+  position:absolute;
+  left:18px;
+  top:96px;
+  width:222px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  color:#fff;
+  background:linear-gradient(150deg,rgba(8,64,75,.96),rgba(26,93,70,.91));
+  box-shadow:0 16px 34px rgba(12,45,50,.26),inset 0 1px 0 rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);
+  z-index:26;
+}
+#river-defender-game .mission h2,
+#river-defender-game .mission h3{margin:0 0 9px;font-size:10px;color:#dff8ff;letter-spacing:.6px}
+#river-defender-game .mission h3{margin-top:17px;color:#ffe58b}
+#river-defender-game .mission p{margin:0 0 7px;font-size:13px;font-weight:800;line-height:1.4}
+#river-defender-game .mission ul{margin:0;padding:0;list-style:none;font-size:14px;font-weight:900;line-height:1.85}
+#river-defender-game .mission li{display:flex;align-items:center;gap:7px}
+#river-defender-game .mission li::first-letter{color:#ffd15c}
+#river-defender-game .mission::after{content:'DRAG TO EXPLORE  •  SCROLL TO ZOOM';display:block;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.14);font-size:8px;font-weight:900;letter-spacing:.4px;color:rgba(255,255,255,.7)}
+
+#river-defender-game .status{
+  position:absolute;
+  top:92px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:11px 22px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:15px;
+  color:#fff;
+  background:linear-gradient(145deg,rgba(9,75,78,.96),rgba(27,101,69,.92));
+  box-shadow:0 10px 25px rgba(12,50,55,.22),inset 0 1px 0 rgba(255,255,255,.1);
+  font-size:18px;font-weight:900;text-align:center;white-space:nowrap;z-index:28
+}
+#river-defender-game .place-hint{
+  position:absolute;
+  left:50%;
+  bottom:118px;
+  transform:translateX(-50%);
+  max-width:min(680px,calc(100% - 540px));
+  padding:10px 18px;
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:14px;
+  color:#123238;
+  background:rgba(255,248,216,.96);
+  box-shadow:0 9px 20px rgba(18,50,56,.17);
+  font-size:14px;font-weight:900;text-align:center;z-index:27
+}
+
+/* Defense dock */
+#river-defender-game .toolbar{
+  position:absolute;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  display:flex!important;
+  gap:10px;
+  margin:0;
+  padding:8px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(10,62,67,.94),rgba(27,87,69,.9));
+  box-shadow:0 16px 34px rgba(13,47,53,.3),inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter:blur(10px);
+  z-index:35;
+}
+#river-defender-game .tool{
+  width:182px;height:86px;
+  display:grid;
+  grid-template-columns:48px 1fr 38px;
+  grid-template-rows:1fr 18px;
+  grid-template-areas:'icon name count' 'icon desc count';
+  align-items:center;justify-items:start;column-gap:8px;
+  padding:9px 11px;
+  border:2px solid rgba(255,255,255,.8);
+  border-radius:14px;
+  background:linear-gradient(145deg,#fffdf2,#e6ebdf);
+  box-shadow:0 5px 0 rgba(112,134,60,.55),0 12px 24px rgba(18,50,56,.18),inset 0 1px 0 #fff;
+}
+#river-defender-game .tool .icon{grid-area:icon;width:46px;height:46px;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:#edf0e8;box-shadow:inset 0 1px 0 #fff,0 3px 8px rgba(20,60,65,.1)}
+#river-defender-game .tool .icon svg{width:42px;height:42px;display:block;filter:drop-shadow(0 2px 2px rgba(25,55,55,.18))}
+#river-defender-game .wall-tool .icon{background:linear-gradient(145deg,#eee9df,#cfc8bc)}
+#river-defender-game .pump-tool .icon{background:linear-gradient(145deg,#e3f5fa,#c6e3e8)}
+#river-defender-game .sand-tool .icon{background:linear-gradient(145deg,#f5e7c3,#e0c486)}
+#river-defender-game .tool strong{grid-area:name;font-size:13px;line-height:1;white-space:nowrap}
+#river-defender-game .tool small{grid-area:desc;font-size:8px;font-weight:900;color:#28719a;white-space:nowrap}
+#river-defender-game .tool em{grid-area:count;justify-self:center;font-style:normal;font-size:18px;font-weight:900;color:#276137}
+#river-defender-game .tool.selected{background:linear-gradient(145deg,#ffe070,#ffc94d);outline:3px solid #fff;transform:translateY(-4px);box-shadow:0 6px 0 rgba(179,119,24,.75),0 16px 30px rgba(18,50,56,.25)}
+#river-defender-game .tool:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.15)}
+#river-defender-game .tool:disabled:hover{transform:none}
+
+/* Responsive */
+@media(max-width:980px){
+  #river-defender-game .topbar{grid-template-columns:140px 1fr 78px;left:10px;right:10px}
+  #river-defender-game .game-logo strong{font-size:22px}
+  #river-defender-game .stats{grid-template-columns:repeat(3,minmax(82px,1fr))}
+  #river-defender-game .mission{width:190px;top:98px}
+  #river-defender-game .tool{width:155px}
+  #river-defender-game .place-hint{max-width:calc(100% - 420px)}
+}
+@media(max-width:820px){
+  #river-defender-game .topbar{grid-template-columns:1fr auto; height:auto}
+  #river-defender-game .game-logo{display:none}
+  #river-defender-game .stats{grid-template-columns:repeat(3,minmax(72px,1fr))}
+  #river-defender-game .mission{top:112px;width:178px;padding:12px}
+  #river-defender-game .toolbar{gap:7px;padding:6px}
+  #river-defender-game .tool{width:140px;height:78px;grid-template-columns:40px 1fr 30px;padding:7px}
+  #river-defender-game .tool .icon{width:38px;height:38px}
+  #river-defender-game .tool .icon svg{width:35px;height:35px}
+  #river-defender-game .tool strong{font-size:11px}
+  #river-defender-game .tool small{font-size:7px}
+  #river-defender-game .place-hint{bottom:100px;max-width:calc(100% - 240px);font-size:12px}
+}
+@media(max-width:620px){
+  #river-defender-game{min-height:680px;height:100vh}
+  #river-defender-game .topbar{left:8px;right:8px;top:8px}
+  #river-defender-game .stats{grid-template-columns:repeat(2,minmax(80px,1fr));gap:6px}
+  #river-defender-game .stats div{min-height:42px;padding:6px 8px}
+  #river-defender-game .stats strong{font-size:15px}
+  #river-defender-game .pause{min-width:72px;padding:9px 10px}
+  #river-defender-game .mission{left:8px;top:108px;width:155px;padding:10px}
+  #river-defender-game .mission ul{font-size:12px}
+  #river-defender-game .status{top:96px;font-size:14px;max-width:calc(100% - 20px);white-space:normal}
+  #river-defender-game .place-hint{left:8px;right:8px;bottom:94px;width:auto;max-width:none;transform:none;font-size:11px}
+  #river-defender-game .toolbar{width:calc(100% - 12px);justify-content:center;gap:5px;bottom:6px}
+  #river-defender-game .tool{flex:1;width:auto;max-width:120px;height:70px;grid-template-columns:34px 1fr 26px;column-gap:5px;padding:6px}
+  #river-defender-game .tool .icon{width:32px;height:32px}
+  #river-defender-game .tool .icon svg{width:30px;height:30px}
+  #river-defender-game .tool strong{font-size:9px}
+  #river-defender-game .tool small{font-size:6px}
+  #river-defender-game .tool em{font-size:13px}
+}
