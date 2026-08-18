@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   X, Trophy, Sparkles, ArrowRight, Flame as FireIcon, RotateCcw, Home,
-  Timer as TimerIcon, PartyPopper, HeartCrack, Play
+  Timer as TimerIcon, PartyPopper, HeartCrack, Play, ShieldAlert, CheckCircle2, AlertTriangle
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -182,20 +182,12 @@ const CATEGORIES = [
       { phase: "Scenario", q: "Someone collapses & isn't breathing normally. First action?", options: ["Wait for them to wake up", "Call emergency services & start CPR immediately", "Give them water", "Shake them very hard repeatedly"], correct: 1, fact: "Brain damage can start in 4-6 mins without oxygen — fast CPR saves lives. ❤️" },
       { phase: "First Aid", q: "Someone is choking and can't speak or cough. You:", options: ["Give water to wash it down", "Perform back blows & abdominal thrusts (Heimlich)", "Wait for it to clear on its own", "Slap them on the back while lying down"], correct: 1, fact: "5 back blows + 5 abdominal thrusts is the standard choking response. 🫁" },
       { phase: "First Aid", q: "Deep cut, bleeding heavily. Best immediate action?", options: ["Apply direct firm pressure with clean cloth & elevate the limb", "Wash it thoroughly first, pressure later", "Apply a tourniquet immediately for any cut", "Let it bleed to 'clean itself'"], correct: 0, fact: "Direct pressure stops most bleeding — tourniquets are only for severe limb bleeds. 🩸" },
-      { phase: "Scenario", q: "A friend twists their ankle badly on a hike & it's swelling fast.", options: ["Keep walking, it'll loosen up", "R.I.C.E — Rest, Ice, Compression, Elevation", "Massage it hard immediately", "Apply heat right away"], correct: 1, fact: "R.I.C.E. reduces swelling; heat & massage early can worsen it. 🧊" },
+      { phase: "Scenario", q: "A friend twists their ankle badly on a hike & it's swelling fast.", options: ["Keep walking, it's totally fine", "R.I.C.E — Rest, Ice, Compression, Elevation", "Massage it hard immediately", "Apply heat right away"], correct: 1, fact: "R.I.C.E. reduces swelling; heat & massage early can worsen it. 🧊" },
       { phase: "First Aid", q: "Someone is having a seizure. What should you do?", options: ["Hold them down firmly", "Put something in their mouth to stop tongue-biting", "Clear the area, cushion their head, time it, don't restrain", "Pour water on their face"], correct: 2, fact: "Never restrain or put objects in the mouth — protect the head & wait it out. 🧠" },
       { phase: "Scenario", q: "A stranger collapses in a mall, no pulse, crowd is filming instead of helping.", options: ["Assume someone else will help", "Call for help loudly, start CPR & direct someone to get an AED", "Wait for paramedics quietly", "Move the person to a private area first"], correct: 1, fact: "This is the 'bystander effect' — assign tasks directly (\"You, call 911!\") to break it. 📢" },
     ],
   },
 ];
-
-const PHASE_STYLES = {
-  Before: { bg: "bg-blue-500/15", text: "text-blue-300", ring: "ring-blue-500/30" },
-  During: { bg: "bg-red-500/15", text: "text-red-300", ring: "ring-red-500/30" },
-  After: { bg: "bg-emerald-500/15", text: "text-emerald-300", ring: "ring-emerald-500/30" },
-  "First Aid": { bg: "bg-pink-500/15", text: "text-pink-300", ring: "ring-pink-500/30" },
-  Scenario: { bg: "bg-amber-500/15", text: "text-amber-300", ring: "ring-amber-500/30" },
-};
 
 const PHASE_DIFFICULTY = {
   Before: "Easy",
@@ -205,18 +197,12 @@ const PHASE_DIFFICULTY = {
   Scenario: "Hard",
 };
 
-const DIFFICULTY_STYLES = {
-  Easy: { bg: "bg-emerald-500/15", text: "text-emerald-400", ring: "ring-emerald-500/30", label: "🟢 Easy" },
-  Medium: { bg: "bg-amber-500/15", text: "text-amber-400", ring: "ring-amber-500/30", label: "🟡 Medium" },
-  Hard: { bg: "bg-red-500/15", text: "text-red-400", ring: "ring-red-500/30", label: "🔴 Hard" },
-};
-
 const DIFFICULTY_XP_BASE = { Easy: 70, Medium: 100, Hard: 140 };
 
 const LEVELS = [
-  { id: "Easy", emoji: "🟢", label: "Easy", desc: "Basics & prep", activeClasses: "border-emerald-500 bg-emerald-500/10 text-emerald-400" },
-  { id: "Medium", emoji: "🟡", label: "Medium", desc: "During & after", activeClasses: "border-amber-500 bg-amber-500/10 text-amber-400" },
-  { id: "Hard", emoji: "🔴", label: "Hard", desc: "First aid & scenarios", activeClasses: "border-red-500 bg-red-500/10 text-red-400" },
+  { id: "Easy", emoji: "🟢", label: "Easy", desc: "Basics & prep", activeClasses: "border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-xl shadow-emerald-500/10" },
+  { id: "Medium", emoji: "🟡", label: "Medium", desc: "During & after", activeClasses: "border-amber-500 bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-500/10" },
+  { id: "Hard", emoji: "🔴", label: "Hard", desc: "First aid & scenarios", activeClasses: "border-red-500 bg-red-500/20 text-red-300 shadow-xl shadow-red-500/10" },
 ];
 
 const QUESTION_TIME = 15;
@@ -287,7 +273,7 @@ function AnswerPopup({ isCorrect, message, remaining, xpEarned, fact, onContinue
         onClick={onContinue}
       />
       <div
-        className={`relative w-full max-w-sm rounded-3xl p-7 text-center border popup-pop ${
+        className={`relative w-full max-w-md rounded-3xl p-8 text-center border popup-pop ${
           isCorrect ? "bg-zinc-950 border-emerald-500/40" : "bg-zinc-950 border-red-500/40"
         }`}
         style={{
@@ -296,7 +282,7 @@ function AnswerPopup({ isCorrect, message, remaining, xpEarned, fact, onContinue
             : "0 0 60px -10px rgba(239,68,68,0.4)",
         }}
       >
-        <div className={`mx-auto mb-3 w-16 h-16 rounded-full flex items-center justify-center ${isCorrect ? "bg-emerald-500/15" : "bg-red-500/15"} icon-pop`}>
+        <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center ${isCorrect ? "bg-emerald-500/15" : "bg-red-500/15"} icon-pop`}>
           {isCorrect ? (
             <PartyPopper className="w-8 h-8 text-emerald-400" />
           ) : (
@@ -304,32 +290,32 @@ function AnswerPopup({ isCorrect, message, remaining, xpEarned, fact, onContinue
           )}
         </div>
 
-        <h3 className={`text-2xl font-extrabold mb-1 ${isCorrect ? "text-emerald-400" : "text-red-400"}`}>
+        <h3 className={`text-2xl md:text-3xl font-extrabold mb-1 ${isCorrect ? "text-emerald-400" : "text-red-400"}`}>
           {message.big}
         </h3>
-        <p className="text-zinc-400 text-sm mb-4">
+        <p className="text-zinc-400 text-sm md:text-base mb-4">
           {message.sub}{!isCorrect && !isLast && <> — {remaining} left</>}
         </p>
 
         {isCorrect && (
           <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-sm font-bold">
-              <Sparkles className="w-3.5 h-3.5" /> +{xpEarned} XP
+            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500/15 text-amber-400 text-sm font-bold">
+              <Sparkles className="w-4 h-4" /> +{xpEarned} XP
             </div>
           </div>
         )}
 
-        <div className="text-xs text-zinc-500 bg-zinc-900/80 rounded-xl p-3 mb-5 leading-relaxed text-left">
+        <div className="text-sm text-zinc-400 bg-zinc-900/90 rounded-2xl p-4 mb-6 leading-relaxed text-left border border-zinc-800">
           💡 {fact}
         </div>
 
         <button
           onClick={onContinue}
-          className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition active:scale-[0.97] ${
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-base transition active:scale-[0.97] ${
             isCorrect ? "bg-emerald-600 hover:bg-emerald-500" : "bg-red-600 hover:bg-red-500"
           }`}
         >
-          {isLast ? "See Results" : "Continue"} <ArrowRight className="w-4 h-4" />
+          {isLast ? "See Results" : "Continue"} <ArrowRight className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -342,6 +328,7 @@ export default function Quiz({ onExit, onXPEarned }) {
       CATEGORIES.flatMap((cat) =>
         cat.questions.map((q) => ({
           ...q,
+          catId: cat.id,
           catName: cat.name,
           catEmoji: cat.emoji,
           catColor: cat.color,
@@ -372,7 +359,25 @@ export default function Quiz({ onExit, onXPEarned }) {
   const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
   const [confettiKey, setConfettiKey] = useState(0);
   const [popup, setPopup] = useState(null);
+  const [userAnswers, setUserAnswers] = useState([]);
   const timerRef = useRef(null);
+
+  // Load chosen companion from localStorage or default
+  const [activeCompanion, setActiveCompanion] = useState(() => {
+    const email = localStorage.getItem('currentUserEmail');
+    let xp = 3450;
+    if (email) {
+      const savedUser = localStorage.getItem(`user_${email}`);
+      if (savedUser) {
+        try {
+          xp = JSON.parse(savedUser).xp || 3450;
+        } catch (e) {}
+      }
+    }
+    if (xp >= 5000) return '/raichu.mp4';
+    if (xp >= 1200) return '/pikachu.mp4';
+    return '/pichu.mp4';
+  });
 
   const total = deck.length;
   const current = deck[qIndex];
@@ -389,6 +394,7 @@ export default function Quiz({ onExit, onXPEarned }) {
     setSelected(null);
     setLocked(false);
     setPopup(null);
+    setUserAnswers([]);
     setTimeLeft(QUESTION_TIME);
   };
 
@@ -417,7 +423,6 @@ export default function Quiz({ onExit, onXPEarned }) {
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
-    
   }, [stage, qIndex, locked]);
 
   function handleAnswer(idx) {
@@ -428,6 +433,11 @@ export default function Quiz({ onExit, onXPEarned }) {
     const isCorrect = idx === current.correct;
     const remaining = total - (qIndex + 1);
     const isLast = qIndex + 1 >= total;
+
+    setUserAnswers((prev) => [
+      ...prev,
+      { catId: current.catId, catName: current.catName, emoji: current.catEmoji, isCorrect }
+    ]);
 
     if (isCorrect) {
       const diff = current.difficulty || "Medium";
@@ -460,64 +470,74 @@ export default function Quiz({ onExit, onXPEarned }) {
   /* ---------------- INTRO SCREEN ---------------- */
   if (stage === "intro") {
     return (
-      <div className="min-h-screen w-full bg-black text-white p-6 md:p-10 flex items-center justify-center">
+      <div className="h-screen w-screen relative flex items-center justify-center p-6 md:p-10 overflow-hidden bg-black">
         <style>{globalStyles}</style>
-        <div className="max-w-md w-full text-center">
-          <div className="text-6xl mb-4 animate-bounce-slow">🧠</div>
-          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0 backdrop-blur-[12px] filter brightness-65 scale-105" 
+          style={{ backgroundImage: `url('/quizbg.png')` }}
+        />
+
+        <div className="relative z-10 max-w-4xl w-full text-center mx-auto flex flex-col justify-center h-full">
+          <div className="text-5xl md:text-6xl mb-2 animate-bounce-slow drop-shadow-md">🧠</div>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 text-white drop-shadow-xl">
             Know<span className="text-red-500">2</span>Survive
           </h1>
-          <p className="text-zinc-400 text-sm mb-6">
+          <p className="text-zinc-100 text-sm md:text-base mb-6 max-w-2xl mx-auto leading-snug drop-shadow-lg font-medium">
             Rapid-fire questions across every major disaster —
             before, during, after, first aid & real-life scenarios.
           </p>
 
-          <div className="flex justify-center gap-2 mb-6 flex-wrap">
+          <div className="flex justify-center gap-2 mb-6 flex-wrap max-w-3xl mx-auto">
             {CATEGORIES.map((c) => (
-              <span key={c.id} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
+              <span key={c.id} className="text-[11px] md:text-xs font-semibold px-3 py-1.5 rounded-full bg-zinc-950/80 border border-zinc-700/60 text-zinc-200 shadow-md backdrop-blur-md">
                 {c.emoji} {c.name}
               </span>
             ))}
           </div>
 
-          <p className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-3">Choose your level</p>
-          <div className="grid grid-cols-3 gap-2 mb-8">
+          <p className="text-white text-xs font-bold uppercase tracking-widest mb-3 drop-shadow">Choose your level</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 max-w-2xl mx-auto">
             {LEVELS.map((lvl) => {
               const isActive = selectedLevel === lvl.id;
               return (
                 <button
                   key={lvl.id}
                   onClick={() => setSelectedLevel(lvl.id)}
-                  className={`flex flex-col items-center gap-0.5 py-3 px-2 rounded-xl border transition active:scale-[0.97] ${
-                    isActive ? lvl.activeClasses : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600"
+                  className={`flex flex-col items-center gap-1.5 py-4 px-4 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
+                    isActive 
+                      ? `${lvl.activeClasses} ring-2 ring-white/40 scale-[1.02] shadow-2xl` 
+                      : "border-zinc-700/60 bg-zinc-950/80 text-zinc-300 hover:border-zinc-500 hover:bg-zinc-900/90 shadow-md"
                   }`}
                 >
-                  <span className="text-xl">{lvl.emoji}</span>
-                  <span className="text-sm font-bold">{lvl.label}</span>
-                  <span className="text-[10px] opacity-80">{levelCounts[lvl.id] || 0} questions</span>
+                  <span className="text-2xl">{lvl.emoji}</span>
+                  <span className="text-base font-bold">{lvl.label}</span>
+                  <span className="text-[11px] opacity-85">{lvl.desc}</span>
+                  <span className="text-[10px] font-semibold mt-0.5 opacity-90 px-2 py-0.2 rounded-full bg-black/60">{levelCounts[lvl.id] || 0} questions</span>
                 </button>
               );
             })}
           </div>
 
-          <button
-            onClick={startQuiz}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-lg transition active:scale-[0.98]"
-          >
-            <Play className="w-5 h-5 fill-current" /> Start {selectedLevel} Quiz
-          </button>
-
-          {onExit && (
-            <button onClick={onExit} className="mt-4 text-sm text-zinc-500 hover:text-zinc-300 transition">
-              Back to dashboard
+          <div className="max-w-xs md:max-w-sm mx-auto w-full">
+            <button
+              onClick={startQuiz}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 font-bold text-base transition active:scale-[0.98] shadow-2xl shadow-red-600/40 cursor-pointer text-white"
+            >
+              <Play className="w-4 h-4 fill-current" /> Start {selectedLevel} Quiz
             </button>
-          )}
+
+            {onExit && (
+              <button onClick={onExit} className="mt-3 text-xs md:text-sm text-zinc-200 hover:text-white transition block w-full text-center font-medium drop-shadow">
+                Back to dashboard
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  /* ---------------- RESULT SCREEN ---------------- */
+  /* ---------------- RESULT SCREEN WITH QUIZINSIDE BACKGROUND, CENTERED, NON-SCROLLABLE ---------------- */
   if (stage === "result") {
     const pct = Math.round((score / total) * 100);
     const rank =
@@ -529,43 +549,94 @@ export default function Quiz({ onExit, onXPEarned }) {
         ? { label: "Getting There", emoji: "💪" }
         : { label: "Needs Drilling", emoji: "🚧" };
 
+    const catMap = {};
+    userAnswers.forEach((ans) => {
+      if (!catMap[ans.catId]) {
+        catMap[ans.catId] = { name: ans.catName, emoji: ans.emoji, correct: 0, total: 0 };
+      }
+      catMap[ans.catId].total += 1;
+      if (ans.isCorrect) catMap[ans.catId].correct += 1;
+    });
+
+    const categoryBreakdown = Object.values(catMap).map((cat) => ({
+      ...cat,
+      percentage: cat.total > 0 ? Math.round((cat.correct / cat.total) * 100) : 0,
+    })).sort((a, b) => b.percentage - a.percentage);
+
+    const areasNeedingImprovement = categoryBreakdown.filter((c) => c.percentage < 70);
+
     return (
-      <div className="min-h-screen w-full bg-black text-white p-6 md:p-10 flex items-center justify-center relative overflow-hidden">
+      <div className="h-screen w-screen relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-6 bg-black">
         <style>{globalStyles}</style>
+        {/* Background image `quizinside.png` with blur on result screen */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0 backdrop-blur-[12px] filter brightness-65 scale-105" 
+          style={{ backgroundImage: `url('/quizinside.png')` }}
+        />
         <ConfettiBurst trigger={confettiKey} />
-        <div className="max-w-lg w-full text-center">
-          <div className="text-6xl mb-3 animate-pop">{rank.emoji}</div>
-          <h2 className="text-3xl font-extrabold mb-1">{rank.label}!</h2>
-          <p className="text-zinc-400 mb-8">
-            You cleared the full <span className="text-white font-semibold">Know2Survive</span> challenge
+
+        <div className="relative z-10 max-w-lg w-full text-center mx-auto flex flex-col justify-center items-center h-full my-auto">
+          <div className="text-5xl mb-1.5 animate-pop">{rank.emoji}</div>
+          <h2 className="text-2xl md:text-3xl font-black mb-0.5 text-black drop-shadow-sm">{rank.label}!</h2>
+          <p className="text-black text-xs md:text-sm mb-4 font-bold drop-shadow-sm">
+            Your Comprehensive Disaster Preparedness Report
           </p>
 
-          <div className="grid grid-cols-3 gap-3 mb-8">
-            <StatBox label="Score" value={`${score}/${total}`} icon={<Trophy className="w-4 h-4" />} color="#f59e0b" />
-            <StatBox label="XP Earned" value={`+${xpGained}`} icon={<Sparkles className="w-4 h-4" />} color="#ef4444" />
-            <StatBox label="Best Streak" value={`${bestStreak}🔥`} icon={<FireIcon className="w-4 h-4" />} color="#38bdf8" />
+          {/* Preparedness Score Banner - Smaller & Centered */}
+          <div className="rounded-2xl border border-white/20 bg-zinc-950/85 p-4 mb-4 shadow-xl relative overflow-hidden backdrop-blur-md w-full max-w-md mx-auto">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-0.5">Overall Preparedness Score</div>
+            <div className="text-3xl md:text-4xl font-black text-amber-400 mb-1">{pct}%</div>
+            <p className="text-[11px] text-zinc-300 max-w-xs mx-auto leading-tight">
+              {pct >= 80 
+                ? "Outstanding! High survival awareness across emergencies." 
+                : pct >= 50 
+                ? "Good foundation! Review your weaker topics below." 
+                : "Significant training recommended. Focus on improvement areas below."}
+            </p>
           </div>
 
-          <div className="w-full h-3 bg-zinc-900 rounded-full overflow-hidden mb-8">
-            <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ width: `${pct}%`, background: "linear-gradient(90deg,#ef4444,#f59e0b)" }}
-            />
+          <div className="grid grid-cols-3 gap-2.5 mb-4 w-full max-w-md mx-auto">
+            <StatBox label="Score" value={`${score}/${total}`} icon={<Trophy className="w-3.5 h-3.5" />} color="#f59e0b" />
+            <StatBox label="XP Earned" value={`+${xpGained}`} icon={<Sparkles className="w-3.5 h-3.5" />} color="#ef4444" />
+            <StatBox label="Best Streak" value={`${bestStreak}🔥`} icon={<FireIcon className="w-3.5 h-3.5" />} color="#38bdf8" />
           </div>
 
-          <div className="flex gap-3 justify-center flex-wrap">
+          {/* Areas Needing Improvement & Breakdown - Compact & Non-scrollable */}
+          <div className="rounded-2xl border border-white/20 bg-zinc-950/85 p-3.5 mb-5 text-left backdrop-blur-md shadow-xl w-full max-w-md mx-auto max-h-36 overflow-y-auto">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-200 mb-2 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Areas Needing Improvement
+            </h3>
+            {areasNeedingImprovement.length === 0 ? (
+              <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Amazing! 70%+ across all disaster categories.
+              </p>
+            ) : (
+              <div className="space-y-1.5">
+                {areasNeedingImprovement.map((cat) => (
+                  <div key={cat.name} className="flex items-center justify-between text-[11px] bg-zinc-900/90 py-1.5 px-2.5 rounded-lg border border-zinc-800">
+                    <span className="font-medium text-zinc-200 flex items-center gap-1.5">
+                      <span>{cat.emoji}</span> {cat.name}
+                    </span>
+                    <span className="text-red-400 font-bold">{cat.percentage}% ({cat.correct}/{cat.total})</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 justify-center w-full max-w-md mx-auto">
             <button
               onClick={startQuiz}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500 font-semibold transition active:scale-95"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 font-semibold text-xs md:text-sm transition active:scale-95 shadow-lg shadow-red-600/35 cursor-pointer text-white"
             >
-              <RotateCcw className="w-4 h-4" /> Retry
+              <RotateCcw className="w-3.5 h-3.5" /> Retry Quiz
             </button>
             {onExit && (
               <button
                 onClick={onExit}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 font-semibold transition active:scale-95"
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 font-semibold text-xs md:text-sm transition active:scale-95 border border-zinc-700 cursor-pointer text-zinc-200 backdrop-blur-sm"
               >
-                <Home className="w-4 h-4" /> Dashboard
+                <Home className="w-3.5 h-3.5" /> Dashboard
               </button>
             )}
           </div>
@@ -574,12 +645,19 @@ export default function Quiz({ onExit, onXPEarned }) {
     );
   }
 
-  /* ---------------- QUIZ SCREEN ---------------- */
+  /* ---------------- QUIZ SCREEN WITH QUIZINSIDE BACKGROUND ---------------- */
   if (!current) return null;
 
   return (
-    <div className="min-h-screen w-full bg-black text-white p-5 md:p-10 relative overflow-hidden">
+    <div className="h-screen w-screen relative overflow-hidden flex flex-col justify-center p-6 md:p-12">
       <style>{globalStyles}</style>
+      
+      {/* Background image `quizinside.png` with blur */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center z-0 backdrop-blur-[8px] filter brightness-75 scale-105" 
+        style={{ backgroundImage: `url('/quizinside.png')` }}
+      />
+      
       <ConfettiBurst trigger={confettiKey} />
       {popup && (
         <AnswerPopup
@@ -593,80 +671,98 @@ export default function Quiz({ onExit, onXPEarned }) {
         />
       )}
 
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto w-full relative z-10 bg-black/55 p-6 md:p-8 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <button
             onClick={() => setStage("intro")}
-            className="p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 transition"
+            className="p-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700 transition cursor-pointer"
           >
-            <X className="w-5 h-5 text-zinc-400" />
+            <X className="w-5 h-5 text-zinc-300" />
           </button>
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <span className="text-lg">{current.catEmoji}</span>
-            <span className="font-semibold text-white">{current.catName}</span>
+          <div className="flex items-center gap-2 text-sm md:text-base text-zinc-200 font-bold">
+            <span className="text-xl">{current.catEmoji}</span>
+            <span className="tracking-wide">{current.catName}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 text-sm font-bold text-amber-400">
-            <FireIcon className="w-4 h-4" /> {streak}
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-700 text-xs md:text-sm font-bold text-amber-400">
+            <FireIcon className="w-4 h-4" /> {streak} streak
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-2 bg-zinc-900 rounded-full overflow-hidden mb-2">
+        <div className="w-full h-2 bg-zinc-900/80 rounded-full overflow-hidden mb-2 border border-zinc-700/60">
           <div
             className="h-full bg-gradient-to-r from-red-600 to-amber-500 transition-all duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <div className="flex items-center justify-between text-xs text-zinc-500 mb-6">
+        <div className="flex items-center justify-between text-xs text-zinc-300 mb-6 font-semibold">
           <span>Question {qIndex + 1} of {total}</span>
-          <span className="flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-400" /> {xpGained} XP
+          <span className="flex items-center gap-1 text-amber-400">
+            <Sparkles className="w-3.5 h-3.5" /> {xpGained} XP
           </span>
         </div>
 
         {/* Timer bar */}
-        <div className="flex items-center gap-2 mb-4">
-          <TimerIcon className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500 animate-pulse" : "text-zinc-500"}`} />
-          <div className="flex-1 h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+        <div className="flex items-center gap-3 mb-5">
+          <TimerIcon className={`w-4 h-4 ${timeLeft <= 5 ? "text-red-500 animate-pulse" : "text-zinc-300"}`} />
+          <div className="flex-1 h-1.5 bg-zinc-900/80 rounded-full overflow-hidden border border-zinc-700/60">
             <div
               className="h-full rounded-full transition-all duration-1000 linear"
               style={{ width: `${timePct}%`, background: timeLeft <= 5 ? "#ef4444" : "#22c55e" }}
             />
           </div>
-          <span className={`text-xs font-mono w-6 ${timeLeft <= 5 ? "text-red-500" : "text-zinc-500"}`}>
+          <span className={`text-xs font-mono font-bold w-6 text-right ${timeLeft <= 5 ? "text-red-500" : "text-zinc-300"}`}>
             {timeLeft}s
           </span>
         </div>
 
         {/* Question card */}
-        <div key={qIndex} className="relative rounded-2xl border border-zinc-800 bg-zinc-950 p-6 mb-5 quiz-card-in">
-          <h2 className="text-lg md:text-xl font-bold leading-snug">{current.q}</h2>
+        <div key={qIndex} className="relative rounded-2xl border border-zinc-700/80 bg-zinc-950/85 p-6 md:p-8 mb-5 quiz-card-in shadow-xl backdrop-blur-md">
+          <h2 className="text-lg md:text-xl font-bold leading-relaxed text-white">{current.q}</h2>
         </div>
 
         {/* Options */}
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {current.options.map((opt, idx) => {
             const isCorrect = idx === current.correct;
             const isSelected = idx === selected;
-            let stateClasses = "border-zinc-800 bg-zinc-950 hover:border-zinc-600 hover:bg-zinc-900";
+            let stateClasses = "border-zinc-700/80 bg-zinc-950/80 hover:border-zinc-500 hover:bg-zinc-900/90 text-zinc-100";
             if (locked) {
-              if (isCorrect) stateClasses = "border-emerald-500 bg-emerald-500/10";
-              else if (isSelected && !isCorrect) stateClasses = "border-red-500 bg-red-500/10";
-              else stateClasses = "border-zinc-800 bg-zinc-950/60 opacity-50";
+              if (isCorrect) stateClasses = "border-emerald-500 bg-emerald-950/60 text-emerald-200";
+              else if (isSelected && !isCorrect) stateClasses = "border-red-500 bg-red-950/60 text-red-200";
+              else stateClasses = "border-zinc-800 bg-zinc-950/40 opacity-40 text-zinc-400";
             }
             return (
               <button
                 key={idx}
                 disabled={locked}
                 onClick={() => handleAnswer(idx)}
-                className={`flex items-center justify-between gap-3 text-left px-4 py-3.5 rounded-xl border transition-all ${stateClasses} ${!locked ? "active:scale-[0.98]" : ""}`}
+                className={`flex items-center justify-between gap-3 text-left p-4 rounded-xl border transition-all backdrop-blur-sm shadow-md ${stateClasses} ${!locked ? "active:scale-[0.98] cursor-pointer" : ""}`}
               >
-                <span className="font-medium text-sm md:text-base">{opt}</span>
+                <span className="font-medium text-xs md:text-sm leading-snug">{opt}</span>
               </button>
             );
           })}
         </div>
+      </div>
+
+      {/* Floating Active Companion Widget in Bottom Right Corner */}
+      <div className="absolute bottom-5 right-5 z-50 flex flex-col items-center pointer-events-none">
+        <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-zinc-900/90 border-2 border-amber-400/80 shadow-2xl overflow-hidden flex items-center justify-center backdrop-blur-md">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src={activeCompanion} type="video/mp4" />
+          </video>
+        </div>
+        <span className="mt-1.5 px-2.5 py-0.5 rounded-full bg-black/75 border border-zinc-800 text-[10px] font-bold text-amber-300 tracking-wider uppercase backdrop-blur-sm">
+          Companion
+        </span>
       </div>
     </div>
   );
@@ -674,12 +770,12 @@ export default function Quiz({ onExit, onXPEarned }) {
 
 function StatBox({ label, value, icon, color }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3">
-      <div className="flex items-center justify-center gap-1 mb-1" style={{ color }}>
+    <div className="rounded-xl border border-white/20 bg-zinc-950/85 p-3 backdrop-blur-md shadow-md">
+      <div className="flex items-center justify-center gap-1 mb-0.5" style={{ color }}>
         {icon}
       </div>
-      <div className="text-lg font-extrabold">{value}</div>
-      <div className="text-[11px] text-zinc-500">{label}</div>
+      <div className="text-lg md:text-xl font-extrabold mb-0.5 text-white">{value}</div>
+      <div className="text-[10px] text-zinc-400 font-medium uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -687,9 +783,11 @@ function StatBox({ label, value, icon, color }) {
 const globalStyles = `
 html, body, #root {
   background: #000000 !important;
-  min-height: 100%;
+  height: 100vh;
+  width: 100vw;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 @keyframes fall {
