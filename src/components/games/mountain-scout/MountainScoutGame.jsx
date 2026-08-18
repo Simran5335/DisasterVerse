@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { HAZARDS_DATA, GAME_QUIZ_QUESTIONS, GAME_SETTINGS } from "../../../data/mountainScoutData";
+import { useNavigate } from "react-router-dom";
+import { LEVELS_DATA, GAME_QUIZ_QUESTIONS, GAME_SETTINGS } from "../../../data/mountainScoutData";
 import MountainVillageScene from "./MountainVillageScene";
+import MountainRoadScene from "./scenes/MountainRoadScene";
+import CliffValleyScene from "./scenes/CliffValleyScene";
 import "../../../styles/MountainScout.css";
 
 // Web Audio API Sound Synthesizer Helper
@@ -22,7 +25,7 @@ const playSound = (type) => {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.15);
-    } else if (type === "win") {
+    } else if (type === "level_complete" || type === "win") {
       [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -42,9 +45,19 @@ const playSound = (type) => {
 };
 
 export default function MountainScoutGame() {
-  // Game States: 'START' | 'PLAYING' | 'PAUSED' | 'WIN' | 'TIME_UP' | 'LEARN_QUIZ'
+  const navigate = useNavigate();
+
+  // Level State: 1 | 2 | 3
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const activeLevelData = LEVELS_DATA[currentLevel] || LEVELS_DATA[1];
+
+  // Game States: 'START' | 'GUIDE' | 'PLAYING' | 'PAUSED' | 'LEVEL_COMPLETE' | 'WIN' | 'TIME_UP' | 'LEARN_QUIZ'
   const [gameState, setGameState] = useState("START");
-  const [timeRemaining, setTimeRemaining] = useState(GAME_SETTINGS.initialTime);
+
+  // Active Timer State
+  const [timeRemaining, setTimeRemaining] = useState(activeLevelData.timer);
+
+  // Score System
   const [score, setScore] = useState(0);
 
   // Combo System
@@ -53,13 +66,14 @@ export default function MountainScoutGame() {
   const lastDiscoveryTimeRef = useRef(0);
 
   // Tools & Resources
-  const [cluesRemaining, setCluesRemaining] = useState(GAME_SETTINGS.maxClues);
-  const [activeClueText, setActiveClueText] = useState(null);
-  const [binocularsRemaining, setBinocularsRemaining] = useState(GAME_SETTINGS.maxBinoculars);
+  const [cluesRemaining, setCluesRemaining] = useState(activeLevelData.maxClues);
+  const [activeClueModalText, setActiveClueModalText] = useState(null);
+
+  const [binocularsRemaining, setBinocularsRemaining] = useState(activeLevelData.maxBinoculars);
   const [isBinocularActive, setIsBinocularActive] = useState(false);
   const [isInvestigateMode, setIsInvestigateMode] = useState(false);
 
-  // Zoom & Pan Camera Controls
+  // Viewport Controls
   const [zoomScale, setZoomScale] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
@@ -67,11 +81,11 @@ export default function MountainScoutGame() {
   const [discoveredHazards, setDiscoveredHazards] = useState([]);
   const [missedHazards, setMissedHazards] = useState([]);
   const [activeHazardCard, setActiveHazardCard] = useState(null);
+  const [showChecklistDrawer, setShowChecklistDrawer] = useState(false);
 
-  // Feedback & Dynamic Event State
-  const [wrongClickCount, setWrongClickCount] = useState(0);
-  const [wrongToastMsg, setWrongToastMsg] = useState(null);
-  const [observeNotice, setObserveNotice] = useState(false);
+  // Toast Alerts
+  const [distractorToastMsg, setDistractorToastMsg] = useState(null);
+  const [comboEducationalBanner, setComboEducationalBanner] = useState(null);
 
   // Quiz State
   const [currentQuizIdx, setCurrentQuizIdx] = useState(0);
@@ -80,70 +94,50 @@ export default function MountainScoutGame() {
 
   const timerRef = useRef(null);
   const toastTimeoutRef = useRef(null);
-  const eventTimerRef = useRef(null);
 
-  // Main Game Countdown Timer
+  // STRICT TIMER CONTROL: Timer runs ONLY when gameState === "PLAYING" AND no overlay/modal is open!
+  const isTimerActive =
+    gameState === "PLAYING" &&
+    !activeHazardCard &&
+    !activeClueModalText &&
+    !showChecklistDrawer;
+
   useEffect(() => {
-    if (gameState === "PLAYING") {
+    if (isTimerActive) {
       timerRef.current = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current);
-            handleTimeUp();
+            setGameState("TIME_UP");
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     }
 
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameState]);
+  }, [isTimerActive]);
 
-  // Occasional Dynamic Event ("👀 SOMETHING CHANGED...")
-  useEffect(() => {
-    if (gameState === "PLAYING") {
-      eventTimerRef.current = setInterval(() => {
-        if (Math.random() > 0.4 && !activeHazardCard) {
-          setObserveNotice(true);
-          setTimeout(() => setObserveNotice(false), 3000);
-        }
-      }, 14000);
-    } else {
-      if (eventTimerRef.current) clearInterval(eventTimerRef.current);
-    }
-    return () => {
-      if (eventTimerRef.current) clearInterval(eventTimerRef.current);
-    };
-  }, [gameState, activeHazardCard]);
-
-  // Clean up toasts on unmount
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
   }, []);
 
-  // Handle Game Start / Restart
-  const handleStartGame = () => {
-    setGameState("PLAYING");
-    setTimeRemaining(GAME_SETTINGS.initialTime);
-    setScore(0);
-    setCombo(0);
-    setMaxCombo(0);
-    setCluesRemaining(GAME_SETTINGS.maxClues);
-    setActiveClueText(null);
-    setBinocularsRemaining(GAME_SETTINGS.maxBinoculars);
+  // Open Instruction Guide for a Level
+  const openLevelGuide = (levelNum) => {
+    const lvlData = LEVELS_DATA[levelNum] || LEVELS_DATA[1];
+    setCurrentLevel(levelNum);
+    setGameState("GUIDE");
+    setTimeRemaining(lvlData.timer);
+    setCluesRemaining(lvlData.maxClues);
+    setActiveClueModalText(null);
+    setBinocularsRemaining(lvlData.maxBinoculars);
     setIsBinocularActive(false);
     setIsInvestigateMode(false);
     setZoomScale(1);
@@ -151,11 +145,40 @@ export default function MountainScoutGame() {
     setDiscoveredHazards([]);
     setMissedHazards([]);
     setActiveHazardCard(null);
-    setWrongClickCount(0);
-    setWrongToastMsg(null);
+    setShowChecklistDrawer(false);
+    setDistractorToastMsg(null);
+    setComboEducationalBanner(null);
   };
 
-  // Handle Hazard Click
+  // Start Gameplay Timer
+  const startLevelGameplay = (levelNum) => {
+    setCurrentLevel(levelNum);
+    setGameState("PLAYING");
+  };
+
+  // Full Game Reset
+  const handleStartGame = () => {
+    setScore(0);
+    setCombo(0);
+    setMaxCombo(0);
+    openLevelGuide(1);
+  };
+
+  // Restart Current Level
+  const handleRestartCurrentLevel = () => {
+    openLevelGuide(currentLevel);
+  };
+
+  // Proceed to Next Level
+  const handleNextLevel = () => {
+    if (currentLevel < 3) {
+      openLevelGuide(currentLevel + 1);
+    } else {
+      setGameState("WIN");
+    }
+  };
+
+  // Handle Hazard Discovery Click
   const handleHazardClick = (hazard) => {
     if (gameState !== "PLAYING") return;
 
@@ -164,7 +187,6 @@ export default function MountainScoutGame() {
       const timeSinceLast = (now - lastDiscoveryTimeRef.current) / 1000;
       lastDiscoveryTimeRef.current = now;
 
-      // Calculate Combo
       let newCombo = 1;
       if (timeSinceLast < 12 && combo > 0) {
         newCombo = combo + 1;
@@ -172,254 +194,267 @@ export default function MountainScoutGame() {
       setCombo(newCombo);
       setMaxCombo((prev) => Math.max(prev, newCombo));
 
-      const comboBonus = (newCombo - 1) * GAME_SETTINGS.comboIncrement;
-      const pointsEarned = GAME_SETTINGS.basePoints + comboBonus;
-
+      const pointsEarned = hazard.points || 50;
       const nextDiscovered = [...discoveredHazards, hazard.id];
+
       setDiscoveredHazards(nextDiscovered);
       setScore((prev) => prev + pointsEarned);
       setActiveHazardCard(hazard);
       playSound("discover");
 
-      // Check Victory Condition (All 6 found!)
-      if (nextDiscovered.length === HAZARDS_DATA.length) {
+      if (nextDiscovered.length >= 3) {
+        setComboEducationalBanner(
+          "⚠️ Educational Insight: Several warning signs occurring together indicate increasing slope instability!"
+        );
+      }
+
+      if (nextDiscovered.length === activeLevelData.targetCount) {
         if (timerRef.current) clearInterval(timerRef.current);
-        playSound("win");
+        playSound("level_complete");
         setTimeout(() => {
-          setGameState("WIN");
-        }, 500);
+          if (currentLevel < 3) {
+            setGameState("LEVEL_COMPLETE");
+          } else {
+            setGameState("WIN");
+          }
+        }, 600);
       }
     } else {
       setActiveHazardCard(hazard);
     }
   };
 
+  // Handle Distractor Click
+  const handleDistractorClick = (distractor) => {
+    if (gameState !== "PLAYING" || activeHazardCard) return;
+
+    setCombo(0);
+    setScore((prev) => Math.max(0, prev - 10));
+    setDistractorToastMsg(`🔎 Not a warning sign: ${distractor.message}`);
+
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setDistractorToastMsg(null);
+    }, 2500);
+  };
+
   // Handle Wrong Background Click
   const handleSceneClick = () => {
     if (gameState !== "PLAYING" || activeHazardCard) return;
 
-    setCombo(0); // Reset combo on wrong click
-    setWrongClickCount((prev) => {
-      const newCount = prev + 1;
-      let msg = "Nothing unusual here... Keep observing!";
-      if (newCount > 4) msg = "Slow down, Scout. Observe carefully before clicking!";
-      else if (newCount > 2) msg = "That's part of the normal mountain environment.";
+    setCombo(0);
+    setScore((prev) => Math.max(0, prev - 10));
+    setDistractorToastMsg("🔎 That looks normal. Investigate another area carefully!");
 
-      setWrongToastMsg(msg);
-      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
-      toastTimeoutRef.current = setTimeout(() => {
-        setWrongToastMsg(null);
-      }, 1800);
-
-      return newCount;
-    });
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setDistractorToastMsg(null);
+    }, 2000);
   };
 
   // Handle Use Clue
   const handleUseClue = () => {
     if (cluesRemaining <= 0 || gameState !== "PLAYING") return;
 
-    const undiscovered = HAZARDS_DATA.filter((h) => !discoveredHazards.includes(h.id));
+    const undiscovered = activeLevelData.hazards.filter((h) => !discoveredHazards.includes(h.id));
     if (undiscovered.length === 0) return;
 
     const randomTarget = undiscovered[Math.floor(Math.random() * undiscovered.length)];
-    setActiveClueText(`💡 CLUE: ${randomTarget.clueText}`);
+    const text = `💡 CLUE (${activeLevelData.name}): Look in AREA ${randomTarget.area || "A"} for warning sign: "${randomTarget.name}"`;
+    setActiveClueModalText(text);
     setCluesRemaining((prev) => prev - 1);
   };
 
-  // Handle Binoculars Toggle
+  // Handle Binoculars Tool
   const handleToggleBinoculars = () => {
-    if (isBinocularActive) {
+    if (binocularsRemaining <= 0 && !isBinocularActive) return;
+
+    if (!isBinocularActive) {
+      setIsBinocularActive(true);
+      setZoomScale(1.4);
+      setBinocularsRemaining((prev) => prev - 1);
+    } else {
       setIsBinocularActive(false);
       setZoomScale(1);
-    } else if (binocularsRemaining > 0) {
-      setIsBinocularActive(true);
-      setBinocularsRemaining((prev) => prev - 1);
-      setZoomScale(1.4);
     }
   };
 
-  // Handle Time Up
-  const handleTimeUp = () => {
-    setGameState("TIME_UP");
-    const missed = HAZARDS_DATA.filter((h) => !discoveredHazards.includes(h.id)).map((h) => h.id);
-    setMissedHazards(missed);
+  // Zoom controls
+  const handleZoomIn = () => setZoomScale((prev) => Math.min(2.0, prev + 0.25));
+  const handleZoomOut = () => {
+    setZoomScale((prev) => {
+      const next = Math.max(1.0, prev - 0.25);
+      if (next === 1.0) setPanOffset({ x: 0, y: 0 });
+      return next;
+    });
   };
 
-  // Calculations for Final Score & Ratings
-  const timeBonus = timeRemaining * GAME_SETTINGS.timeBonusMultiplier;
-  const clueBonus = cluesRemaining * GAME_SETTINGS.clueBonus;
-  const binocularBonus = binocularsRemaining * GAME_SETTINGS.binocularBonus;
-  const finalScore = score + (discoveredHazards.length === HAZARDS_DATA.length ? timeBonus + clueBonus + binocularBonus : 0);
-
-  const getScoutRating = (totScore) => {
-    if (totScore >= 950) return { title: "🏆 EXPERT SCOUT", color: "#fbbf24" };
-    if (totScore >= 800) return { title: "🥇 GREAT SCOUT", color: "#34d399" };
-    if (totScore >= 600) return { title: "🥈 GOOD OBSERVER", color: "#38bdf8" };
-    return { title: "🥉 KEEP PRACTICING", color: "#cbd5e1" };
-  };
-
-  const rating = getScoutRating(finalScore);
-
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  const progressPct = (discoveredHazards.length / activeLevelData.targetCount) * 100;
 
   return (
-    <div className="mountain-scout-game">
-      {/* TOP HUD BAR */}
-      <header className="ms-hud">
-        <div className="ms-hud-brand">
-          <div className="ms-hud-title">
-            <span>🏔️</span> MOUNTAIN SCOUT
+    <div className="mountain-scout-page">
+      {/* CONTAINED GAME CARD */}
+      <div className="mountain-game-card">
+        {/* TOP CARD HUD HEADER */}
+        <div className="mountain-card-header">
+          <div className="card-header-left">
+            <span className="card-lvl-badge">LEVEL {currentLevel}</span>
+            <h2 className="card-title">🏔️ {activeLevelData.headerTitle}</h2>
           </div>
-          <span className="ms-hud-sub">Landslide Warning Mission</span>
-        </div>
-
-        {/* Countdown Timer with 3 Visual Urgency States */}
-        <div
-          className={`ms-hud-timer ${
-            timeRemaining <= 15 ? "urgent" : timeRemaining <= 30 ? "warning" : ""
-          }`}
-        >
-          ⏱️ {formatTime(timeRemaining)}
-        </div>
-
-        <div className="ms-hud-controls">
-          <div className="ms-stat-chip">
-            🔎 {discoveredHazards.length} / {HAZARDS_DATA.length}
-          </div>
-
-          <div className="ms-stat-chip" style={{ color: "#fbbf24" }}>
-            ⭐ {score}
-          </div>
-
-          {combo > 1 && <div className="ms-combo-chip">🔥 COMBO x{combo}</div>}
-
-          {/* Pause Button */}
-          {gameState === "PLAYING" && (
-            <button className="ms-action-icon-btn" onClick={() => setGameState("PAUSED")}>
-              ⏸ Pause
+          <div className="card-header-right">
+            <div className={`card-stat-pill timer ${timeRemaining <= 15 ? "urgent" : ""}`}>
+              ⏱ {timeRemaining}s
+            </div>
+            <div className="card-stat-pill xp">
+              ⭐ {score} XP
+            </div>
+            {combo > 1 && (
+              <div className="card-stat-pill combo">
+                🔥 x{combo}
+              </div>
+            )}
+            <button className="card-icon-btn" onClick={() => setGameState("PAUSED")} title="Pause">
+              ⏸️
             </button>
+            <button className="card-icon-btn" onClick={handleRestartCurrentLevel} title="Restart Level">
+              🔄
+            </button>
+          </div>
+        </div>
+
+        {/* CONTAINED SCENE WRAPPER */}
+        <div className="mountain-image-wrapper">
+          {currentLevel === 1 && (
+            <MountainVillageScene
+              hazards={activeLevelData.hazards}
+              distractors={activeLevelData.distractors}
+              discoveredHazards={discoveredHazards}
+              missedHazards={missedHazards}
+              onHazardClick={handleHazardClick}
+              onDistractorClick={handleDistractorClick}
+              onSceneClick={handleSceneClick}
+              disabled={gameState !== "PLAYING" || !!activeHazardCard || !!activeClueModalText}
+              zoomScale={zoomScale}
+              panOffset={panOffset}
+              setPanOffset={setPanOffset}
+              isInvestigateMode={isInvestigateMode}
+              isBinocularActive={isBinocularActive}
+            />
+          )}
+
+          {currentLevel === 2 && (
+            <MountainRoadScene
+              hazards={activeLevelData.hazards}
+              distractors={activeLevelData.distractors}
+              discoveredHazards={discoveredHazards}
+              missedHazards={missedHazards}
+              onHazardClick={handleHazardClick}
+              onDistractorClick={handleDistractorClick}
+              onSceneClick={handleSceneClick}
+              disabled={gameState !== "PLAYING" || !!activeHazardCard || !!activeClueModalText}
+              zoomScale={zoomScale}
+              panOffset={panOffset}
+              setPanOffset={setPanOffset}
+              isInvestigateMode={isInvestigateMode}
+              isBinocularActive={isBinocularActive}
+            />
+          )}
+
+          {currentLevel === 3 && (
+            <CliffValleyScene
+              hazards={activeLevelData.hazards}
+              distractors={activeLevelData.distractors}
+              discoveredHazards={discoveredHazards}
+              missedHazards={missedHazards}
+              onHazardClick={handleHazardClick}
+              onDistractorClick={handleDistractorClick}
+              onSceneClick={handleSceneClick}
+              disabled={gameState !== "PLAYING" || !!activeHazardCard || !!activeClueModalText}
+              zoomScale={zoomScale}
+              panOffset={panOffset}
+              setPanOffset={setPanOffset}
+              isInvestigateMode={isInvestigateMode}
+              isBinocularActive={isBinocularActive}
+            />
+          )}
+
+          {/* TOAST ALERTS OVERLAY */}
+          {distractorToastMsg && gameState === "PLAYING" && (
+            <div className="ms-floating-toast-alert">{distractorToastMsg}</div>
+          )}
+
+          {comboEducationalBanner && gameState === "PLAYING" && (
+            <div className="ms-floating-edu-banner">
+              {comboEducationalBanner}
+            </div>
           )}
         </div>
-      </header>
 
-      {/* TOOLBAR & EXPLORATION CONTROL ROW */}
-      {gameState === "PLAYING" && (
-        <div className="ms-control-bar">
-          <div className="ms-zoom-group">
-            <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: "bold" }}>VIEWPORT:</span>
-            <button
-              className="ms-tool-btn"
-              onClick={() => setZoomScale((prev) => Math.min(1.8, prev + 0.2))}
-            >
-              🔍 Zoom In
-            </button>
-            <button
-              className="ms-tool-btn"
-              onClick={() => setZoomScale((prev) => Math.max(1.0, prev - 0.2))}
-            >
-              🔎 Zoom Out
-            </button>
-            <button
-              className="ms-tool-btn"
-              onClick={() => {
-                setZoomScale(1);
-                setPanOffset({ x: 0, y: 0 });
-              }}
-            >
-              ↔ Reset View
-            </button>
+        {/* BOTTOM GAME CARD FOOTER / CONTROLS & TASK HUD */}
+        <div className="mountain-card-footer">
+          {/* LEFT: ZOOM CONTROLS */}
+          <div className="footer-left">
+            <button className="footer-btn" onClick={handleZoomIn} title="Zoom In">🔍 +</button>
+            <button className="footer-btn" onClick={handleZoomOut} title="Zoom Out">🔍 −</button>
+            <button className="footer-btn" onClick={() => { setZoomScale(1); setPanOffset({ x: 0, y: 0 }); }}>🎯 RESET</button>
           </div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
-            {/* Investigate Mode Toggle Button */}
-            <button
-              className={`ms-action-icon-btn ${isInvestigateMode ? "active" : ""}`}
-              onClick={() => setIsInvestigateMode(!isInvestigateMode)}
-            >
-              🔍 Investigate Mode
-            </button>
+          {/* CENTER: TASK TRACKER */}
+          <div className="footer-center">
+            <div className="footer-progress-info">
+              <span>TASKS FOUND: <strong>{discoveredHazards.length} / {activeLevelData.targetCount}</strong></span>
+              <button className="footer-checklist-btn" onClick={() => setShowChecklistDrawer((prev) => !prev)}>
+                📋 Task Checklist
+              </button>
+            </div>
+            <div className="footer-progress-track">
+              <div className="footer-progress-fill" style={{ width: `${progressPct}%` }} />
+            </div>
+          </div>
 
-            {/* Binoculars Toggle Button */}
+          {/* RIGHT: TOOLS */}
+          <div className="footer-right">
             <button
-              className={`ms-action-icon-btn ${isBinocularActive ? "active" : ""}`}
+              className={`footer-btn ${isBinocularActive ? "active" : ""}`}
               onClick={handleToggleBinoculars}
               disabled={binocularsRemaining <= 0 && !isBinocularActive}
             >
-              🔭 Binoculars ({binocularsRemaining}/3)
+              🔭 Binoculars ({binocularsRemaining})
             </button>
-
-            {/* Use Clue Button */}
             <button
-              className="ms-action-icon-btn"
+              className="footer-btn"
               onClick={handleUseClue}
               disabled={cluesRemaining <= 0}
             >
-              💡 Use Clue ({cluesRemaining}/3)
+              💡 Clue ({cluesRemaining})
             </button>
           </div>
         </div>
-      )}
-
-      {/* MAIN GAME BODY GRID */}
-      <div className="ms-game-body">
-        {/* MOUNTAIN VILLAGE SCENE & HOTSPOTS */}
-        <div style={{ position: "relative" }}>
-          <MountainVillageScene
-            discoveredHazards={discoveredHazards}
-            missedHazards={missedHazards}
-            onHazardClick={handleHazardClick}
-            onSceneClick={handleSceneClick}
-            disabled={gameState !== "PLAYING" || !!activeHazardCard}
-            zoomScale={zoomScale}
-            panOffset={panOffset}
-            setPanOffset={setPanOffset}
-            isInvestigateMode={isInvestigateMode}
-            isBinocularActive={isBinocularActive}
-            observeNotice={observeNotice}
-          />
-
-          {/* WRONG CLICK TOAST ALERT */}
-          {wrongToastMsg && gameState === "PLAYING" && (
-            <div className="ms-wrong-toast">🔎 {wrongToastMsg}</div>
-          )}
-        </div>
-
-        {/* SIDEBAR CHECKLIST & CLUE PANEL */}
-        <aside className="ms-sidebar">
-          <div>
-            <h3 className="ms-sidebar-title">
-              <span>📋</span> Warning Signs Checklist
-            </h3>
-            <div className="ms-checklist-progress">
-              {discoveredHazards.length} / {HAZARDS_DATA.length} FOUND
-            </div>
-          </div>
-
-          <div className="ms-checklist">
-            {HAZARDS_DATA.filter(h => h && h.id && h.name).map((h) => {
-              const isFound = discoveredHazards.includes(h.id);
-              return (
-                <div key={h.id} className={`ms-check-item ${isFound ? "found" : ""}`}>
-                  <span className="ms-check-icon">{isFound ? "✓" : "?"}</span>
-                  <span>{h.name}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ACTIVE CLUE DISPLAY BOX */}
-          {activeClueText && (
-            <div className="ms-clue-display-box">
-              {activeClueText}
-            </div>
-          )}
-        </aside>
       </div>
+
+      {/* CHECKLIST DRAWER OVERLAY */}
+      {showChecklistDrawer && gameState === "PLAYING" && (
+        <div className="ms-drawer-backdrop" onClick={() => setShowChecklistDrawer(false)}>
+          <div className="ms-checklist-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="ms-drawer-header">
+              <h3>📋 LEVEL {currentLevel} TASK CHECKLIST</h3>
+              <button onClick={() => setShowChecklistDrawer(false)}>×</button>
+            </div>
+            <div className="ms-drawer-list">
+              {activeLevelData.hazards.map((h) => {
+                const isFound = discoveredHazards.includes(h.id);
+                return (
+                  <div key={h.id} className={`ms-drawer-item ${isFound ? "found" : ""}`}>
+                    <span className="item-status">{isFound ? "✓" : "○"}</span>
+                    <span className="item-name">{h.name}</span>
+                    <span className="item-cat">{h.category}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* MODAL 1: START SCREEN MODAL */}
       {gameState === "START" && (
@@ -427,119 +462,221 @@ export default function MountainScoutGame() {
           <div className="ms-start-card">
             <span style={{ fontSize: "56px" }}>🏔️🔎</span>
             <h1 className="ms-start-title">MOUNTAIN SCOUT</h1>
-            <p className="ms-start-sub">Landslide Warning Mission — Explore. Observe. Detect the danger.</p>
+            <p className="ms-start-sub">Landslide Safety Inspection Expedition</p>
 
-            <div className="ms-start-instructions">
-              <strong style={{ color: "#38bdf8", display: "block", marginBottom: "6px" }}>
-                🎯 YOUR MISSION:
-              </strong>
-              Investigate the mountain village and identify all <strong>6 hidden landslide warning signs</strong> before the slope collapses!
-              <br /><br />
-              🛠️ <strong>Tools Available:</strong>
-              <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
-                <li>🔍 <strong>Zoom & Pan</strong>: Zoom in and drag the canvas to inspect distant slopes.</li>
-                <li>🔭 <strong>Binoculars (3)</strong>: Enlarge distant hillside sections.</li>
-                <li>💡 <strong>Clues (3)</strong>: Get observational hints for hidden hazards.</li>
-                <li>🔥 <strong>Combos</strong>: Discover signs quickly to earn extra combo points!</li>
-              </ul>
+            <div className="ms-levels-preview-grid">
+              <div className="ms-level-card">
+                <span className="ms-lvl-tag" style={{ background: "#34d399" }}>LEVEL 1</span>
+                <h3>CLIFFSIDE WARNING</h3>
+                <p>Find 5 landslide warning signs.</p>
+                <span className="ms-lvl-target">Target: 5/5 Tasks • 250 XP</span>
+              </div>
+
+              <div className="ms-level-card">
+                <span className="ms-lvl-tag" style={{ background: "#fbbf24" }}>LEVEL 2</span>
+                <h3>MOUNTAIN VILLAGE INSPECTION</h3>
+                <p>Find 10 signs of slope instability.</p>
+                <span className="ms-lvl-target">Target: 10/10 Tasks • 750 XP</span>
+              </div>
+
+              <div className="ms-level-card">
+                <span className="ms-lvl-tag" style={{ background: "#f43f5e" }}>LEVEL 3</span>
+                <h3>HIGH MOUNTAIN EXPEDITION</h3>
+                <p>Complete full safety inspection (15 warning signs).</p>
+                <span className="ms-lvl-target">Target: 15/15 Tasks • 1500 XP</span>
+              </div>
             </div>
 
             <button className="ms-start-btn" onClick={handleStartGame}>
-              ▶ START SCOUTING
+              🚀 START SCOUTING EXPEDITION →
             </button>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: PAUSE MODAL */}
+      {/* MODAL 2: LEVEL INSTRUCTION GUIDE MODAL */}
+      {gameState === "GUIDE" && (
+        <div className="ms-modal-backdrop">
+          <div className="ms-guide-modal">
+            <div className="ms-guide-header">
+              <span className="ms-guide-badge" style={{ background: activeLevelData.badgeColor }}>
+                LEVEL {currentLevel}: {activeLevelData.difficulty}
+              </span>
+              <h2 className="ms-guide-title">{activeLevelData.headerTitle}</h2>
+            </div>
+
+            <div className="ms-guide-body">
+              <div className="ms-guide-section">
+                <strong className="ms-guide-section-label">🎯 YOUR MISSION OBJECTIVE:</strong>
+                <p className="ms-guide-text" style={{ fontSize: "16px", fontWeight: "bold", color: "#fef08a" }}>
+                  {currentLevel === 1 && "Find 5 landslide warning signs before time runs out."}
+                  {currentLevel === 2 && "Inspect the mountain village and find 10 warning signs."}
+                  {currentLevel === 3 && "Complete the mountain safety inspection and find 15 warning signs."}
+                </p>
+              </div>
+
+              <div className="ms-guide-section">
+                <strong className="ms-guide-section-label">🔎 TASKS TO COMPUTE ({activeLevelData.targetCount} TASKS):</strong>
+                <div className="ms-guide-tasks-grid">
+                  {activeLevelData.hazards.map((h, idx) => (
+                    <div key={h.id} className="ms-guide-task-item">
+                      <span className="ms-guide-task-name">Task {idx + 1}: {h.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="ms-guide-section">
+                <strong className="ms-guide-section-label">💡 SCOUT TIPS:</strong>
+                <ul className="ms-guide-tips-list">
+                  <li>Click suspicious objects or areas to investigate warning signs.</li>
+                  <li>Use <strong>Area A–E Navigation Pills</strong> at the top to focus camera.</li>
+                  <li>Use <strong>Binoculars</strong> for zoomed inspection.</li>
+                  <li>Use <strong>Clues</strong> when you need an area hint.</li>
+                </ul>
+              </div>
+            </div>
+
+            <button className="ms-guide-start-btn" onClick={() => startLevelGameplay(currentLevel)}>
+              ▶ START LEVEL {currentLevel} (0/{activeLevelData.targetCount} FOUND)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: PAUSE MODAL */}
       {gameState === "PAUSED" && (
         <div className="ms-modal-backdrop">
           <div className="ms-card-modal">
             <span style={{ fontSize: "48px" }}>⏸️</span>
-            <h2 className="ms-card-title">GAME PAUSED</h2>
-            <p style={{ color: "#94a3b8", fontSize: "14px" }}>Timer and investigation paused.</p>
+            <h2 className="ms-card-title">MISSION PAUSED</h2>
+            <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+              Gameplay timer paused for Level {currentLevel}: {activeLevelData.missionName}.
+            </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
               <button className="ms-card-btn" onClick={() => setGameState("PLAYING")}>
                 ▶ Resume Scouting
               </button>
-              <button className="ms-btn-secondary" onClick={handleStartGame}>
-                🔄 Restart Mission
+              <button className="ms-btn-secondary" onClick={handleRestartCurrentLevel}>
+                🔄 View Level Instructions
+              </button>
+              <button className="ms-btn-secondary" onClick={() => navigate("/dashboard")}>
+                🏠 Exit to Dashboard
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 3: HAZARD DISCOVERY EXPLANATION CARD */}
-      {activeHazardCard && gameState === "PLAYING" && (
-        <div className="ms-modal-backdrop" onClick={() => setActiveHazardCard(null)}>
+      {/* MODAL 4: ACTIVE CLUE MODAL */}
+      {activeClueModalText && (
+        <div className="ms-modal-backdrop" onClick={() => setActiveClueModalText(null)}>
           <div className="ms-card-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ms-card-header-icon">{activeHazardCard.icon}</div>
-            <h2 className="ms-card-title">🔎 {activeHazardCard.name.toUpperCase()}</h2>
+            <div className="ms-card-header-icon">💡</div>
+            <h2 className="ms-card-title">INVESTIGATION CLUE</h2>
+            <p style={{ color: "#94a3b8", fontSize: "12px", marginBottom: "12px" }}>
+              ⏱️ Timer paused while reading clue text.
+            </p>
 
             <div className="ms-educational-block">
-              <span className="ms-edu-section-title">WHAT YOU FOUND:</span>
-              <p className="ms-edu-text">{activeHazardCard.explanation}</p>
-
-              <span className="ms-edu-section-title">WHY IT MATTERS:</span>
-              <p className="ms-edu-text">{activeHazardCard.whyItMatters}</p>
-
-              <span className="ms-edu-section-title">WHAT TO WATCH FOR:</span>
-              <p className="ms-edu-text" style={{ color: "#fbbf24" }}>{activeHazardCard.whatToWatchFor}</p>
+              <p className="ms-edu-text" style={{ color: "#fef08a", fontSize: "14px", fontWeight: "bold" }}>
+                {activeClueModalText}
+              </p>
             </div>
 
-            <button className="ms-card-btn" onClick={() => setActiveHazardCard(null)}>
-              Continue Exploring →
+            <button className="ms-card-btn" onClick={() => setActiveClueModalText(null)}>
+              Resume Gameplay →
             </button>
           </div>
         </div>
       )}
 
-      {/* MODAL 4: WIN SCREEN (MISSION COMPLETE) */}
-      {gameState === "WIN" && (
+      {/* MODAL 5: HAZARD DISCOVERY POLISHED POPUP CARD */}
+      {activeHazardCard && (
+        <div className="ms-modal-backdrop" onClick={() => setActiveHazardCard(null)}>
+          <div className="ms-card-modal hazard-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="ms-popup-header-tag">⚠ LANDSLIDE WARNING</div>
+            <h2 className="ms-card-title" style={{ marginTop: "4px" }}>{activeHazardCard.name}</h2>
+            <span className="ms-popup-cat">{activeHazardCard.category?.toUpperCase() || "LANDSLIDE WARNING SIGN"}</span>
+
+            <div className="ms-educational-block">
+              <span className="ms-edu-section-title">EXPLANATION:</span>
+              <p className="ms-edu-text">{activeHazardCard.explanation || activeHazardCard.description}</p>
+
+              <span className="ms-edu-section-title">SAFETY ACTION:</span>
+              <p className="ms-edu-text safety-tip">{activeHazardCard.safetyAction || activeHazardCard.safetyTip}</p>
+            </div>
+
+            <div className="ms-popup-reward-badge">+{activeHazardCard.points || 50} XP</div>
+
+            <button className="ms-card-btn" onClick={() => setActiveHazardCard(null)}>
+              CONTINUE →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: LEVEL UNLOCKED / TRANSITION MODAL */}
+      {gameState === "LEVEL_COMPLETE" && (
         <div className="ms-modal-backdrop">
           <div className="ms-end-card">
-            <span style={{ fontSize: "56px" }}>🎉🏆</span>
-            <h1 className="ms-start-title" style={{ color: "#34d399" }}>
-              MISSION COMPLETE!
+            <span style={{ fontSize: "56px" }}>🎉🔓</span>
+            <h1 className="ms-start-title" style={{ color: "#38bdf8" }}>
+              {currentLevel === 1 ? "CLIFFSIDE INSPECTION COMPLETE!" : "MOUNTAIN VILLAGE INSPECTION COMPLETE!"}
             </h1>
-            <span className="ms-rating-badge">{rating.title}</span>
-            <p className="ms-start-sub">You successfully identified all 6 landslide warning signs!</p>
+            <p className="ms-start-sub" style={{ fontSize: "16px", color: "#34d399", fontWeight: "bold" }}>
+              {currentLevel === 1 ? "5 / 5 warning signs found." : "10 / 10 warning signs found."}
+            </p>
 
             <div className="ms-score-summary">
               <div className="ms-score-chip">
-                <span>HAZARDS FOUND</span>
-                <strong>6 / 6 ✅</strong>
+                <span>TASKS COMPLETED</span>
+                <strong>{discoveredHazards.length} / {activeLevelData.targetCount} ✅</strong>
               </div>
               <div className="ms-score-chip">
-                <span>TIME REMAINING</span>
-                <strong>{timeRemaining}s</strong>
-              </div>
-              <div className="ms-score-chip">
-                <span>MAX COMBO</span>
-                <strong>🔥 x{maxCombo}</strong>
-              </div>
-              <div className="ms-score-chip">
-                <span>TIME BONUS</span>
-                <strong style={{ color: "#fbbf24" }}>+{timeBonus}</strong>
-              </div>
-              <div className="ms-score-chip">
-                <span>CLUE BONUS</span>
-                <strong style={{ color: "#fbbf24" }}>+{clueBonus}</strong>
-              </div>
-              <div className="ms-score-chip">
-                <span>BINOCULAR BONUS</span>
-                <strong style={{ color: "#fbbf24" }}>+{binocularBonus}</strong>
+                <span>XP EARNED</span>
+                <strong style={{ color: "#fbbf24" }}>+{discoveredHazards.length * (currentLevel === 1 ? 50 : 75)} XP</strong>
               </div>
             </div>
 
-            <div style={{ background: "#1e293b", padding: "12px", borderRadius: "12px", fontSize: "15px", color: "#38bdf8", fontWeight: "bold" }}>
-              ⭐ FINAL SCORE: {finalScore} POINTS
+            <div className="ms-end-btn-group">
+              <button className="ms-btn-primary" onClick={handleNextLevel}>
+                PROCEED TO LEVEL {currentLevel + 1} →
+              </button>
+              <button className="ms-btn-secondary" onClick={handleRestartCurrentLevel}>
+                🔄 Replay Level {currentLevel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: WIN SCREEN */}
+      {gameState === "WIN" && (
+        <div className="ms-modal-backdrop">
+          <div className="ms-end-card">
+            <span style={{ fontSize: "56px" }}>🏆🌟</span>
+            <h1 className="ms-start-title" style={{ color: "#34d399" }}>
+              HIGH MOUNTAIN EXPEDITION COMPLETE!
+            </h1>
+            <p className="ms-start-sub" style={{ fontSize: "16px", color: "#38bdf8", fontWeight: "bold" }}>
+              15 / 15 warning signs found.
+            </p>
+
+            <div className="ms-score-summary">
+              <div className="ms-score-chip">
+                <span>MISSIONS CLEARED</span>
+                <strong>3 / 3 ✅</strong>
+              </div>
+              <div className="ms-score-chip">
+                <span>TOTAL XP EARNED</span>
+                <strong style={{ color: "#fbbf24" }}>{score} XP</strong>
+              </div>
             </div>
 
             <div className="ms-end-btn-group">
               <button className="ms-btn-primary" onClick={handleStartGame}>
-                🔄 PLAY AGAIN
+                🔄 REPLAY SCOUT EXPEDITION
               </button>
               <button className="ms-btn-secondary" onClick={() => {
                 setCurrentQuizIdx(0);
@@ -554,47 +691,42 @@ export default function MountainScoutGame() {
         </div>
       )}
 
-      {/* MODAL 5: TIME-UP SCREEN (TIMEOUT) */}
+      {/* MODAL 8: TIME-UP SCREEN */}
       {gameState === "TIME_UP" && (
         <div className="ms-modal-backdrop">
           <div className="ms-end-card timeup">
             <span style={{ fontSize: "56px" }}>⏰</span>
             <h1 className="ms-start-title" style={{ color: "#f43f5e" }}>
-              TIME'S UP!
+              INSPECTION INCOMPLETE
             </h1>
             <p className="ms-start-sub">
-              You found {discoveredHazards.length} out of {HAZARDS_DATA.length} warning signs.
+              FOUND: {discoveredHazards.length} / {activeLevelData.targetCount}
             </p>
 
             <div style={{ background: "#1e293b", padding: "12px", borderRadius: "12px", fontSize: "13px", color: "#cbd5e1", textAlign: "left", marginBottom: "12px" }}>
               <strong style={{ color: "#f43f5e", display: "block", marginBottom: "4px" }}>
-                ⚠️ MISSED WARNING SIGNS REVEALED ON MAP:
+                MISSED WARNING SIGNS:
               </strong>
-              {HAZARDS_DATA.filter((h) => !discoveredHazards.includes(h.id)).map((h) => (
+              {activeLevelData.hazards.filter((h) => !discoveredHazards.includes(h.id)).map((h) => (
                 <div key={h.id} style={{ marginTop: "6px", fontSize: "12px" }}>
-                  <strong style={{ color: "#38bdf8" }}>{h.icon} {h.name}:</strong> {h.shortDesc}
+                  <strong style={{ color: "#38bdf8" }}>{h.name}:</strong> {h.description}
                 </div>
               ))}
             </div>
 
             <div className="ms-end-btn-group">
-              <button className="ms-btn-primary" onClick={handleStartGame}>
-                🔄 RETRY SCOUTING
+              <button className="ms-btn-primary" onClick={handleRestartCurrentLevel}>
+                🔄 RETRY LEVEL {currentLevel}
               </button>
-              <button className="ms-btn-secondary" onClick={() => {
-                setCurrentQuizIdx(0);
-                setQuizSelectedOption(null);
-                setQuizScore(0);
-                setGameState("LEARN_QUIZ");
-              }}>
-                📚 LEARN & TEST QUIZ
+              <button className="ms-btn-secondary" onClick={() => setGameState("START")}>
+                🏠 RETURN TO MENU
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 6: INTERACTIVE QUIZ & LEARNING CHALLENGE */}
+      {/* MODAL 9: INTERACTIVE QUIZ */}
       {gameState === "LEARN_QUIZ" && (
         <div className="ms-modal-backdrop">
           <div className="ms-quiz-card">
@@ -647,7 +779,7 @@ export default function MountainScoutGame() {
                   }
                 }}
               >
-                {currentQuizIdx < GAME_QUIZ_QUESTIONS.length - 1 ? "Next Question →" : "Finish Quiz & Play Game"}
+                {currentQuizIdx < GAME_QUIZ_QUESTIONS.length - 1 ? "Next Question →" : "Finish Quiz & Return to Game"}
               </button>
             )}
           </div>

@@ -9,6 +9,7 @@ import {
 } from '../../../data/quakecraftData';
 import { loadSaveData } from '../../../utils/quakecraftSave';
 import QuakeCraftWorld from './QuakeCraftWorld';
+import '../../../styles/EarthquakeBuilder.css';
 
 export default function QuakeCraftGame() {
   const navigate = useNavigate();
@@ -382,13 +383,11 @@ export default function QuakeCraftGame() {
             magnitude,
             reasonTitle: evaluation.reasonTitle,
             reasonDesc: evaluation.reasonDesc,
-            resourcesEarned: 500,
             xpEarned: 300
           });
 
           setPlayerData(prev => ({
             ...prev,
-            coins: prev.coins + 500,
             xp: prev.xp + 300
           }));
         } else {
@@ -402,7 +401,6 @@ export default function QuakeCraftGame() {
             magnitude,
             reasonTitle: evaluation.reasonTitle,
             reasonDesc: evaluation.reasonDesc,
-            resourcesEarned: 0,
             xpEarned: 0
           });
         }
@@ -447,100 +445,50 @@ export default function QuakeCraftGame() {
   const activeSpec = MATERIAL_SPECS[activeMaterialKey] || { name: 'Normal Base' };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#0a0e1a', color: '#f8fafc', fontFamily: 'Inter, sans-serif', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div className="eq-game-wrapper">
 
-      {/* TOP HEADER WITH PERSISTENT TABS */}
-      <header style={{
-        background: '#0f172a',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        padding: '8px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        zIndex: 40
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* TOP HEADER WITH RESPONSIVE TABS & NO COINS */}
+      <header className="eq-header">
+        <div className="eq-header-brand">
           <div style={{ fontSize: '24px' }}>🏗️</div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '18px', color: '#38bdf8', fontWeight: 900 }}>Earthquake Balance Builder</h1>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>DisasterVerse Educational Structure Simulator</span>
+            <h1 className="eq-header-title">Earthquake Balance Builder</h1>
+            <span className="eq-header-subtitle">DisasterVerse Educational Structure Simulator</span>
           </div>
         </div>
 
         {/* TOP NAVIGATION TABS */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="eq-header-nav">
           <button
             onClick={() => setActiveScreen('MAIN')}
-            style={{
-              background: activeScreen === 'MAIN' ? '#0284c7' : '#1e293b',
-              color: '#fff',
-              border: activeScreen === 'MAIN' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
-              padding: '8px 16px',
-              borderRadius: '10px',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              boxShadow: activeScreen === 'MAIN' ? '0 0 12px rgba(2, 132, 199, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
+            className={`eq-header-btn ${activeScreen === 'MAIN' ? 'active' : ''}`}
           >
             🧱 3D Block Building Plot
           </button>
           <button
             onClick={() => setActiveScreen('BADGES')}
-            style={{
-              background: activeScreen === 'BADGES' ? '#0284c7' : '#1e293b',
-              color: '#fff',
-              border: activeScreen === 'BADGES' ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)',
-              padding: '8px 16px',
-              borderRadius: '10px',
-              fontSize: '12px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              boxShadow: activeScreen === 'BADGES' ? '0 0 12px rgba(2, 132, 199, 0.4)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
+            className={`eq-header-btn ${activeScreen === 'BADGES' ? 'active' : ''}`}
           >
             🏆 Badges & Senior Architect
           </button>
-        </div>
-
-        {/* HUD STATS */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'rgba(251, 191, 36, 0.15)', border: '1px solid #fbbf24', padding: '6px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 900, color: '#fbbf24' }}>
-            💰 {playerData.coins} Coins
-          </div>
-          <button onClick={() => navigate('/dashboard')} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>
+          <button onClick={() => navigate('/dashboard')} className="eq-header-exit">
             ← Dashboard
           </button>
         </div>
       </header>
 
-      {/* MAIN TWO-PANEL SPLIT VIEWPORT */}
+      {/* MAIN TWO-PANEL RESPONSIVE VIEWPORT */}
       <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
 
         {activeScreen === 'MAIN' && (
-          <div style={{ width: '100%', height: '100%', display: 'flex' }}>
+          <div className="eq-main-container">
             
-            {/* LEFT SIDEBAR — CONSTRUCTION BLUEPRINT (~320px wide) */}
-            <div style={{
-              width: '320px',
-              background: '#0a0e1a',
-              borderRight: '1px solid rgba(255,255,255,0.1)',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              zIndex: 20,
-              overflowY: 'auto'
-            }}>
+            {/* LEFT SIDEBAR — CONSTRUCTION BLUEPRINT */}
+            <div className="eq-blueprint-sidebar">
               
-              <div>
-                <h2 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#38bdf8', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Construction Blueprint
-                </h2>
-                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Select material options to update active brush</span>
+              <div className="eq-blueprint-header">
+                <h2>Construction Blueprint</h2>
+                <span>Select material options to update active brush</span>
               </div>
 
               {/* 1. FOUNDATION SECTION */}
@@ -577,7 +525,7 @@ export default function QuakeCraftGame() {
                           <strong style={{ color: '#fff', fontSize: '12px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.name}</strong>
                           <span style={{ color: '#94a3b8', fontSize: '10px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.desc}</span>
                         </div>
-                        <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 900, flexShrink: 0 }}>{mat.cost} 🪙</span>
+                        <span className="eq-mat-free-pill">FREE</span>
                       </div>
                     );
                   })}
@@ -620,7 +568,7 @@ export default function QuakeCraftGame() {
                           <strong style={{ color: '#fff', fontSize: '12px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.name}</strong>
                           <span style={{ color: '#94a3b8', fontSize: '10px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.desc}</span>
                         </div>
-                        <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 900, flexShrink: 0 }}>{mat.cost} 🪙</span>
+                        <span className="eq-mat-free-pill">FREE</span>
                       </div>
                     );
                   })}
@@ -663,7 +611,7 @@ export default function QuakeCraftGame() {
                           <strong style={{ color: '#fff', fontSize: '12px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.name}</strong>
                           <span style={{ color: '#94a3b8', fontSize: '10px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.desc}</span>
                         </div>
-                        <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 900, flexShrink: 0 }}>{mat.cost} 🪙</span>
+                        <span className="eq-mat-free-pill">FREE</span>
                       </div>
                     );
                   })}
@@ -706,7 +654,7 @@ export default function QuakeCraftGame() {
                           <strong style={{ color: '#fff', fontSize: '12px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.name}</strong>
                           <span style={{ color: '#94a3b8', fontSize: '10px', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mat.desc}</span>
                         </div>
-                        <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 900, flexShrink: 0 }}>{mat.cost} 🪙</span>
+                        <span className="eq-mat-free-pill">FREE</span>
                       </div>
                     );
                   })}
@@ -851,25 +799,10 @@ export default function QuakeCraftGame() {
             </div>
 
             {/* RIGHT PANEL — STRUCTURE SIMULATOR (3D CANVAS VIEWPORT) */}
-            <div style={{ flex: 1, position: 'relative', height: '100%' }}>
+            <div className="eq-canvas-panel">
               
               {/* TOP STATUS BAR OVERLAY ON CANVAS WITH LIVE STATUS PILL & SHAKE DEBUG READOUT */}
-              <div style={{
-                position: 'absolute',
-                top: '16px',
-                left: '16px',
-                right: '16px',
-                zIndex: 30,
-                background: 'rgba(15, 23, 42, 0.9)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRadius: '16px',
-                padding: '10px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-              }}>
+              <div className="eq-status-overlay">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                   <div>
                     <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block' }}>BUILD LEVEL</span>
@@ -989,8 +922,8 @@ export default function QuakeCraftGame() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-around', background: '#1e293b', padding: '12px', borderRadius: '12px', color: '#fbbf24', fontWeight: 900, marginBottom: '20px' }}>
-                <span>💰 +{evalResultModal.resourcesEarned} Resources</span>
-                <span>⭐ +{evalResultModal.xpEarned} XP</span>
+                <span>✓ FREE SIMULATION</span>
+                <span>⭐ +{evalResultModal.xpEarned || 300} XP</span>
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>

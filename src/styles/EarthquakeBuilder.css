@@ -1,0 +1,324 @@
+/* EARTHQUAKE BALANCE BUILDER — RESPONSIVE STYLESHEET */
+
+.eq-game-wrapper {
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  background: #0a0e1a;
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+.eq-header {
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+.eq-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eq-header-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #38bdf8;
+  font-weight: 900;
+}
+
+.eq-header-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: block;
+}
+
+.eq-header-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.eq-header-btn {
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.eq-header-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+}
+
+.eq-header-exit {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* MAIN LAYOUT SPLIT */
+.eq-main-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  height: calc(100vh - 65px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* SIDEBAR BLUEPRINT */
+.eq-blueprint-sidebar {
+  width: 100%;
+  background: #0a0e1a;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 20;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.eq-blueprint-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: #38bdf8;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eq-blueprint-header span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.eq-mat-section {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.eq-mat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 44px;
+}
+
+.eq-mat-card.selected {
+  background: rgba(56, 189, 248, 0.15);
+  border: 2px solid #38bdf8;
+}
+
+.eq-mat-free-pill {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* 3D CANVAS VIEWPORT PANEL */
+.eq-canvas-panel {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #090d16;
+  display: flex;
+  flex-direction: column;
+}
+
+/* CANVAS TOP STATUS OVERLAY */
+.eq-status-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 30;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.eq-status-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+/* 3D CONTROLS FLOATING BAR */
+.eq-view-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.eq-ctrl-btn {
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 14px;
+  border-radius: 24px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+}
+
+/* TABLET RESPONSIVE ADJUSTMENTS (768px to 1024px) */
+@media (max-width: 1024px) and (min-width: 768px) {
+  .eq-main-container {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+}
+
+/* MOBILE RESPONSIVE LAYOUT (< 768px) */
+@media (max-width: 767px) {
+  .eq-game-wrapper {
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  .eq-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .eq-header-brand {
+    justify-content: space-between;
+  }
+
+  .eq-header-nav {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .eq-header-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+
+  .eq-main-container {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ORDER ON MOBILE: 3D CANVAS FIRST, CONTROLS SECOND, BLUEPRINT THIRD */
+  .eq-canvas-panel {
+    order: 1;
+    height: 380px;
+    min-height: 340px;
+    max-height: 50vh;
+    flex: none;
+  }
+
+  .eq-blueprint-sidebar {
+    order: 2;
+    width: 100%;
+    border-right: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: visible;
+    padding: 12px;
+  }
+
+  .eq-status-overlay {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 8px;
+    border-radius: 12px;
+    padding: 8px;
+  }
+
+  .eq-status-stats {
+    gap: 8px;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .eq-view-controls {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+    justify-content: center;
+  }
+
+  .eq-ctrl-btn {
+    flex: 1;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 0.75rem;
+  }
+}

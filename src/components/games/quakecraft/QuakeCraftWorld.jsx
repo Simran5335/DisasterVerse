@@ -293,23 +293,23 @@ export default function QuakeCraftWorld({
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#0a0e1a', overflow: 'hidden' }}>
       
-      {/* FLOATING VIEW CONTROLS BOTTOM-RIGHT (PILL BUTTONS) */}
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', zIndex: 30, display: 'flex', gap: '10px' }}>
+      {/* FLOATING VIEW CONTROLS (RESPONSIVE PILL BUTTONS) */}
+      <div className="eq-view-controls">
         <button
           onClick={() => setRotationAngle(prev => (prev - 45 + 360) % 360)}
-          style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 18px', borderRadius: '30px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}
+          className="eq-ctrl-btn"
         >
           🔄 Rotate View
         </button>
         <button
           onClick={() => setZoomLevel(prev => Math.min(1.6, prev + 0.15))}
-          style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 16px', borderRadius: '30px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}
+          className="eq-ctrl-btn"
         >
           🔍 Zoom In
         </button>
         <button
           onClick={() => setZoomLevel(prev => Math.max(0.7, prev - 0.15))}
-          style={{ background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', padding: '10px 18px', borderRadius: '30px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', gap: '6px' }}
+          className="eq-ctrl-btn"
         >
           🔎 Zoom Out
         </button>
@@ -337,7 +337,7 @@ export default function QuakeCraftWorld({
           <span style={{ fontSize: '32px' }}>{gemNotification.icon}</span>
           <div>
             <strong style={{ fontSize: '16px', color: '#38bdf8', display: 'block' }}>💎 GEM DISCOVERED!</strong>
-            <span style={{ fontSize: '12px', color: '#e2e8f0' }}>{gemNotification.name} (+{gemNotification.sellValue}🪙 Coins)</span>
+            <span style={{ fontSize: '12px', color: '#e2e8f0' }}>{gemNotification.name} (Bonus Item)</span>
           </div>
         </div>
       )}
