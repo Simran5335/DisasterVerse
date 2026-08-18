@@ -1,34 +1,30 @@
 // ============================================================
 // RIVER DEFENDER — GAME ENGINE
 // ============================================================
-// Simulation layer.
+// Runs the actual River Defender gameplay.
 //
-// ENGINE RESPONSIBILITIES
-// ------------------------------------------------------------
-// • Raise the river
-// • Spread floodwater
-// • Simulate terrain height
-// • Apply flood walls
-// • Apply pumps
-// • Apply sandbags
-// • Track building safety
-// • Unlock defensive rewards
-// • Track score / XP
-// • Determine victory / failure
+// Responsibilities:
+//   - Run flood simulation
+//   - Raise river level
+//   - Spread water downhill
+//   - Apply flood walls
+//   - Apply sandbags
+//   - Apply pumps
+//   - Calculate building safety
+//   - Handle rewards
+//   - Calculate score
+//   - Determine victory / defeat
 //
-// IMPORTANT
-// ------------------------------------------------------------
-// There is NO budget system.
-// There is NO money.
-// There are NO prices.
+// IMPORTANT:
+//   - No React
+//   - No canvas drawing
+//   - No budget / money system
 //
-// The player manages a LIMITED number of defenses and earns
-// additional defenses by successfully protecting the town.
-//
-// Renderer -> visuals
-// World    -> map mathematics
-// Engine   -> simulation
-// React    -> UI
+// Compatible with:
+//   - riverDefenderData.js
+//   - RiverDefenderWorld.js
+//   - RiverDefenderRenderer.js
+//   - RiverDefenderGame.jsx
 // ============================================================
 
 import {
@@ -47,7 +43,6 @@ import {
   isRiver,
   isWetland,
   isLowGround,
-  isHighGround,
   buildingAt,
   inBounds,
 } from "./RiverDefenderWorld.js";
@@ -68,19 +63,27 @@ const WATER_EPSILON = 0.012;
 
 const MAX_WATER_DEPTH = 1.35;
 
-// Natural water movement.
-const BASE_FLOW_SPEED = 0.9;
+// Base amount of water transferred per simulation step.
+const FLOW_RATE = 0.075;
 
-// Maximum fraction of a cell's water that can move in
-// one simulation step.
-const MAX_TRANSFER_RATIO = 0.28;
+// Flood movement is intentionally gradual so the player has time
+// to read the map, place defenses, and react.
+const MAX_TRANSFER_PER_CELL = 0.055;
 
-// How strongly terrain height affects water movement.
-const HEIGHT_DIFFERENCE_FACTOR = 2.4;
+// Prevent water from disappearing too quickly.
+const WATER_RETENTION = 0.992;
 
-// Small amount of water naturally evaporates / drains
-// from non-river cells.
-const NATURAL_DRAIN_RATE = 0.004;
+// How strongly elevation influences movement.
+const ELEVATION_INFLUENCE = 2.4;
+
+// Wall effectiveness.
+const WALL_BLOCK_STRENGTH = 0.94;
+
+// Sandbag slowdown.
+const SANDBAG_FLOW_MULTIPLIER = 0.42;
+
+// Pump strength is supplied by the data file.
+const DEFAULT_RAINFALL = 40;
 
 
 // ============================================================
@@ -100,8 +103,7 @@ export class RiverDefenderEngine {
 
   reset() {
 
-    const world =
-      createWorldArrays();
+    const world = createWorldArrays();
 
     this.elevation =
       world.elevation;
@@ -112,6 +114,7 @@ export class RiverDefenderEngine {
     this.nextWater =
       world.nextWater;
 
+
     initializeWorld(
       this.elevation,
       this.water,
@@ -120,7 +123,7 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // BUILDINGS
+    // Buildings
     // --------------------------------------------------------
 
     this.buildings =
@@ -128,14 +131,14 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // DEFENSES
+    // Defenses
     // --------------------------------------------------------
 
     this.defenses = [];
 
 
     // --------------------------------------------------------
-    // INVENTORY
+    // Inventory
     // --------------------------------------------------------
 
     this.inventory =
@@ -143,7 +146,7 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // UNLOCK STATE
+    // Rewards
     // --------------------------------------------------------
 
     this.unlocked =
@@ -151,13 +154,14 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // FLOOD STATE
+    // Flood state
     // --------------------------------------------------------
 
     this.riverLevel =
       GAME_RULES.riverStartLevel;
 
-    this.rainfall = 40;
+    this.rainfall =
+      DEFAULT_RAINFALL;
 
     this.elapsed = 0;
 
@@ -169,29 +173,56 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // GAME FEEDBACK
+    // PLAYER PROGRESSION
+    // --------------------------------------------------------
+
+    this.hasPlacedDefense = false;
+
+    this.objectiveStage = 0;
+
+    this.objectiveMessage =
+      "🎯 First objective: place your first defense.";
+
+    this.objectiveType =
+      "info";
+
+    this.hospitalProtectedOnce = false;
+
+    this.schoolProtectedOnce = false;
+
+    this.communityProtectedOnce = false;
+
+
+    // --------------------------------------------------------
+    // Score
     // --------------------------------------------------------
 
     this.score = 0;
 
     this.xp = 0;
 
+
+    // --------------------------------------------------------
+    // UI message
+    // --------------------------------------------------------
+
     this.message =
-      "Protect the hospital, school and community.";
+      "Place your defenses before the flood reaches the town.";
 
     this.messageType =
       "info";
 
 
     // --------------------------------------------------------
-    // INTERNAL STATE
+    // Internal timing
     // --------------------------------------------------------
 
     this.lastUpdate = 0;
 
-    this.lastRewardCheck = 0;
 
-    this.lastScoreUpdate = 0;
+    // --------------------------------------------------------
+    // React subscriptions
+    // --------------------------------------------------------
 
     this.listeners =
       new Set();
@@ -211,26 +242,23 @@ export class RiverDefenderEngine {
       return () => {};
     }
 
-    this.listeners.add(
-      listener
-    );
+    this.listeners.add(listener);
 
     return () => {
-      this.listeners.delete(
-        listener
-      );
+      this.listeners.delete(listener);
     };
   }
 
 
   notify() {
 
+    const snapshot =
+      this.getSnapshot();
+
     for (
       const listener of this.listeners
     ) {
-      listener(
-        this.getSnapshot()
-      );
+      listener(snapshot);
     }
   }
 
@@ -241,9 +269,7 @@ export class RiverDefenderEngine {
 
   start() {
 
-    if (
-      this.finished
-    ) {
+    if (this.finished) {
       this.reset();
     }
 
@@ -252,10 +278,12 @@ export class RiverDefenderEngine {
     this.floodStarted = true;
 
     this.message =
-      "🌊 The flood has started! Protect the town.";
+      "🌊 Flood started! Protect the hospital, school and community.";
 
     this.messageType =
       "warning";
+
+    this.lastUpdate = 0;
 
     this.notify();
   }
@@ -267,10 +295,14 @@ export class RiverDefenderEngine {
 
   pause() {
 
+    if (this.finished) {
+      return;
+    }
+
     this.running = false;
 
     this.message =
-      "Game paused.";
+      "⏸️ Flood paused. Plan your next move.";
 
     this.messageType =
       "info";
@@ -285,16 +317,14 @@ export class RiverDefenderEngine {
 
   resume() {
 
-    if (
-      this.finished
-    ) {
+    if (this.finished) {
       return;
     }
 
     this.running = true;
 
     this.message =
-      "🌊 The flood is moving again.";
+      "🌊 The flood is moving again!";
 
     this.messageType =
       "warning";
@@ -304,12 +334,37 @@ export class RiverDefenderEngine {
 
 
   // ==========================================================
+  // STOP FLOOD
+  // ==========================================================
+  //
+  // Used by UI controls when the player wants to stop the
+  // simulation completely without resetting their defenses.
+  // ==========================================================
+
+  stopFlood() {
+
+    if (this.finished) {
+      return;
+    }
+
+    this.running = false;
+    this.floodStarted = false;
+
+    this.message =
+      "⏹️ Flood stopped. Your defenses remain in place.";
+
+    this.messageType =
+      "info";
+
+    this.notify();
+  }
+
+
+  // ==========================================================
   // UPDATE
   // ==========================================================
 
-  update(
-    deltaSeconds = 0.016
-  ) {
+  update(deltaSeconds = 0.016) {
 
     if (
       !this.running ||
@@ -318,46 +373,32 @@ export class RiverDefenderEngine {
       return;
     }
 
-    // Prevent huge simulation jumps if the browser tab
-    // was inactive for a moment.
+
     const delta =
       Math.min(
-        Math.max(
-          deltaSeconds,
-          0
-        ),
+        Math.max(deltaSeconds, 0),
         0.1
       );
 
-    this.elapsed +=
-      delta;
+
+    this.elapsed += delta;
 
 
     // ========================================================
     // FLOOD PROGRESS
     // ========================================================
 
-    const duration =
-      Math.max(
-        1,
-        GAME_RULES.gameDurationSeconds
-      );
-
     const progress =
       Math.min(
         this.elapsed /
-          duration,
+          GAME_RULES.gameDurationSeconds,
         1
       );
 
 
-    // ========================================================
-    // RIVER LEVEL
-    // ========================================================
-
     this.riverLevel =
       Math.min(
-        1.35,
+        1,
         GAME_RULES.riverStartLevel +
           progress *
             GAME_RULES.riverRiseAmount
@@ -370,37 +411,30 @@ export class RiverDefenderEngine {
 
     this.rainfall =
       Math.round(
-        40 +
-          progress *
-            190
+        DEFAULT_RAINFALL +
+          progress * 190
       );
 
 
     // ========================================================
-    // WATER INPUT
+    // RIVER INPUT
     // ========================================================
 
-    this.injectRiverWater(
-      delta
-    );
+    this.injectRiverWater(delta);
 
 
     // ========================================================
     // WATER MOVEMENT
     // ========================================================
 
-    this.simulateWater(
-      delta
-    );
+    this.simulateWater(delta);
 
 
     // ========================================================
-    // DEFENSE EFFECTS
+    // DEFENSES
     // ========================================================
 
-    this.applyDefenses(
-      delta
-    );
+    this.applyDefenses(delta);
 
 
     // ========================================================
@@ -421,27 +455,17 @@ export class RiverDefenderEngine {
     // SCORE
     // ========================================================
 
-    if (
-      this.elapsed -
-        this.lastScoreUpdate >
-      0.25
-    ) {
-      this.updateScore();
-
-      this.lastScoreUpdate =
-        this.elapsed;
-    }
+    this.updateScore();
 
 
     // ========================================================
-    // END
+    // VICTORY / DEFEAT
     // ========================================================
 
     if (
       progress >= 1
     ) {
       this.finishGame();
-
       return;
     }
 
@@ -454,14 +478,12 @@ export class RiverDefenderEngine {
   // RIVER WATER
   // ==========================================================
 
-  injectRiverWater(
-    delta
-  ) {
+  injectRiverWater(delta) {
 
-    const strength =
+    const riverStrength =
       this.riverLevel *
       delta *
-      0.48;
+      0.72;
 
 
     for (
@@ -477,21 +499,18 @@ export class RiverDefenderEngine {
       ) {
 
         if (
-          !isRiver(
-            x,
-            y
-          )
+          !isRiver(x, y)
         ) {
           continue;
         }
 
 
-        // River cells naturally fill first.
         this.water[y][x] =
           Math.min(
             MAX_WATER_DEPTH,
+
             this.water[y][x] +
-              strength
+              riverStrength
           );
       }
     }
@@ -502,12 +521,10 @@ export class RiverDefenderEngine {
   // WATER SIMULATION
   // ==========================================================
 
-  simulateWater(
-    delta
-  ) {
+  simulateWater(delta) {
 
     // --------------------------------------------------------
-    // Start next frame from current water.
+    // Reset next frame
     // --------------------------------------------------------
 
     for (
@@ -523,13 +540,14 @@ export class RiverDefenderEngine {
       ) {
 
         this.nextWater[y][x] =
-          this.water[y][x];
+          this.water[y][x] *
+          WATER_RETENTION;
       }
     }
 
 
     // --------------------------------------------------------
-    // Spread water downhill.
+    // Spread water
     // --------------------------------------------------------
 
     for (
@@ -556,30 +574,43 @@ export class RiverDefenderEngine {
         }
 
 
-        const currentHeight =
-          this.elevation[y][x] +
-          currentWater;
+        const currentElevation =
+          this.elevation[y][x];
 
 
         const candidates = [];
 
 
+        // ----------------------------------------------------
+        // Find lower neighbours
+        // ----------------------------------------------------
+
         for (
-          const neighbour of
-            NEIGHBOURS
+          const neighbour of NEIGHBOURS
         ) {
 
           const nx =
-            x +
-            neighbour.x;
+            x + neighbour.x;
 
           const ny =
-            y +
-            neighbour.y;
+            y + neighbour.y;
 
 
           if (
-            !inBounds(
+            !inBounds(nx, ny)
+          ) {
+            continue;
+          }
+
+
+          // --------------------------------------------------
+          // A wall occupying either cell blocks flow.
+          // --------------------------------------------------
+
+          if (
+            this.hasWallBetween(
+              x,
+              y,
               nx,
               ny
             )
@@ -588,27 +619,42 @@ export class RiverDefenderEngine {
           }
 
 
-          const neighbourHeight =
-            this.elevation[ny][nx] +
+          const neighbourElevation =
+            this.elevation[ny][nx];
+
+
+          const neighbourWater =
             this.water[ny][nx];
 
 
+          const currentSurface =
+            currentElevation +
+            currentWater;
+
+
+          const neighbourSurface =
+            neighbourElevation +
+            neighbourWater;
+
+
           const difference =
-            currentHeight -
-            neighbourHeight;
+            currentSurface -
+            neighbourSurface;
 
 
           if (
-            difference >
-            0.018
+            difference <=
+            0.01
           ) {
-
-            candidates.push({
-              x: nx,
-              y: ny,
-              difference,
-            });
+            continue;
           }
+
+
+          candidates.push({
+            x: nx,
+            y: ny,
+            difference,
+          });
         }
 
 
@@ -619,62 +665,47 @@ export class RiverDefenderEngine {
         }
 
 
-        // Lowest destination first.
+        // ----------------------------------------------------
+        // Sort lowest first
+        // ----------------------------------------------------
+
         candidates.sort(
-          (
-            a,
-            b
-          ) =>
+          (a, b) =>
             b.difference -
             a.difference
         );
 
 
-        // We distribute water between the two best
-        // destinations instead of always choosing one.
-        const destinations =
-          candidates.slice(
-            0,
-            2
-          );
+        // ----------------------------------------------------
+        // We allow water to spread to more than one neighbour.
+        // This makes the flood look much more natural.
+        // ----------------------------------------------------
+
+        const strongest =
+          candidates.slice(0, 3);
 
 
-        let remainingWater =
-          currentWater;
+        const share =
+          currentWater /
+          strongest.length;
 
 
         for (
-          const destination of
-            destinations
+          const target of strongest
         ) {
 
-          if (
-            remainingWater <=
-            WATER_EPSILON
-          ) {
-            break;
-          }
-
-
           let transfer =
-            remainingWater *
-            BASE_FLOW_SPEED *
-            delta;
+            share *
+            FLOW_RATE *
+            delta *
+            60;
 
 
           transfer *=
             Math.min(
               1,
-              destination.difference *
-                HEIGHT_DIFFERENCE_FACTOR
-            );
-
-
-          transfer =
-            Math.min(
-              transfer,
-              currentWater *
-                MAX_TRANSFER_RATIO
+              target.difference *
+                ELEVATION_INFLUENCE
             );
 
 
@@ -684,13 +715,11 @@ export class RiverDefenderEngine {
 
           if (
             isWetland(
-              destination.x,
-              destination.y
+              target.x,
+              target.y
             )
           ) {
-
-            transfer *=
-              0.34;
+            transfer *= 0.28;
           }
 
 
@@ -700,60 +729,46 @@ export class RiverDefenderEngine {
 
           if (
             isLowGround(
-              destination.x,
-              destination.y
+              target.x,
+              target.y
             )
           ) {
-
-            transfer *=
-              1.35;
+            transfer *= 1.45;
           }
 
 
           // --------------------------------------------------
-          // High ground resists water slightly.
+          // Sandbags slow incoming water.
           // --------------------------------------------------
 
           if (
-            isHighGround(
-              destination.x,
-              destination.y
+            this.hasSandbags(
+              target.x,
+              target.y
             )
           ) {
-
             transfer *=
-              0.68;
+              SANDBAG_FLOW_MULTIPLIER;
           }
 
+
+          // --------------------------------------------------
+          // Do not drain more than available.
+          // --------------------------------------------------
 
           transfer =
             Math.min(
               transfer,
-              remainingWater *
-                0.45
+              currentWater * 0.22,
+              MAX_TRANSFER_PER_CELL
             );
-
-
-          if (
-            transfer <=
-            WATER_EPSILON
-          ) {
-            continue;
-          }
 
 
           this.nextWater[y][x] -=
             transfer;
 
-          this.nextWater[
-            destination.y
-          ][
-            destination.x
-          ] +=
-            transfer;
 
-
-          remainingWater -=
+          this.nextWater[target.y][target.x] +=
             transfer;
         }
       }
@@ -761,50 +776,7 @@ export class RiverDefenderEngine {
 
 
     // --------------------------------------------------------
-    // Natural drainage.
-    // --------------------------------------------------------
-
-    for (
-      let y = 0;
-      y < WORLD_HEIGHT;
-      y++
-    ) {
-
-      for (
-        let x = 0;
-        x < WORLD_WIDTH;
-        x++
-      ) {
-
-        if (
-          isRiver(
-            x,
-            y
-          )
-        ) {
-          continue;
-        }
-
-
-        const drainage =
-          this.nextWater[y][x] *
-          NATURAL_DRAIN_RATE *
-          delta *
-          60;
-
-
-        this.nextWater[y][x] =
-          Math.max(
-            0,
-            this.nextWater[y][x] -
-              drainage
-          );
-      }
-    }
-
-
-    // --------------------------------------------------------
-    // Clamp.
+    // Clamp
     // --------------------------------------------------------
 
     for (
@@ -822,6 +794,7 @@ export class RiverDefenderEngine {
         this.water[y][x] =
           Math.max(
             0,
+
             Math.min(
               MAX_WATER_DEPTH,
               this.nextWater[y][x]
@@ -833,16 +806,69 @@ export class RiverDefenderEngine {
 
 
   // ==========================================================
+  // CHECK WALL BETWEEN CELLS
+  // ==========================================================
+
+  hasWallBetween(
+    x1,
+    y1,
+    x2,
+    y2
+  ) {
+
+    return this.defenses.some(
+      (defense) => {
+
+        if (
+          defense.type !==
+          "wall"
+        ) {
+          return false;
+        }
+
+
+        const wx =
+          Math.round(
+            defense.x
+          );
+
+        const wy =
+          Math.round(
+            defense.y
+          );
+
+
+        // Wall cell itself.
+        if (
+          wx === x1 &&
+          wy === y1
+        ) {
+          return true;
+        }
+
+
+        if (
+          wx === x2 &&
+          wy === y2
+        ) {
+          return true;
+        }
+
+
+        return false;
+      }
+    );
+  }
+
+
+  // ==========================================================
   // DEFENSE EFFECTS
   // ==========================================================
 
-  applyDefenses(
-    delta
-  ) {
+  applyDefenses(delta) {
 
     for (
-      const defense of
-        this.defenses
+      const defense of this.defenses
     ) {
 
       if (
@@ -855,12 +881,8 @@ export class RiverDefenderEngine {
       defense.animation =
         Math.min(
           1,
-          (
-            defense.animation ??
-            0
-          ) +
-            delta *
-              2.8
+          (defense.animation || 0) +
+            delta * 4
         );
 
 
@@ -914,80 +936,62 @@ export class RiverDefenderEngine {
     delta
   ) {
 
-    const config =
-      DEFENSE_TYPES.pump;
-
     const radius =
-      Math.max(
-        1,
-        config.radius ?? 3
-      );
-
-    const removalRate =
-      config.removalRate ??
-      0.12;
+      DEFENSE_TYPES.pump.radius;
 
 
-    const minX =
-      Math.floor(
-        defense.x -
-          radius
-      );
-
-    const maxX =
-      Math.ceil(
-        defense.x +
-          radius
-      );
-
-    const minY =
-      Math.floor(
-        defense.y -
-          radius
-      );
-
-    const maxY =
-      Math.ceil(
-        defense.y +
-          radius
-      );
+    const removal =
+      DEFENSE_TYPES.pump
+        .removalRate *
+      delta;
 
 
     for (
-      let y = minY;
-      y <= maxY;
+      let y =
+        Math.floor(
+          defense.y - radius
+        );
+
+      y <=
+        Math.ceil(
+          defense.y + radius
+        );
+
       y++
     ) {
 
       for (
-        let x = minX;
-        x <= maxX;
+        let x =
+          Math.floor(
+            defense.x - radius
+          );
+
+        x <=
+          Math.ceil(
+            defense.x + radius
+          );
+
         x++
       ) {
 
         if (
-          !inBounds(
-            x,
-            y
-          )
+          !inBounds(x, y)
         ) {
           continue;
         }
 
 
         const dx =
-          x -
-          defense.x;
+          x - defense.x;
 
         const dy =
-          y -
-          defense.y;
+          y - defense.y;
 
 
         const distance =
           Math.sqrt(
             dx * dx +
-              dy * dy
+            dy * dy
           );
 
 
@@ -1000,22 +1004,21 @@ export class RiverDefenderEngine {
 
 
         const factor =
-          1 -
-          distance /
-            radius;
-
-
-        const removal =
-          removalRate *
-          delta *
-          factor;
+          Math.max(
+            0,
+            1 -
+              distance /
+                radius
+          );
 
 
         this.water[y][x] =
           Math.max(
             0,
+
             this.water[y][x] -
-              removal
+              removal *
+                factor
           );
       }
     }
@@ -1024,6 +1027,16 @@ export class RiverDefenderEngine {
 
   // ==========================================================
   // FLOOD WALL
+  // ==========================================================
+  //
+  // The wall now acts as a real barrier.
+  //
+  // It:
+  //   - blocks water movement through its cell
+  //   - removes a small amount of water touching it
+  //   - redirects pressure toward surrounding cells
+  //
+  // It does NOT create extra water.
   // ==========================================================
 
   applyWall(
@@ -1043,10 +1056,7 @@ export class RiverDefenderEngine {
 
 
     if (
-      !inBounds(
-        x,
-        y
-      )
+      !inBounds(x, y)
     ) {
       return;
     }
@@ -1054,115 +1064,76 @@ export class RiverDefenderEngine {
 
     const strength =
       DEFENSE_TYPES.wall
-        .strength ??
-      0.9;
+        .strength;
 
 
-    /*
-     * A wall doesn't magically remove water.
-     *
-     * It works by reducing the amount of water able to
-     * cross its cell and gently redistributing pressure
-     * toward surrounding cells.
-     */
+    // --------------------------------------------------------
+    // A wall can absorb a small amount of water pressure.
+    // --------------------------------------------------------
 
-
-    const wallWater =
+    const localWater =
       this.water[y][x];
 
 
     if (
-      wallWater <=
-      WATER_EPSILON
+      localWater > 0
     ) {
-      return;
+
+      this.water[y][x] =
+        Math.max(
+          0,
+
+          localWater -
+            localWater *
+              strength *
+              delta *
+              1.8
+        );
     }
 
 
-    const pressure =
-      wallWater *
-      strength *
-      delta *
-      1.8;
-
-
-    this.water[y][x] =
-      Math.max(
-        0,
-        this.water[y][x] -
-          pressure
-      );
-
-
-    // Redirect pressure to the least flooded adjacent
-    // cells rather than creating additional water.
-    const candidates = [];
-
+    // --------------------------------------------------------
+    // Push water away from the wall.
+    // --------------------------------------------------------
 
     for (
-      const neighbour of
-        NEIGHBOURS
+      const neighbour of NEIGHBOURS
     ) {
 
       const nx =
-        x +
-        neighbour.x;
+        x + neighbour.x;
 
       const ny =
-        y +
-        neighbour.y;
+        y + neighbour.y;
 
 
       if (
-        !inBounds(
-          nx,
-          ny
-        )
+        !inBounds(nx, ny)
       ) {
         continue;
       }
 
 
-      candidates.push({
-        x: nx,
-        y: ny,
-        water:
-          this.water[ny][nx],
-      });
-    }
+      if (
+        this.water[ny][nx] <=
+        WATER_EPSILON
+      ) {
+        continue;
+      }
 
 
-    candidates.sort(
-      (
-        a,
-        b
-      ) =>
-        a.water -
-        b.water
-    );
+      // The wall contains nearby water.
+      // It never creates artificial water; it simply reduces
+      // pressure around the barrier so the normal terrain flow
+      // redirects water toward other available cells.
 
-
-    if (
-      candidates.length
-    ) {
-
-      const target =
-        candidates[0];
-
-
-      this.water[
-        target.y
-      ][
-        target.x
-      ] =
-        Math.min(
-          MAX_WATER_DEPTH,
-          this.water[
-            target.y
-          ][
-            target.x
-          ] +
-            pressure
+      this.water[ny][nx] *=
+        Math.max(
+          0.12,
+          1 -
+            WALL_BLOCK_STRENGTH *
+              delta *
+              1.35
         );
     }
   }
@@ -1177,31 +1148,24 @@ export class RiverDefenderEngine {
     delta
   ) {
 
-    const config =
-      DEFENSE_TYPES.sand;
-
     const radius =
-      Math.max(
-        1,
-        config.radius ?? 1
-      );
+      DEFENSE_TYPES.sand.radius;
+
 
     const slowdown =
-      config.strength ??
-      0.56;
+      DEFENSE_TYPES.sand
+        .strength;
 
 
     for (
       let y =
         Math.floor(
-          defense.y -
-            radius
+          defense.y - radius
         );
 
       y <=
         Math.ceil(
-          defense.y +
-            radius
+          defense.y + radius
         );
 
       y++
@@ -1210,42 +1174,35 @@ export class RiverDefenderEngine {
       for (
         let x =
           Math.floor(
-            defense.x -
-              radius
-        );
+            defense.x - radius
+          );
 
         x <=
           Math.ceil(
-            defense.x +
-              radius
-          );
+            defense.x + radius
+        );
 
         x++
       ) {
 
         if (
-          !inBounds(
-            x,
-            y
-          )
+          !inBounds(x, y)
         ) {
           continue;
         }
 
 
         const dx =
-          x -
-          defense.x;
+          x - defense.x;
 
         const dy =
-          y -
-          defense.y;
+          y - defense.y;
 
 
         const distance =
           Math.sqrt(
             dx * dx +
-              dy * dy
+            dy * dy
           );
 
 
@@ -1257,30 +1214,15 @@ export class RiverDefenderEngine {
         }
 
 
-        /*
-         * Sandbags primarily reduce water depth very
-         * slightly and, more importantly, make that cell
-         * less attractive as a flow path.
-         */
-
-        const factor =
-          1 -
-          distance /
-            (radius + 0.001);
-
-
-        const reduction =
-          slowdown *
-          factor *
-          delta *
-          0.08;
-
-
-        this.water[y][x] =
+        // Sandbags do not remove water.
+        // They reduce its local pressure.
+        this.water[y][x] *=
           Math.max(
-            0,
-            this.water[y][x] -
-              reduction
+            0.35,
+            1 -
+              slowdown *
+                delta *
+                2
           );
       }
     }
@@ -1297,6 +1239,10 @@ export class RiverDefenderEngine {
     y
   ) {
 
+    // --------------------------------------------------------
+    // Validate type
+    // --------------------------------------------------------
+
     if (
       !DEFENSE_TYPES[type]
     ) {
@@ -1309,6 +1255,10 @@ export class RiverDefenderEngine {
       };
     }
 
+
+    // --------------------------------------------------------
+    // Validate coordinates
+    // --------------------------------------------------------
 
     if (
       !Number.isFinite(x) ||
@@ -1325,14 +1275,10 @@ export class RiverDefenderEngine {
 
 
     const gridX =
-      Math.round(
-        x
-      );
+      Math.round(x);
 
     const gridY =
-      Math.round(
-        y
-      );
+      Math.round(y);
 
 
     if (
@@ -1346,43 +1292,36 @@ export class RiverDefenderEngine {
         success: false,
 
         message:
-          "That location is outside the town.",
+          "That location is outside the map.",
       };
     }
 
 
-    // ========================================================
-    // INVENTORY
-    // ========================================================
+    // --------------------------------------------------------
+    // Inventory
+    // --------------------------------------------------------
 
     if (
-      (
-        this.inventory[type] ??
-        0
-      ) <= 0
+      !this.inventory[type] ||
+      this.inventory[type] <= 0
     ) {
 
       return {
         success: false,
 
         message:
-          `No ${
-            DEFENSE_TYPES[type]
-              .name
-          } left.`,
+          `No ${DEFENSE_TYPES[type].name} left.`,
       };
     }
 
 
-    // ========================================================
-    // EXISTING DEFENSE
-    // ========================================================
+    // --------------------------------------------------------
+    // Prevent stacking
+    // --------------------------------------------------------
 
     const occupied =
       this.defenses.some(
-        (
-          defense
-        ) =>
+        (defense) =>
           Math.round(
             defense.x
           ) === gridX &&
@@ -1392,9 +1331,7 @@ export class RiverDefenderEngine {
       );
 
 
-    if (
-      occupied
-    ) {
+    if (occupied) {
 
       return {
         success: false,
@@ -1405,9 +1342,9 @@ export class RiverDefenderEngine {
     }
 
 
-    // ========================================================
-    // BUILDING CHECK
-    // ========================================================
+    // --------------------------------------------------------
+    // Prevent placing directly on buildings
+    // --------------------------------------------------------
 
     const building =
       buildingAt(
@@ -1417,9 +1354,7 @@ export class RiverDefenderEngine {
       );
 
 
-    if (
-      building
-    ) {
+    if (building) {
 
       return {
         success: false,
@@ -1430,17 +1365,12 @@ export class RiverDefenderEngine {
     }
 
 
-    // ========================================================
-    // RIVER CHECK
-    // ========================================================
-
-    /*
-     * Walls and sandbags should be placed on land.
-     * Pumps are allowed near water.
-     */
+    // --------------------------------------------------------
+    // Don't put walls inside the river.
+    // --------------------------------------------------------
 
     if (
-      type !== "pump" &&
+      type === "wall" &&
       isRiver(
         gridX,
         gridY
@@ -1451,14 +1381,41 @@ export class RiverDefenderEngine {
         success: false,
 
         message:
-          "Place this defense on land beside the river.",
+          "Place the flood wall beside the river, not inside it.",
       };
     }
 
+    // Pumps and sandbags can be placed near active water,
+    // but a pump should not be wasted on the far edge of the map.
+    if (
+      type === "pump" &&
+      this.water[gridY]?.[gridX] <= WATER_EPSILON &&
+      !isRiver(gridX, gridY)
+    ) {
+      const nearbyFlood =
+        NEIGHBOURS.some((offset) => {
+          const nx = gridX + offset.x;
+          const ny = gridY + offset.y;
 
-    // ========================================================
-    // CREATE DEFENSE
-    // ========================================================
+          return (
+            inBounds(nx, ny) &&
+            this.water[ny][nx] > WATER_EPSILON
+          );
+        });
+
+      if (!nearbyFlood) {
+        return {
+          success: false,
+          message:
+            "Place the pump near water or the river.",
+        };
+      }
+    }
+
+
+    // --------------------------------------------------------
+    // Create defense
+    // --------------------------------------------------------
 
     const defense = {
 
@@ -1491,54 +1448,63 @@ export class RiverDefenderEngine {
       1;
 
 
-    // ========================================================
-    // PLAYER FEEDBACK
-    // ========================================================
+    // --------------------------------------------------------
+    // PLAYER HAS MADE A REAL DEFENSE MOVE
+    // --------------------------------------------------------
 
-    switch (
-      type
+    this.hasPlacedDefense =
+      true;
+
+
+    if (
+      this.objectiveStage === 0
     ) {
 
-      case "wall":
+      this.objectiveMessage =
+        "🏥 Protect the hospital! Keep floodwater away from it.";
 
-        this.message =
-          "🧱 Flood wall built! The barrier is redirecting water.";
-
-        this.messageType =
-          "success";
-
-        break;
+      this.objectiveType =
+        "warning";
+    }
 
 
-      case "pump":
+    // --------------------------------------------------------
+    // Feedback
+    // --------------------------------------------------------
 
-        this.message =
-          "💧 Pump activated! Nearby floodwater is being removed.";
+    if (
+      type === "wall"
+    ) {
 
-        this.messageType =
-          "success";
+      this.message =
+        "🧱 Flood wall built! It will block the flood path.";
 
-        break;
-
-
-      case "sand":
-
-        this.message =
-          "🟨 Sandbags placed! Water flow is slowing here.";
-
-        this.messageType =
-          "success";
-
-        break;
+      this.messageType =
+        "success";
+    }
 
 
-      default:
+    if (
+      type === "pump"
+    ) {
 
-        this.message =
-          "Defense placed!";
+      this.message =
+        "💧 Pump activated! Nearby floodwater is being removed.";
 
-        this.messageType =
-          "success";
+      this.messageType =
+        "success";
+    }
+
+
+    if (
+      type === "sand"
+    ) {
+
+      this.message =
+        "🟨 Sandbags placed! Water will slow down here.";
+
+      this.messageType =
+        "success";
     }
 
 
@@ -1554,14 +1520,81 @@ export class RiverDefenderEngine {
 
 
   // ==========================================================
+  // REMOVE DEFENSE
+  // ==========================================================
+
+  removeDefense(
+    defenseId
+  ) {
+
+    const index =
+      this.defenses.findIndex(
+        (defense) =>
+          defense.id ===
+          defenseId
+      );
+
+
+    if (
+      index === -1
+    ) {
+
+      return {
+        success: false,
+
+        message:
+          "Defense not found.",
+      };
+    }
+
+
+    const defense =
+      this.defenses[index];
+
+
+    this.defenses.splice(
+      index,
+      1
+    );
+
+
+    // Return the tool to inventory.
+    if (
+      this.inventory[
+        defense.type
+      ] !== undefined
+    ) {
+
+      this.inventory[
+        defense.type
+      ] += 1;
+    }
+
+
+    this.message =
+      "Defense removed. You can reposition it.";
+
+    this.messageType =
+      "info";
+
+
+    this.notify();
+
+
+    return {
+      success: true,
+    };
+  }
+
+
+  // ==========================================================
   // BUILDING SAFETY
   // ==========================================================
 
   updateBuildingSafety() {
 
     for (
-      const building of
-        this.buildings
+      const building of this.buildings
     ) {
 
       let totalWater = 0;
@@ -1574,8 +1607,8 @@ export class RiverDefenderEngine {
           building.y;
 
         y <
-        building.y +
-          building.h;
+          building.y +
+            building.h;
 
         y++
       ) {
@@ -1585,17 +1618,14 @@ export class RiverDefenderEngine {
             building.x;
 
           x <
-          building.x +
-            building.w;
+            building.x +
+              building.w;
 
           x++
         ) {
 
           if (
-            !inBounds(
-              x,
-              y
-            )
+            !inBounds(x, y)
           ) {
             continue;
           }
@@ -1611,14 +1641,9 @@ export class RiverDefenderEngine {
 
       const averageWater =
         cells > 0
-          ? totalWater /
-            cells
+          ? totalWater / cells
           : 0;
 
-
-      // ------------------------------------------------------
-      // Building-specific thresholds
-      // ------------------------------------------------------
 
       let threshold =
         GAME_RULES
@@ -1664,157 +1689,202 @@ export class RiverDefenderEngine {
 
   checkUnlocks() {
 
-    for (
-      const unlock of
-        GAME_RULES.unlocks
+    if (
+      !this.floodStarted ||
+      !this.hasPlacedDefense
+    ) {
+      return;
+    }
+
+
+    const duration =
+      Math.max(
+        1,
+        GAME_RULES.gameDurationSeconds
+      );
+
+    const progress =
+      Math.min(
+        this.elapsed / duration,
+        1
+      );
+
+    const hospital =
+      this.getBuilding("hospital");
+
+    const school =
+      this.getBuilding("school");
+
+    const totalHomes =
+      this.getHomesCount();
+
+    const safeHomes =
+      this.getSafeHomesCount();
+
+    const communityRatio =
+      totalHomes > 0
+        ? safeHomes / totalHomes
+        : 0;
+
+
+    if (
+      progress >= 0.18 &&
+      hospital?.safe === true
+    ) {
+      this.hospitalProtectedOnce = true;
+    }
+
+
+    if (
+      progress >= 0.42 &&
+      school?.safe === true
+    ) {
+      this.schoolProtectedOnce = true;
+    }
+
+
+    if (
+      progress >= 0.65 &&
+      totalHomes > 0 &&
+      communityRatio >= GAME_RULES.targetHomesSafe
+    ) {
+      this.communityProtectedOnce = true;
+    }
+
+
+    if (
+      !this.unlocked.has("hospital-reward") &&
+      this.hospitalProtectedOnce
     ) {
 
-      if (
-        this.unlocked.has(
-          unlock.id
-        )
-      ) {
-        continue;
-      }
-
-
-      let shouldUnlock =
-        false;
-
-
-      // ======================================================
-      // HOSPITAL REWARD
-      // ======================================================
-
-      if (
-        unlock.id ===
-        "hospital-reward"
-      ) {
-
-        const hospital =
-          this.getBuilding(
-            "hospital"
-          );
-
-
-        shouldUnlock =
-          hospital?.safe ===
-          true;
-      }
-
-
-      // ======================================================
-      // SCHOOL REWARD
-      // ======================================================
-
-      if (
-        unlock.id ===
-        "school-reward"
-      ) {
-
-        const school =
-          this.getBuilding(
-            "school"
-          );
-
-
-        shouldUnlock =
-          school?.safe ===
-          true &&
-          this.elapsed >
-          20;
-      }
-
-
-      // ======================================================
-      // COMMUNITY REWARD
-      // ======================================================
-
-      if (
-        unlock.id ===
-        "community-reward"
-      ) {
-
-        const totalHomes =
-          this.getHomesCount();
-
-        const safeHomes =
-          this.getSafeHomesCount();
-
-
-        shouldUnlock =
-          totalHomes > 0 &&
-          safeHomes /
-            totalHomes >=
-            GAME_RULES
-              .targetHomesSafe;
-      }
-
-
-      if (
-        shouldUnlock
-      ) {
-
-        this.unlockReward(
-          unlock
+      const unlock =
+        GAME_RULES.unlocks.find(
+          (item) =>
+            item.id === "hospital-reward"
         );
+
+      if (unlock) {
+        this.unlockReward(unlock);
+        return;
       }
     }
+
+
+    if (
+      !this.unlocked.has("school-reward") &&
+      this.hospitalProtectedOnce &&
+      this.schoolProtectedOnce
+    ) {
+
+      const unlock =
+        GAME_RULES.unlocks.find(
+          (item) =>
+            item.id === "school-reward"
+        );
+
+      if (unlock) {
+        this.unlockReward(unlock);
+        return;
+      }
+    }
+
+
+    if (
+      !this.unlocked.has("community-reward") &&
+      this.schoolProtectedOnce &&
+      this.communityProtectedOnce
+    ) {
+
+      const unlock =
+        GAME_RULES.unlocks.find(
+          (item) =>
+            item.id === "community-reward"
+        );
+
+      if (unlock) {
+        this.unlockReward(unlock);
+      }
+    }
+
   }
 
-
-  // ==========================================================
-  // REWARD
-  // ==========================================================
 
   unlockReward(
     unlock
   ) {
 
+    if (
+      this.unlocked.has(unlock.id)
+    ) {
+      return;
+    }
+
+
     this.unlocked.add(
       unlock.id
     );
 
-
-    this.inventory[
-      unlock.defense
-    ] =
-      (
-        this.inventory[
-          unlock.defense
-        ] ??
-        0
-      ) +
+    this.inventory[unlock.defense] =
+      (this.inventory[unlock.defense] ?? 0) +
       unlock.amount;
 
-
-    // XP is progression feedback.
-    // It is NOT money and cannot be spent.
-    this.xp +=
-      100;
-
-
-    this.score +=
-      500;
-
+    this.xp += 100;
+    this.score += 500;
 
     this.message =
-      unlock.message;
-
+      unlock.message ||
+      "🎁 New defense unlocked!";
 
     this.messageType =
       "reward";
 
 
+    if (
+      unlock.id === "hospital-reward"
+    ) {
+
+      this.objectiveStage = 1;
+
+      this.objectiveMessage =
+        "🏥 HOSPITAL SECURED! Now protect the school.";
+
+      this.objectiveType =
+        "reward";
+    }
+
+    else if (
+      unlock.id === "school-reward"
+    ) {
+
+      this.objectiveStage = 2;
+
+      this.objectiveMessage =
+        "🏫 SCHOOL SECURED! Now save at least 80% of the homes.";
+
+      this.objectiveType =
+        "reward";
+    }
+
+    else if (
+      unlock.id === "community-reward"
+    ) {
+
+      this.objectiveStage = 3;
+
+      this.objectiveMessage =
+        "🏠 COMMUNITY PROTECTED! Keep the town safe until the flood ends.";
+
+      this.objectiveType =
+        "reward";
+    }
+
     this.notify();
+
   }
 
 
   // ==========================================================
   // SCORE
-  // ==========================================================
-  // Score measures how well the player protects the town.
-  // It is NOT a currency.
   // ==========================================================
 
   updateScore() {
@@ -1824,13 +1894,16 @@ export class RiverDefenderEngine {
         "hospital"
       );
 
+
     const school =
       this.getBuilding(
         "school"
       );
 
+
     const homes =
       this.getHomesCount();
+
 
     const safeHomes =
       this.getSafeHomesCount();
@@ -1844,8 +1917,7 @@ export class RiverDefenderEngine {
       hospital?.safe
     ) {
 
-      score +=
-        3000;
+      score += 3000;
     }
 
 
@@ -1854,8 +1926,7 @@ export class RiverDefenderEngine {
       school?.safe
     ) {
 
-      score +=
-        2500;
+      score += 2500;
     }
 
 
@@ -1864,43 +1935,29 @@ export class RiverDefenderEngine {
       homes > 0
     ) {
 
-      score +=
-        Math.round(
-          (
-            safeHomes /
-            homes
-          ) *
+      score += Math.round(
+        (safeHomes /
+          homes) *
           2500
-        );
+      );
     }
 
 
-    // --------------------------------------------------------
-    // Efficient defense bonus.
-    //
-    // This is NOT a budget mechanic.
-    // It rewards thoughtful placement.
-    // --------------------------------------------------------
-
-    const defenseBonus =
+    // Smart defense bonus.
+    score +=
       Math.max(
         0,
+
         1000 -
           this.defenses.length *
             80
       );
 
 
-    score +=
-      defenseBonus;
-
-
     this.score =
       Math.max(
         this.score,
-        Math.round(
-          score
-        )
+        score
       );
   }
 
@@ -1916,7 +1973,6 @@ export class RiverDefenderEngine {
     this.finished = true;
 
 
-    // Make sure the final state is accurate.
     this.updateBuildingSafety();
 
 
@@ -1924,6 +1980,7 @@ export class RiverDefenderEngine {
       this.getBuilding(
         "hospital"
       );
+
 
     const school =
       this.getBuilding(
@@ -1933,6 +1990,7 @@ export class RiverDefenderEngine {
 
     const homes =
       this.getHomesCount();
+
 
     const safeHomes =
       this.getSafeHomesCount();
@@ -1946,28 +2004,23 @@ export class RiverDefenderEngine {
 
 
     const victory =
-      hospital?.safe ===
-        true &&
-      school?.safe ===
-        true &&
+      hospital?.safe === true &&
+      school?.safe === true &&
       homesRatio >=
         GAME_RULES
           .targetHomesSafe;
 
 
-    if (
-      victory
-    ) {
+    if (victory) {
 
-      this.xp +=
-        500;
+      this.xp += 500;
 
-      this.score +=
-        1000;
+      this.score += 1000;
 
 
       this.message =
-        "🏆 FLOOD DEFENDED! You protected the community!";
+        "🏆 FLOOD DEFENDED! You protected the city!";
+
 
       this.messageType =
         "success";
@@ -1975,7 +2028,8 @@ export class RiverDefenderEngine {
     } else {
 
       this.message =
-        "🌊 The flood reached the end. Try a different strategy!";
+        "🌊 The flood reached the end. Try a different defense strategy.";
+
 
       this.messageType =
         "warning";
@@ -1987,19 +2041,14 @@ export class RiverDefenderEngine {
 
 
   // ==========================================================
-  // HELPERS
+  // BUILDING HELPERS
   // ==========================================================
 
-  getBuilding(
-    id
-  ) {
+  getBuilding(id) {
 
     return this.buildings.find(
-      (
-        building
-      ) =>
-        building.id ===
-        id
+      (building) =>
+        building.id === id
     );
   }
 
@@ -2007,9 +2056,7 @@ export class RiverDefenderEngine {
   getHomes() {
 
     return this.buildings.filter(
-      (
-        building
-      ) =>
+      (building) =>
         building.type ===
         "home"
     );
@@ -2027,9 +2074,7 @@ export class RiverDefenderEngine {
 
     return this.getHomes()
       .filter(
-        (
-          home
-        ) =>
+        (home) =>
           home.safe
       )
       .length;
@@ -2039,9 +2084,7 @@ export class RiverDefenderEngine {
   getBuildingsSafeCount() {
 
     return this.buildings.filter(
-      (
-        building
-      ) =>
+      (building) =>
         building.safe
     ).length;
   }
@@ -2052,6 +2095,10 @@ export class RiverDefenderEngine {
     return this.buildings.length;
   }
 
+
+  // ==========================================================
+  // WATER STATS
+  // ==========================================================
 
   getWaterManaged() {
 
@@ -2080,58 +2127,107 @@ export class RiverDefenderEngine {
   }
 
 
-  // ==========================================================
-  // GET BUILDING STATUS
-  // ==========================================================
+  getFloodedCells() {
 
-  getCriticalBuildings() {
+    let count = 0;
 
-    return this.buildings.filter(
-      (
-        building
-      ) =>
-        building.priority ===
-          "critical" ||
-        building.importance >=
-          2
-    );
+
+    for (
+      let y = 0;
+      y < WORLD_HEIGHT;
+      y++
+    ) {
+
+      for (
+        let x = 0;
+        x < WORLD_WIDTH;
+        x++
+      ) {
+
+        if (
+          this.water[y][x] >
+          0.08
+        ) {
+
+          count += 1;
+        }
+      }
+    }
+
+
+    return count;
   }
 
 
   // ==========================================================
-  // GET COMMUNITY STATUS
+  // DEFENSE HELPERS
   // ==========================================================
 
-  getCommunityStatus() {
+  hasWallAt(
+    x,
+    y
+  ) {
 
-    const homes =
-      this.getHomesCount();
+    return this.defenses.some(
+      (defense) =>
+        defense.type ===
+          "wall" &&
+        Math.round(
+          defense.x
+        ) === Math.round(x) &&
+        Math.round(
+          defense.y
+        ) === Math.round(y)
+    );
+  }
 
-    const safeHomes =
-      this.getSafeHomesCount();
+
+  hasSandbags(
+    x,
+    y
+  ) {
+
+    return this.defenses.some(
+      (defense) => {
+
+        if (
+          defense.type !==
+          "sand"
+        ) {
+          return false;
+        }
 
 
-    const ratio =
-      homes > 0
-        ? safeHomes /
-          homes
-        : 0;
+        const dx =
+          x -
+          defense.x;
+
+        const dy =
+          y -
+          defense.y;
 
 
-    return {
-      homes,
-      safeHomes,
-      ratio,
+        return (
+          Math.sqrt(
+            dx * dx +
+              dy * dy
+          ) <=
+          DEFENSE_TYPES.sand.radius
+        );
+      }
+    );
+  }
 
-      target:
-        GAME_RULES
-          .targetHomesSafe,
 
-      protected:
-        ratio >=
-        GAME_RULES
-          .targetHomesSafe,
-    };
+  getDefenseCount(
+    type
+  ) {
+
+    return this.defenses.filter(
+      (defense) =>
+        defense.type ===
+        type
+    ).length;
   }
 
 
@@ -2143,10 +2239,6 @@ export class RiverDefenderEngine {
 
     return {
 
-      // ------------------------------------------------------
-      // Flood
-      // ------------------------------------------------------
-
       riverLevel:
         this.riverLevel,
 
@@ -2155,11 +2247,6 @@ export class RiverDefenderEngine {
 
       elapsed:
         this.elapsed,
-
-
-      // ------------------------------------------------------
-      // Game state
-      // ------------------------------------------------------
 
       running:
         this.running,
@@ -2170,21 +2257,23 @@ export class RiverDefenderEngine {
       floodStarted:
         this.floodStarted,
 
-
-      // ------------------------------------------------------
-      // Feedback
-      // ------------------------------------------------------
-
       message:
         this.message,
 
       messageType:
         this.messageType,
 
+      objectiveStage:
+        this.objectiveStage,
 
-      // ------------------------------------------------------
-      // Progress
-      // ------------------------------------------------------
+      objectiveMessage:
+        this.objectiveMessage,
+
+      objectiveType:
+        this.objectiveType,
+
+      hasPlacedDefense:
+        this.hasPlacedDefense,
 
       score:
         this.score,
@@ -2193,79 +2282,59 @@ export class RiverDefenderEngine {
         this.xp,
 
 
-      // ------------------------------------------------------
-      // Inventory
-      // ------------------------------------------------------
-
       inventory: {
         ...this.inventory,
       },
 
 
-      // ------------------------------------------------------
-      // Defenses
-      // ------------------------------------------------------
-
       defenses:
         this.defenses.map(
-          (
-            defense
-          ) => ({
+          (defense) => ({
             ...defense,
           })
         ),
 
 
-      // ------------------------------------------------------
-      // Buildings
-      // ------------------------------------------------------
-
       buildings:
         this.buildings.map(
-          (
-            building
-          ) => ({
+          (building) => ({
             ...building,
           })
         ),
 
-
-      // ------------------------------------------------------
-      // Rewards
-      // ------------------------------------------------------
 
       unlocked: [
         ...this.unlocked,
       ],
 
 
-      // ------------------------------------------------------
-      // Community
-      // ------------------------------------------------------
-
       buildingsSafe:
         this.getBuildingsSafeCount(),
+
 
       buildingsTotal:
         this.getBuildingsCount(),
 
+
       homesSafe:
         this.getSafeHomesCount(),
+
 
       homesTotal:
         this.getHomesCount(),
 
 
-      community:
-        this.getCommunityStatus(),
+      floodedCells:
+        this.getFloodedCells(),
 
 
-      // ------------------------------------------------------
-      // World arrays
-      // ------------------------------------------------------
+      waterManaged:
+        this.getWaterManaged(),
+
 
       water:
         this.water,
+
 
       elevation:
         this.elevation,
@@ -2274,7 +2343,13 @@ export class RiverDefenderEngine {
 
 
   // ==========================================================
-  // GET WORLD DATA
+  // GET WORLD
+  // ==========================================================
+  //
+  // The renderer owns visual-only objects such as animated cars,
+  // trees, road markings and building artwork. The engine only
+  // supplies gameplay state for those visuals.
+  //
   // ==========================================================
 
   getWorld() {
@@ -2302,8 +2377,7 @@ export class RiverDefenderEngine {
 
   destroy() {
 
-    this.running =
-      false;
+    this.running = false;
 
     this.listeners.clear();
   }

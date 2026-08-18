@@ -783,6 +783,33 @@ export const GAME_RULES = {
   // Community objective.
   targetHomesSafe: 0.8,
 
+  // ==========================================================
+  // PLAYER PROGRESSION
+  // ==========================================================
+  // These checkpoints are used by RiverDefenderEngine.js.
+  // The player must actually play through the flood before
+  // rewards can unlock.
+  // ==========================================================
+
+  progression: {
+    hospitalProgress: 0.18,
+    schoolProgress: 0.42,
+    communityProgress: 0.65,
+  },
+
+  objectiveText: {
+    start:
+      "🎯 Place your first defense to begin protecting the town.",
+    hospital:
+      "🏥 Protect the hospital. Keep floodwater away from it.",
+    school:
+      "🏫 Protect the school. Keep students safe.",
+    community:
+      "🏠 Save at least 80% of the homes in the community.",
+    final:
+      "🌊 Keep the town safe until the flood ends.",
+  },
+
   // Building safety thresholds.
   hospitalSafeThreshold: 0.18,
 
@@ -808,6 +835,7 @@ export const GAME_RULES = {
       id: "hospital-reward",
 
       riverLevel: 0.58,
+      requires: "hospital-protected",
 
       defense: "wall",
 
@@ -821,6 +849,7 @@ export const GAME_RULES = {
       id: "school-reward",
 
       riverLevel: 0.68,
+      requires: "hospital-and-school-protected",
 
       defense: "pump",
 
@@ -834,6 +863,7 @@ export const GAME_RULES = {
       id: "community-reward",
 
       riverLevel: 0.78,
+      requires: "community-protected",
 
       defense: "sand",
 

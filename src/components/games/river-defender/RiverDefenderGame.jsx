@@ -19,35 +19,32 @@ import "../../../styles/RiverDefender.css";
 // ============================================================
 // RIVER DEFENDER — GAME
 // ============================================================
-// Main React controller.
-//
-// FLOW
-// ------------------------------------------------------------
-// INTRO
-//   ↓
-// HOW TO PLAY
-//   ↓
-// GAME
-//   ↓
-// RESULT
-//
-// GAMEPLAY
-// ------------------------------------------------------------
-// • Watch the flood
-// • Select a defense
-// • Click a good location
-// • Drag the map to explore
-// • Protect hospital
-// • Protect school
-// • Protect community
+// React controller / interface.
 //
 // IMPORTANT
 // ------------------------------------------------------------
-// There is NO budget.
-// There is NO money.
-// There are NO prices.
+// This file controls:
+// • Game screens
+// • Defense selection
+// • Map interaction
+// • Mission UI
+// • Training guide
+// • Result screen
+// • Clear player instructions
 //
-// XP and SCORE are game feedback only.
+// The ENGINE controls:
+// • Water
+// • Flood simulation
+// • Building safety
+// • Unlocks
+// • Score
+// • XP
+//
+// The RENDERER controls:
+// • World visuals
+// • Camera
+// • Isometric map
+// • Defense visuals
 // ============================================================
 
 
@@ -90,7 +87,7 @@ export default function RiverDefenderGame() {
 
 
   // ==========================================================
-  // DEFENSE SELECTION
+  // SELECTED DEFENSE
   // ==========================================================
 
   const [selectedDefense, setSelectedDefense] =
@@ -106,18 +103,23 @@ export default function RiverDefenderGame() {
 
 
   // ==========================================================
-  // MODALS / TRAINING
+  // HOW TO PLAY
   // ==========================================================
 
   const [showHowToPlay, setShowHowToPlay] =
     useState(false);
+
+
+  // ==========================================================
+  // TRAINING
+  // ==========================================================
 
   const [tutorialStep, setTutorialStep] =
     useState(0);
 
 
   // ==========================================================
-  // ERROR MESSAGE
+  // ERROR / FEEDBACK
   // ==========================================================
 
   const [errorMessage, setErrorMessage] =
@@ -125,24 +127,33 @@ export default function RiverDefenderGame() {
 
 
   // ==========================================================
-  // MAP DRAG STATE
+  // LOCAL GAME ACTION STATE
   // ==========================================================
   //
-  // IMPORTANT:
+  // Used only to make the UI more responsive.
   //
-  // Left mouse:
-  //   click       → place defense
-  //   drag        → pan map
-  //
-  // This makes the map much easier to explore.
+  // It does NOT replace the engine.
+  // ==========================================================
+
+  const [defensesPlaced, setDefensesPlaced] =
+    useState(0);
+
+  // Short-lived UI feedback for successful placements/rewards.
+  const [actionFeedback, setActionFeedback] =
+    useState("");
+
+// ==========================================================
+  // DRAG STATE
   // ==========================================================
 
   const dragRef =
     useRef({
       active: false,
       moved: false,
+
       startX: 0,
       startY: 0,
+
       lastX: 0,
       lastY: 0,
     });
@@ -160,6 +171,7 @@ export default function RiverDefenderGame() {
     engineRef.current =
       engine;
 
+
     setSnapshot(
       engine.getSnapshot()
     );
@@ -172,6 +184,7 @@ export default function RiverDefenderGame() {
           setSnapshot(
             nextSnapshot
           );
+
         }
       );
 
@@ -184,6 +197,7 @@ export default function RiverDefenderGame() {
 
       engineRef.current =
         null;
+
     };
 
   }, []);
@@ -226,6 +240,7 @@ export default function RiverDefenderGame() {
 
       rendererRef.current =
         null;
+
     };
 
   }, [screen]);
@@ -255,6 +270,7 @@ export default function RiverDefenderGame() {
 
           lastFrameRef.current =
             timestamp;
+
         }
 
 
@@ -292,6 +308,7 @@ export default function RiverDefenderGame() {
           renderer.render(
             engine.getSnapshot()
           );
+
         }
 
 
@@ -299,6 +316,7 @@ export default function RiverDefenderGame() {
           requestAnimationFrame(
             loop
           );
+
       };
 
 
@@ -317,6 +335,7 @@ export default function RiverDefenderGame() {
         cancelAnimationFrame(
           animationRef.current
         );
+
       }
 
 
@@ -325,13 +344,14 @@ export default function RiverDefenderGame() {
 
       lastFrameRef.current =
         null;
+
     };
 
   }, [screen]);
 
 
   // ==========================================================
-  // WATCH FOR FINISH
+  // WATCH FOR GAME FINISH
   // ==========================================================
 
   useEffect(() => {
@@ -352,17 +372,21 @@ export default function RiverDefenderGame() {
         null
       );
 
+
       setHoverCell(
         null
       );
+
 
       rendererRef.current?.setSelectedDefense(
         null
       );
 
+
       setScreen(
         "result"
       );
+
     }
 
   }, [
@@ -372,8 +396,61 @@ export default function RiverDefenderGame() {
 
 
   // ==========================================================
-  // START GAME
+  // RESET LOCAL UI STATE
   // ==========================================================
+
+  const resetLocalState =
+    useCallback(() => {
+
+      setSelectedDefense(
+        null
+      );
+
+      setHoverCell(
+        null
+      );
+
+      setErrorMessage("");
+
+      setDefensesPlaced(
+        0
+      );
+
+
+      
+      setActionFeedback("");
+
+rendererRef.current?.setSelectedDefense(
+        null
+      );
+
+    }, []);
+  // ==========================================================
+  // CLEAR SHORT SUCCESS FEEDBACK
+  // ==========================================================
+
+  useEffect(() => {
+
+    if (!actionFeedback) {
+      return;
+    }
+
+    const timer =
+      window.setTimeout(
+        () => {
+          setActionFeedback("");
+        },
+        2200
+      );
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+
+  }, [actionFeedback]);
+
+
+
 
   const startGame =
     useCallback(() => {
@@ -390,15 +467,7 @@ export default function RiverDefenderGame() {
       engine.reset();
 
 
-      setSelectedDefense(
-        null
-      );
-
-      setHoverCell(
-        null
-      );
-
-      setErrorMessage("");
+      resetLocalState();
 
 
       setScreen(
@@ -414,10 +483,13 @@ export default function RiverDefenderGame() {
           rendererRef.current?.setSelectedDefense(
             null
           );
+
         }
       );
 
-    }, []);
+    }, [
+      resetLocalState,
+    ]);
 
 
   // ==========================================================
@@ -439,19 +511,12 @@ export default function RiverDefenderGame() {
       engine.reset();
 
 
-      setSelectedDefense(
-        null
-      );
+      resetLocalState();
 
-      setHoverCell(
-        null
-      );
 
       setTutorialStep(
         0
       );
-
-      setErrorMessage("");
 
 
       setScreen(
@@ -465,14 +530,17 @@ export default function RiverDefenderGame() {
           rendererRef.current?.setSelectedDefense(
             null
           );
+
         }
       );
 
-    }, []);
+    }, [
+      resetLocalState,
+    ]);
 
 
   // ==========================================================
-  // START TRAINING GAME
+  // START ACTUAL TRAINING GAME
   // ==========================================================
 
   const startTrainingGame =
@@ -490,11 +558,13 @@ export default function RiverDefenderGame() {
       engine.start();
 
 
+      setErrorMessage("");
+
+
       setSelectedDefense(
         null
       );
 
-      setErrorMessage("");
 
       rendererRef.current?.setSelectedDefense(
         null
@@ -515,31 +585,22 @@ export default function RiverDefenderGame() {
 
 
       if (engine) {
+
         engine.pause();
+
       }
 
 
-      setSelectedDefense(
-        null
-      );
-
-      setHoverCell(
-        null
-      );
-
-      setErrorMessage("");
-
-
-      rendererRef.current?.setSelectedDefense(
-        null
-      );
+      resetLocalState();
 
 
       setScreen(
         "intro"
       );
 
-    }, []);
+    }, [
+      resetLocalState,
+    ]);
 
 
   // ==========================================================
@@ -581,14 +642,16 @@ export default function RiverDefenderGame() {
         ) {
 
           setErrorMessage(
-            "You've used all of these! Protect buildings to unlock more."
+            "No defenses of this type remain. Protect the town to unlock more."
           );
 
           return;
+
         }
 
 
         setErrorMessage("");
+
 
         setSelectedDefense(
           type
@@ -615,7 +678,9 @@ export default function RiverDefenderGame() {
         null
       );
 
+
       setErrorMessage("");
+
 
       rendererRef.current?.setSelectedDefense(
         null
@@ -627,14 +692,8 @@ export default function RiverDefenderGame() {
   // ==========================================================
   // PLACE DEFENSE
   // ==========================================================
-  //
-  // This is deliberately separate from pointer movement.
-  //
-  // A normal click places a defense.
-  // A drag moves the map.
-  // ==========================================================
 
-  const handleCanvasClick =
+  const placeDefenseAtEvent =
     useCallback(
       (event) => {
 
@@ -662,25 +721,31 @@ export default function RiverDefenderGame() {
           canvas.getBoundingClientRect();
 
 
-        const x =
+        const screenX =
           event.clientX -
           rect.left;
 
 
-        const y =
+        const screenY =
           event.clientY -
           rect.top;
 
 
         const cell =
           renderer.screenToCell(
-            x,
-            y
+            screenX,
+            screenY
           );
 
 
         if (!cell) {
+
+          setErrorMessage(
+            "Choose a location inside the town."
+          );
+
           return;
+
         }
 
 
@@ -699,14 +764,28 @@ export default function RiverDefenderGame() {
 
           setErrorMessage(
             result?.message ||
-            "You cannot place that defense here."
+            "That is not a good location. Try another spot."
           );
 
           return;
+
         }
 
 
+        // ------------------------------------------------------
+        // SUCCESS
+        // ------------------------------------------------------
+
         setErrorMessage("");
+
+        setActionFeedback(
+          `✓ ${DEFENSE_TYPES[selectedDefense]?.name || "Defense"} placed successfully.`
+        );
+
+        setDefensesPlaced(
+          (value) =>
+            value + 1
+        );
 
 
         const remaining =
@@ -725,9 +804,11 @@ export default function RiverDefenderGame() {
             null
           );
 
+
           renderer.setSelectedDefense(
             null
           );
+
         }
 
       },
@@ -739,15 +820,6 @@ export default function RiverDefenderGame() {
 
   // ==========================================================
   // POINTER DOWN
-  // ==========================================================
-  //
-  // Start a possible drag.
-  // We don't immediately know whether the user wants to:
-  //
-  // 1. click to place
-  // 2. drag to pan
-  //
-  // So we wait until pointer-up.
   // ==========================================================
 
   const handlePointerDown =
@@ -762,8 +834,12 @@ export default function RiverDefenderGame() {
 
 
         dragRef.current = {
-          active: true,
-          moved: false,
+
+          active:
+            true,
+
+          moved:
+            false,
 
           startX:
             event.clientX,
@@ -776,6 +852,7 @@ export default function RiverDefenderGame() {
 
           lastY:
             event.clientY,
+
         };
 
 
@@ -815,9 +892,9 @@ export default function RiverDefenderGame() {
           dragRef.current;
 
 
-        // ====================================================
-        // MAP DRAGGING
-        // ====================================================
+        // ------------------------------------------------------
+        // DRAG MAP
+        // ------------------------------------------------------
 
         if (
           drag.active
@@ -845,13 +922,16 @@ export default function RiverDefenderGame() {
 
           const distance =
             Math.sqrt(
-              totalDx * totalDx +
-              totalDy * totalDy
+              (
+                totalDx *
+                totalDx
+              ) +
+              (
+                totalDy *
+                totalDy
+              )
             );
 
-
-          // 5px prevents tiny mouse movements from
-          // turning clicks into drags.
 
           if (
             distance > 5
@@ -859,6 +939,7 @@ export default function RiverDefenderGame() {
 
             drag.moved =
               true;
+
           }
 
 
@@ -870,23 +951,26 @@ export default function RiverDefenderGame() {
               dx,
               dy
             );
+
           }
 
 
           drag.lastX =
             event.clientX;
 
+
           drag.lastY =
             event.clientY;
 
 
           return;
+
         }
 
 
-        // ====================================================
+        // ------------------------------------------------------
         // HOVER
-        // ====================================================
+        // ------------------------------------------------------
 
         const rect =
           canvas.getBoundingClientRect();
@@ -950,24 +1034,21 @@ export default function RiverDefenderGame() {
         );
 
 
-        // ====================================================
-        // NORMAL CLICK
-        // ====================================================
-
         if (
           wasClick &&
           selectedDefense
         ) {
 
-          handleCanvasClick(
+          placeDefenseAtEvent(
             event
           );
+
         }
 
       },
       [
         selectedDefense,
-        handleCanvasClick,
+        placeDefenseAtEvent,
       ]
     );
 
@@ -979,13 +1060,7 @@ export default function RiverDefenderGame() {
   const handleCanvasLeave =
     useCallback(() => {
 
-      const renderer =
-        rendererRef.current;
-
-
-      if (renderer) {
-        renderer.clearHover();
-      }
+      rendererRef.current?.clearHover();
 
 
       setHoverCell(
@@ -1046,20 +1121,6 @@ export default function RiverDefenderGame() {
 
 
   // ==========================================================
-  // RESTART
-  // ==========================================================
-
-  const restartGame =
-    useCallback(() => {
-
-      startGame();
-
-    }, [
-      startGame,
-    ]);
-
-
-  // ==========================================================
   // BUILDING HELPERS
   // ==========================================================
 
@@ -1067,13 +1128,13 @@ export default function RiverDefenderGame() {
     useCallback(
       (id) => {
 
-        return snapshot
-          ?.buildings
-          ?.find(
+        return (
+          snapshot?.buildings?.find(
             (building) =>
-              building.id ===
-              id
-          );
+              building.id === id
+          ) ||
+          null
+        );
 
       },
       [
@@ -1094,14 +1155,18 @@ export default function RiverDefenderGame() {
     );
 
 
+  // ==========================================================
+  // SAFETY
+  // ==========================================================
+
   const hospitalSafe =
     hospital?.safe ??
-    true;
+    false;
 
 
   const schoolSafe =
     school?.safe ??
-    true;
+    false;
 
 
   const homesSafe =
@@ -1120,7 +1185,8 @@ export default function RiverDefenderGame() {
           (
             homesSafe /
             homesTotal
-          ) * 100
+          ) *
+          100
         )
       : 0;
 
@@ -1128,6 +1194,217 @@ export default function RiverDefenderGame() {
   const communitySafe =
     communityPercent >=
     80;
+
+
+  // ==========================================================
+  // UNLOCKS
+  // ==========================================================
+
+  const unlocked =
+    Array.isArray(
+      snapshot?.unlocked
+    )
+      ? snapshot.unlocked
+      : [];
+
+
+  const hospitalRewardUnlocked =
+    unlocked.includes(
+      "hospital-reward"
+    );
+
+
+  const schoolRewardUnlocked =
+    unlocked.includes(
+      "school-reward"
+    );
+
+
+  const communityRewardUnlocked =
+    unlocked.includes(
+      "community-reward"
+    );
+
+
+  // ==========================================================
+  // CURRENT OBJECTIVE
+  // ==========================================================
+  //
+  // The ENGINE is the source of truth for progression/unlocks.
+  // Local React state is only a fallback for instant feedback.
+  // ==========================================================
+
+  const objectiveStage =
+    Number.isFinite(
+      snapshot?.objectiveStage
+    )
+      ? snapshot.objectiveStage
+      : (
+          communityRewardUnlocked
+            ? 3
+            : schoolRewardUnlocked
+              ? 2
+              : hospitalRewardUnlocked
+                ? 1
+                : 0
+        );
+
+  const hasPlacedDefense =
+    snapshot?.hasPlacedDefense === true ||
+    defensesPlaced > 0;
+
+  let objectiveTitle =
+    "FIRST MOVE";
+
+  let objectiveText =
+    "Choose a defense and place it near the flood path.";
+
+  let objectiveIcon =
+    "🎯";
+
+
+  if (
+    !snapshot?.running
+  ) {
+
+    objectiveTitle =
+      "READY";
+
+    objectiveText =
+      "Choose a defense, place it on the map, then protect the hospital, school and community.";
+
+    objectiveIcon =
+      "🛡️";
+
+  }
+
+
+  if (
+    snapshot?.running &&
+    !hasPlacedDefense
+  ) {
+
+    objectiveTitle =
+      "MAKE YOUR FIRST MOVE";
+
+    objectiveText =
+      "Choose a defense, then click the map near the flood path. Your first placement starts your protection plan.";
+
+    objectiveIcon =
+      "🎯";
+
+  }
+
+
+  if (
+    snapshot?.running &&
+    hasPlacedDefense &&
+    objectiveStage === 0 &&
+    !hospitalRewardUnlocked
+  ) {
+
+    objectiveTitle =
+      "PROTECT THE HOSPITAL";
+
+    objectiveText =
+      hospitalSafe
+        ? "🏥 Hospital is safe for now. Keep the flood away until the hospital objective is secured."
+        : "🚨 Hospital is in danger! Redirect, slow or remove floodwater before it reaches the hospital.";
+
+    objectiveIcon =
+      "🏥";
+
+  }
+
+
+  if (
+    snapshot?.running &&
+    (
+      objectiveStage >= 1 ||
+      hospitalRewardUnlocked
+    ) &&
+    !schoolRewardUnlocked
+  ) {
+
+    objectiveTitle =
+      "PROTECT THE SCHOOL";
+
+    objectiveText =
+      schoolSafe
+        ? "🏫 Hospital secured! Keep the school safe while the flood continues."
+        : "🚨 Protect the school! Use your remaining defenses where they will have the most impact.";
+
+    objectiveIcon =
+      "🏫";
+
+  }
+
+
+  if (
+    snapshot?.running &&
+    (
+      objectiveStage >= 2 ||
+      schoolRewardUnlocked
+    ) &&
+    !communityRewardUnlocked
+  ) {
+
+    objectiveTitle =
+      "SAVE THE COMMUNITY";
+
+    objectiveText =
+      `🏠 Save at least 80% of the homes. Current safety: ${communityPercent}%.`;
+
+    objectiveIcon =
+      "🏠";
+
+  }
+
+
+  if (
+    snapshot?.running &&
+    (
+      objectiveStage >= 3 ||
+      communityRewardUnlocked
+    )
+  ) {
+
+    objectiveTitle =
+      "KEEP THE TOWN SAFE";
+
+    objectiveText =
+      `🌊 Community protected! ${communityPercent}% of homes are currently safe. Survive until the flood ends.`;
+
+    objectiveIcon =
+      "🏆";
+
+  }
+
+
+  const engineFeedback =
+    snapshot?.message &&
+    snapshot.messageType === "reward"
+      ? snapshot.message
+      : "";
+
+
+  // ==========================================================
+  // STATUS TEXT
+  // ==========================================================
+
+  const statusText =
+    selectedDefense
+      ? `🎯 Placing ${
+          DEFENSE_TYPES[
+            selectedDefense
+          ]?.name ||
+          "defense"
+        } — click the map`
+      : (
+          engineFeedback ||
+          actionFeedback ||
+          objectiveText
+        );
 
 
   // ==========================================================
@@ -1139,6 +1416,7 @@ export default function RiverDefenderGame() {
   ) {
 
     return (
+
       <div className="river-defender-page">
 
         <div className="river-intro">
@@ -1168,10 +1446,12 @@ export default function RiverDefenderGame() {
 
 
             <p className="river-intro-description">
+
               A flood is coming.
               Protect the hospital,
               school and community
               before the water rises.
+
             </p>
 
 
@@ -1215,19 +1495,29 @@ export default function RiverDefenderGame() {
 
             <div className="river-simple-rule">
 
-              <span>🧱</span>
+              <span>
+                🧱
+              </span>
 
               Place defenses
 
-              <span>→</span>
+              <span>
+                →
+              </span>
 
-              <span>🏥</span>
+              <span>
+                🏥
+              </span>
 
               Protect buildings
 
-              <span>→</span>
+              <span>
+                →
+              </span>
 
-              <span>🏆</span>
+              <span>
+                🏆
+              </span>
 
               Save the town
 
@@ -1239,6 +1529,7 @@ export default function RiverDefenderGame() {
           {showHowToPlay && (
 
             <HowToPlayModal
+
               onClose={() =>
                 setShowHowToPlay(
                   false
@@ -1254,6 +1545,7 @@ export default function RiverDefenderGame() {
                 startGame();
 
               }}
+
             />
 
           )}
@@ -1261,7 +1553,9 @@ export default function RiverDefenderGame() {
         </div>
 
       </div>
+
     );
+
   }
 
 
@@ -1275,7 +1569,9 @@ export default function RiverDefenderGame() {
   ) {
 
     return (
+
       <ResultScreen
+
         snapshot={
           snapshot
         }
@@ -1297,19 +1593,22 @@ export default function RiverDefenderGame() {
         }
 
         onReplay={
-          restartGame
+          startGame
         }
 
         onExit={
           returnToIntro
         }
+
       />
+
     );
+
   }
 
 
   // ==========================================================
-  // GAME
+  // GAME / TRAINING
   // ==========================================================
 
   const isTraining =
@@ -1317,13 +1616,16 @@ export default function RiverDefenderGame() {
 
 
   return (
+
     <div className="river-defender-page river-game-page">
 
-      {/* =====================================================
+
+      {/* ======================================================
           TOP BAR
-          ===================================================== */}
+          ====================================================== */}
 
       <header className="river-topbar">
+
 
         <div className="river-brand">
 
@@ -1349,6 +1651,7 @@ export default function RiverDefenderGame() {
 
         <div className="river-top-stats">
 
+
           <div className="river-stat">
 
             <span>
@@ -1356,13 +1659,17 @@ export default function RiverDefenderGame() {
             </span>
 
             <strong>
+
               {Math.round(
                 (
                   snapshot?.riverLevel ??
                   0
-                ) * 100
+                ) *
+                100
               )}
+
               %
+
             </strong>
 
           </div>
@@ -1375,9 +1682,12 @@ export default function RiverDefenderGame() {
             </span>
 
             <strong>
+
               {snapshot?.rainfall ??
                 0}
+
               mm
+
             </strong>
 
           </div>
@@ -1390,11 +1700,15 @@ export default function RiverDefenderGame() {
             </span>
 
             <strong>
+
               {snapshot?.buildingsSafe ??
                 0}
+
               /
+
               {snapshot?.buildingsTotal ??
                 0}
+
             </strong>
 
           </div>
@@ -1414,23 +1728,26 @@ export default function RiverDefenderGame() {
       </header>
 
 
-      {/* =====================================================
+      {/* ======================================================
           GAME AREA
-          ===================================================== */}
+          ====================================================== */}
 
       <main className="river-game-layout">
 
 
-        {/* =================================================
-            MAP
-            ================================================= */}
+        {/* ====================================================
+            WORLD
+            ==================================================== */}
 
         <section
           className="river-world-container"
         >
 
           <canvas
-            ref={canvasRef}
+
+            ref={
+              canvasRef
+            }
 
             id="river-defender-world"
 
@@ -1463,10 +1780,13 @@ export default function RiverDefenderGame() {
             onContextMenu={
               handleContextMenu
             }
+
           />
 
 
-          {/* GAME MESSAGE */}
+          {/* ==================================================
+              OBJECTIVE MESSAGE
+              ================================================== */}
 
           <div
             className={`river-message ${
@@ -1474,15 +1794,42 @@ export default function RiverDefenderGame() {
               ""
             }`}
           >
-            {snapshot?.message}
+
+            <strong>
+              {selectedDefense
+                ? `🎯 PLACE ${
+                    DEFENSE_TYPES[
+                      selectedDefense
+                    ]?.name ||
+                    "DEFENSE"
+                  }`
+                : `${objectiveIcon} ${objectiveTitle}`}
+            </strong>
+
+
+            <span>
+
+              {selectedDefense
+                ? "Click a safe location on the map."
+                : (
+                    engineFeedback ||
+                    actionFeedback ||
+                    objectiveText
+                  )}
+
+            </span>
+
           </div>
 
 
-          {/* TRAINING */}
+          {/* ==================================================
+              TRAINING GUIDE
+              ================================================== */}
 
           {isTraining && (
 
             <TrainingGuide
+
               step={
                 tutorialStep
               }
@@ -1494,55 +1841,112 @@ export default function RiverDefenderGame() {
               onStart={
                 startTrainingGame
               }
+
             />
 
           )}
 
 
-          {/* PLACEMENT HINT */}
+          {/* ==================================================
+              PLACEMENT HINT
+              ================================================== */}
 
           {hoverCell &&
             selectedDefense && (
 
-              <div
-                className="river-placement-hint"
-              >
-                Click to place{" "}
+              <div className="river-placement-hint">
+
+                🎯 Click to place{" "}
+
                 {
                   DEFENSE_TYPES[
                     selectedDefense
                   ]?.name
                 }
+
               </div>
 
-            )}
+          )}
 
         </section>
 
 
-        {/* =================================================
-            MISSION HUD
-            ================================================= */}
+        {/* ====================================================
+            MISSION PANEL
+            ==================================================== */}
 
         <aside className="river-objectives">
+
 
           <div className="river-panel-title">
             YOUR MISSION
           </div>
 
 
+          {/* CURRENT OBJECTIVE */}
+
+          <div
+            className="river-objective river-current-objective"
+          >
+
+            <span className="complete">
+              {objectiveIcon}
+            </span>
+
+
+            <div>
+
+              <strong>
+                {objectiveTitle}
+              </strong>
+
+
+              <small>
+                {objectiveText}
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div
+            style={{
+              marginTop: "8px",
+              fontSize: "11px",
+              opacity: 0.85,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+            }}
+          >
+            STEP {Math.min(objectiveStage + 1, 4)}
+            {" • "}
+            {objectiveStage === 0
+              ? "HOSPITAL"
+              : objectiveStage === 1
+                ? "SCHOOL"
+                : objectiveStage === 2
+                  ? "COMMUNITY"
+                  : "SURVIVE"}
+          </div>
+
+
+          {/* HOSPITAL */}
+
           <div className="river-objective">
 
             <span
               className={
-                hospitalSafe
+                hospitalRewardUnlocked
                   ? "complete"
                   : ""
               }
             >
-              {hospitalSafe
+
+              {hospitalRewardUnlocked
                 ? "✓"
                 : "○"}
+
             </span>
 
 
@@ -1552,9 +1956,19 @@ export default function RiverDefenderGame() {
                 Protect Hospital
               </strong>
 
+
               <small>
-                Keep the critical
-                building safe.
+
+                {hospitalRewardUnlocked
+
+                  ? "Hospital protected — reward unlocked!"
+
+                  : hospitalSafe
+
+                    ? "Hospital is currently safe. Keep watching the flood."
+
+                    : "🚨 Hospital is in danger!"}
+
               </small>
 
             </div>
@@ -1562,18 +1976,22 @@ export default function RiverDefenderGame() {
           </div>
 
 
+          {/* SCHOOL */}
+
           <div className="river-objective">
 
             <span
               className={
-                schoolSafe
+                schoolRewardUnlocked
                   ? "complete"
                   : ""
               }
             >
-              {schoolSafe
+
+              {schoolRewardUnlocked
                 ? "✓"
                 : "○"}
+
             </span>
 
 
@@ -1583,8 +2001,19 @@ export default function RiverDefenderGame() {
                 Protect School
               </strong>
 
+
               <small>
-                Keep students safe.
+
+                {schoolRewardUnlocked
+
+                  ? "School protected — new progression unlocked!"
+
+                  : schoolSafe
+
+                    ? "School is currently safe."
+
+                    : "🚨 Keep floodwater away from the school."}
+
               </small>
 
             </div>
@@ -1592,18 +2021,24 @@ export default function RiverDefenderGame() {
           </div>
 
 
+          {/* COMMUNITY */}
+
           <div className="river-objective">
 
             <span
               className={
+                communityRewardUnlocked ||
                 communitySafe
                   ? "complete"
                   : ""
               }
             >
-              {communitySafe
+
+              {communityRewardUnlocked ||
+              communitySafe
                 ? "✓"
                 : "○"}
+
             </span>
 
 
@@ -1613,15 +2048,20 @@ export default function RiverDefenderGame() {
                 Protect Community
               </strong>
 
+
               <small>
+
                 Save at least 80%
                 of the homes.
+
               </small>
 
             </div>
 
           </div>
 
+
+          {/* HOMES */}
 
           <div className="river-community-progress">
 
@@ -1631,6 +2071,7 @@ export default function RiverDefenderGame() {
                 HOMES SAFE
               </span>
 
+
               <strong>
                 {communityPercent}%
               </strong>
@@ -1638,11 +2079,12 @@ export default function RiverDefenderGame() {
             </div>
 
 
-            <div className="river-progress-track">
+            <div
+              className="river-progress-track"
+            >
 
               <div
                 className="river-progress-fill"
-
                 style={{
                   width:
                     `${Math.min(
@@ -1657,17 +2099,23 @@ export default function RiverDefenderGame() {
           </div>
 
 
+          {/* LIVE TIP */}
+
           <div className="river-tip">
 
             <span>
               💡
             </span>
 
+
             <p>
-              Place defenses near
-              the path of the
-              flood — not directly
-              on buildings.
+
+              {selectedDefense
+
+                ? "Click near the flood path, not directly on a building."
+
+                : "Watch the water. Place defenses where they can redirect, slow or remove floodwater."}
+
             </p>
 
           </div>
@@ -1675,11 +2123,12 @@ export default function RiverDefenderGame() {
         </aside>
 
 
-        {/* =================================================
-            DEFENSE HUD
-            ================================================= */}
+        {/* ====================================================
+            DEFENSE PANEL
+            ==================================================== */}
 
         <aside className="river-tools">
+
 
           <div className="river-panel-title">
             DEFENSES
@@ -1687,8 +2136,26 @@ export default function RiverDefenderGame() {
 
 
           <p className="river-tool-help">
-            Choose a tool, then
-            click the town to place it.
+
+            {selectedDefense
+
+              ? `🎯 ${
+                  DEFENSE_TYPES[
+                    selectedDefense
+                  ]?.name ||
+                  "Defense"
+                } selected — click the town to place it.`
+
+              : (
+                  objectiveStage === 0
+                    ? "Start with a defense near the flood path."
+                    : objectiveStage === 1
+                      ? "Hospital secured. Choose the best defense for the school."
+                      : objectiveStage === 2
+                        ? "School secured. Protect as many homes as possible."
+                        : "Keep monitoring the flood and reinforce weak areas."
+                )}
+
           </p>
 
 
@@ -1703,11 +2170,17 @@ export default function RiverDefenderGame() {
                   ];
 
 
+                if (!defense) {
+                  return null;
+                }
+
+
                 const count =
                   snapshot
                     ?.inventory?.[
                       type
-                    ] ?? 0;
+                    ] ??
+                  0;
 
 
                 const active =
@@ -1718,7 +2191,10 @@ export default function RiverDefenderGame() {
                 return (
 
                   <button
-                    key={type}
+
+                    key={
+                      type
+                    }
 
                     className={`river-tool ${
                       active
@@ -1739,6 +2215,7 @@ export default function RiverDefenderGame() {
                     disabled={
                       count <= 0
                     }
+
                   >
 
                     <span
@@ -1756,10 +2233,9 @@ export default function RiverDefenderGame() {
                         {defense.name}
                       </strong>
 
+
                       <small>
-                        {
-                          defense.description
-                        }
+                        {defense.description}
                       </small>
 
                     </span>
@@ -1774,19 +2250,25 @@ export default function RiverDefenderGame() {
                   </button>
 
                 );
+
               }
             )}
 
           </div>
 
 
+          {/* CANCEL */}
+
           {selectedDefense && (
 
             <button
+
               className="river-cancel-tool"
+
               onClick={
                 cancelDefense
               }
+
             >
               CANCEL PLACEMENT
             </button>
@@ -1794,65 +2276,103 @@ export default function RiverDefenderGame() {
           )}
 
 
+          {/* ERROR */}
+
           {errorMessage && (
 
             <div
               className="river-error"
             >
+
+              ⚠️{" "}
               {errorMessage}
+
             </div>
 
           )}
 
 
+          {/* CONTROLS */}
+
           <div className="river-mini-guide">
 
+
             <div>
-              <span>🖱️</span>
+
+              <span>
+                🖱️
+              </span>
+
               Click map
+
             </div>
 
 
             <div>
-              <span>✋</span>
+
+              <span>
+                ✋
+              </span>
+
               Drag to move
+
             </div>
 
 
             <div>
-              <span>🔍</span>
+
+              <span>
+                🔍
+              </span>
+
               Scroll to zoom
+
             </div>
 
           </div>
 
 
+          {/* LEGEND */}
+
           <div className="river-defense-legend">
 
+
             <div>
-              <span>🧱</span>
+
+              <span>
+                🧱
+              </span>
 
               <small>
                 Redirect
               </small>
+
             </div>
 
 
             <div>
-              <span>🟨</span>
+
+              <span>
+                🟨
+              </span>
 
               <small>
                 Slow
               </small>
+
             </div>
 
 
             <div>
-              <span>💧</span>
+
+              <span>
+                💧
+              </span>
 
               <small>
                 Remove
               </small>
+
             </div>
 
           </div>
@@ -1862,11 +2382,12 @@ export default function RiverDefenderGame() {
       </main>
 
 
-      {/* =====================================================
+      {/* ======================================================
           BOTTOM STATUS
-          ===================================================== */}
+          ====================================================== */}
 
       <footer className="river-bottom-bar">
+
 
         <div className="river-status-left">
 
@@ -1874,10 +2395,13 @@ export default function RiverDefenderGame() {
             className="river-status-dot"
           />
 
+
           <span>
+
             {snapshot?.running
               ? "FLOOD ACTIVE"
               : "READY"}
+
           </span>
 
         </div>
@@ -1885,15 +2409,7 @@ export default function RiverDefenderGame() {
 
         <div className="river-status-center">
 
-          {selectedDefense
-
-            ? `Placing ${
-                DEFENSE_TYPES[
-                  selectedDefense
-                ]?.name
-              }`
-
-            : "Select a defense to begin"}
+          {statusText}
 
         </div>
 
@@ -1925,7 +2441,9 @@ export default function RiverDefenderGame() {
       </footer>
 
     </div>
+
   );
+
 }
 
 
@@ -1948,11 +2466,15 @@ function HowToPlayModal({
         className="river-howto"
       >
 
+
         <button
+
           className="river-modal-close"
+
           onClick={
             onClose
           }
+
         >
           ×
         </button>
@@ -1969,22 +2491,30 @@ function HowToPlayModal({
 
 
         <p className="river-howto-intro">
-          It's simple:
-          protect the town
-          before the flood
-          reaches it.
+
+          A flood is coming.
+          Your job is to protect
+          the town before the
+          water reaches its
+          critical buildings.
+
         </p>
 
 
         <div className="river-howto-grid">
 
+
           <div>
 
-            <span>1</span>
+            <span>
+              1
+            </span>
+
 
             <strong>
-              Watch the river
+              WATCH THE RIVER
             </strong>
+
 
             <p>
               The river rises
@@ -1998,16 +2528,19 @@ function HowToPlayModal({
 
           <div>
 
-            <span>2</span>
+            <span>
+              2
+            </span>
+
 
             <strong>
-              Choose a defense
+              CHOOSE A DEFENSE
             </strong>
 
+
             <p>
-              Use flood walls,
-              sandbags and
-              pumps.
+              Pick a flood wall,
+              sandbags or pump.
             </p>
 
           </div>
@@ -2015,16 +2548,20 @@ function HowToPlayModal({
 
           <div>
 
-            <span>3</span>
+            <span>
+              3
+            </span>
+
 
             <strong>
-              Place it
+              PLACE IT
             </strong>
 
+
             <p>
-              Select a defense
-              and click a good
-              location on the map.
+              Click a suitable
+              location near the
+              flood path.
             </p>
 
           </div>
@@ -2032,16 +2569,20 @@ function HowToPlayModal({
 
           <div>
 
-            <span>4</span>
+            <span>
+              4
+            </span>
+
 
             <strong>
-              Protect buildings
+              PROTECT THE HOSPITAL
             </strong>
 
+
             <p>
-              Keep the hospital,
-              school and homes
-              safe.
+              Keep the critical
+              building safe while
+              the river rises.
             </p>
 
           </div>
@@ -2049,16 +2590,20 @@ function HowToPlayModal({
 
           <div>
 
-            <span>5</span>
+            <span>
+              5
+            </span>
+
 
             <strong>
-              Earn more defenses
+              PROTECT THE SCHOOL
             </strong>
 
+
             <p>
-              Successful decisions
-              unlock additional
-              tools.
+              Successfully protect
+              key buildings to earn
+              more defensive tools.
             </p>
 
           </div>
@@ -2066,16 +2611,20 @@ function HowToPlayModal({
 
           <div>
 
-            <span>6</span>
+            <span>
+              6
+            </span>
+
 
             <strong>
-              Save the town
+              SAVE THE COMMUNITY
             </strong>
 
+
             <p>
-              Keep the community
-              safe until the flood
-              ends.
+              Keep at least 80%
+              of homes safe until
+              the flood ends.
             </p>
 
           </div>
@@ -2085,13 +2634,18 @@ function HowToPlayModal({
 
         <div className="river-howto-tools">
 
+
           <div>
 
-            <span>🧱</span>
+            <span>
+              🧱
+            </span>
+
 
             <strong>
               Flood Wall
             </strong>
+
 
             <small>
               Redirect water
@@ -2102,11 +2656,15 @@ function HowToPlayModal({
 
           <div>
 
-            <span>🟨</span>
+            <span>
+              🟨
+            </span>
+
 
             <strong>
               Sandbags
             </strong>
+
 
             <small>
               Slow water
@@ -2117,11 +2675,15 @@ function HowToPlayModal({
 
           <div>
 
-            <span>💧</span>
+            <span>
+              💧
+            </span>
+
 
             <strong>
               Pump
             </strong>
+
 
             <small>
               Remove water
@@ -2133,10 +2695,13 @@ function HowToPlayModal({
 
 
         <button
+
           className="river-primary-button"
+
           onClick={
             onStart
           }
+
         >
           START GAME
         </button>
@@ -2144,7 +2709,9 @@ function HowToPlayModal({
       </div>
 
     </div>
+
   );
+
 }
 
 
@@ -2165,7 +2732,7 @@ function TrainingGuide({
         "1. BUILD A FLOOD WALL",
 
       text:
-        "Choose 🧱 Flood Wall and place it near the path where the flood is moving.",
+        "Choose 🧱 Flood Wall and place it near the path where floodwater is moving.",
 
       icon:
         "🧱",
@@ -2174,10 +2741,10 @@ function TrainingGuide({
 
     {
       title:
-        "2. WATCH THE FLOOD",
+        "2. WATCH THE WATER",
 
       text:
-        "Watch how the water moves through the town and around your defenses.",
+        "Your defenses change how the flood moves through the town.",
 
       icon:
         "🌊",
@@ -2186,10 +2753,10 @@ function TrainingGuide({
 
     {
       title:
-        "3. PLACE A PUMP",
+        "3. USE A PUMP",
 
       text:
-        "Choose 💧 Pump and place it where floodwater begins collecting.",
+        "Use 💧 Pump near areas where water starts collecting.",
 
       icon:
         "💧",
@@ -2201,7 +2768,7 @@ function TrainingGuide({
         "4. PROTECT THE HOSPITAL",
 
       text:
-        "Your most important job is keeping critical buildings safe.",
+        "The hospital is a critical building. Keep floodwater away from it.",
 
       icon:
         "🏥",
@@ -2210,10 +2777,22 @@ function TrainingGuide({
 
     {
       title:
-        "5. PROTECT THE COMMUNITY",
+        "5. PROTECT THE SCHOOL",
 
       text:
-        "Use your defenses wisely and try to save as many homes as possible.",
+        "After securing the hospital, focus on the school and continue managing the flood.",
+
+      icon:
+        "🏫",
+    },
+
+
+    {
+      title:
+        "6. SAVE THE COMMUNITY",
+
+      text:
+        "Your final goal is to keep at least 80% of the homes safe until the flood ends.",
 
       icon:
         "🏠",
@@ -2225,7 +2804,7 @@ function TrainingGuide({
         "TRAINING COMPLETE",
 
       text:
-        "You know the basics! Now you're ready to defend the town.",
+        "You know the basics. Now defend the town for real!",
 
       icon:
         "🏆",
@@ -2254,6 +2833,7 @@ function TrainingGuide({
       className="river-training-guide"
     >
 
+
       <div
         className="river-training-icon"
       >
@@ -2266,6 +2846,7 @@ function TrainingGuide({
         <strong>
           {current.title}
         </strong>
+
 
         <p>
           {current.text}
@@ -2302,7 +2883,9 @@ function TrainingGuide({
       )}
 
     </div>
+
   );
+
 }
 
 
@@ -2326,7 +2909,8 @@ function ResultScreen({
           (
             homesSafe /
             homesTotal
-          ) * 100
+          ) *
+          100
         )
       : 0;
 
@@ -2344,9 +2928,11 @@ function ResultScreen({
       className="river-result-page"
     >
 
+
       <div
         className="river-result-card"
       >
+
 
         <div
           className="river-result-icon"
@@ -2363,20 +2949,27 @@ function ResultScreen({
 
 
         <h1>
+
           {won
             ? "CITY SAVED!"
             : "THE FLOOD WON"}
+
         </h1>
 
 
         <p>
+
           {won
+
             ? "Excellent planning. You protected the community."
-            : "Try again and place your defenses earlier."}
+
+            : "The flood overwhelmed the town. Try again and place your defenses earlier."}
+
         </p>
 
 
         <div className="river-result-stats">
+
 
           <div>
 
@@ -2384,10 +2977,13 @@ function ResultScreen({
               HOSPITAL
             </span>
 
+
             <strong>
+
               {hospitalSafe
                 ? "SAFE ✓"
                 : "FLOODED"}
+
             </strong>
 
           </div>
@@ -2399,10 +2995,13 @@ function ResultScreen({
               SCHOOL
             </span>
 
+
             <strong>
+
               {schoolSafe
                 ? "SAFE ✓"
                 : "FLOODED"}
+
             </strong>
 
           </div>
@@ -2413,6 +3012,7 @@ function ResultScreen({
             <span>
               HOMES
             </span>
+
 
             <strong>
               {communityPercent}%
@@ -2427,6 +3027,7 @@ function ResultScreen({
               SCORE
             </span>
 
+
             <strong>
               {snapshot?.score ??
                 0}
@@ -2440,6 +3041,7 @@ function ResultScreen({
         <div
           className="river-result-actions"
         >
+
 
           <button
             className="river-primary-button"
@@ -2465,5 +3067,7 @@ function ResultScreen({
       </div>
 
     </div>
+
   );
+
 }
