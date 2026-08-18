@@ -1,268 +1,2501 @@
-#river-defender-game {
-  --sky:#bfe8ff;
-  --grass:#63c264;
-  --grass-dark:#3d9749;
-  --water:#169fe8;
-  --panel:#0f4d58;
-  --panel-2:#1d6758;
-  --cream:#fff8d8;
-  --gold:#ffd15c;
-  --ink:#123238;
-  --ok:#42d66d;
-  --danger:#ef5d4c;
-  position:relative;
-  width:100%;
-  min-height:720px;
-  height:min(88vh,900px);
-  overflow:hidden;
-  background:linear-gradient(#bfe8ff 0%,#e8f8ff 43%,#9bdc7b 44%,#55ad50 100%);
-  color:var(--ink);
-  font-family:"Trebuchet MS",Verdana,sans-serif;
-  isolation:isolate;
+/* ============================================================
+   RIVER DEFENDER
+   Original bright / playful game style
+   ============================================================ */
+
+:root {
+  --river-sky: #bfe9ff;
+  --river-sky-deep: #7bc8e8;
+
+  --river-grass: #5db85b;
+  --river-grass-dark: #388f4b;
+
+  --river-water: #159ddd;
+  --river-water-dark: #0876b8;
+  --river-water-light: #72d8f4;
+
+  --river-cream: #fff8dc;
+  --river-yellow: #ffd45c;
+
+  --river-green: #45c76b;
+  --river-red: #ef5c4d;
+
+  --river-ink: #123238;
+  --river-muted: #547177;
+
+  --river-panel:
+    rgba(13, 66, 70, 0.76);
+
+  --river-shadow:
+    0 10px 26px rgba(15, 54, 61, 0.18);
 }
 
-#river-defender-game #world{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  display:block;
-  z-index:1;
-  cursor:grab;
-  touch-action:none;
-  user-select:none;
-  -webkit-user-select:none;
-}
-#river-defender-game #world.dragging{cursor:grabbing}
-#river-defender-game #world.placing{cursor:crosshair}
 
-#river-defender-game .hidden{display:none!important}
-#river-defender-game .screen{
-  position:absolute;
-  inset:0;
-  z-index:50;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.18),rgba(8,53,61,.34));
-}
-#river-defender-game .screen.active{display:flex}
+/* ============================================================
+   PAGE
+   ============================================================ */
 
-#river-defender-game button{
-  border:0;
-  border-radius:12px;
-  font:inherit;
-  font-weight:900;
-  color:var(--ink);
-  background:var(--gold);
-  cursor:pointer;
-  box-shadow:0 5px 0 #c98d24,0 12px 22px rgba(18,50,56,.22);
-  transition:transform .15s ease,filter .15s ease,opacity .15s ease;
-}
-#river-defender-game button:hover{filter:brightness(1.04);transform:translateY(-1px)}
-#river-defender-game button:active{transform:translateY(2px);box-shadow:0 3px 0 #c98d24}
-#river-defender-game button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.river-defender-page {
+  position: relative;
 
-#river-defender-game .logo,
-#river-defender-game .tutorial-card,
-#river-defender-game .report-card{text-align:center;color:var(--ink)}
-#river-defender-game .logo span,
-#river-defender-game .game-logo strong{display:block;font-weight:900}
-#river-defender-game .logo span{font-size:clamp(56px,9vw,118px);line-height:.82;text-shadow:0 3px 0 #fff1a9,0 8px 18px rgba(12,57,63,.25)}
-#river-defender-game .logo small{display:block;margin-top:14px;color:#fff8d8;font-weight:900;text-shadow:0 2px 6px rgba(12,57,63,.55)}
-#river-defender-game .start-actions{display:flex;gap:16px;justify-content:center;margin-top:38px;flex-wrap:wrap}
-#river-defender-game .start-actions button,
-#river-defender-game .tutorial-card button,
-#river-defender-game .report-card button{padding:14px 24px;min-width:140px}
+  width: 100%;
+  height: 100dvh;
 
-#river-defender-game .tutorial-card,
-#river-defender-game .report-card{
-  width:min(560px,calc(100% - 40px));
-  padding:30px;
-  border:2px solid rgba(255,255,255,.75);
-  border-radius:20px;
-  background:rgba(255,248,216,.96);
-  box-shadow:0 20px 60px rgba(21,61,68,.3),0 5px 0 rgba(112,134,60,.25);
-}
-#river-defender-game .tutorial-card h1,
-#river-defender-game .report-card h1{margin:0 0 14px;font-size:32px;line-height:1}
-#river-defender-game .tutorial-card p{margin:0 0 20px;font-weight:700;line-height:1.5}
-#river-defender-game .steps{display:grid;gap:10px;margin:22px 0;text-align:left}
-#river-defender-game .steps strong{padding:11px 13px;border-radius:10px;background:rgba(60,154,108,.12)}
+  min-height: 600px;
 
-/* HUD */
-#river-defender-game .hud{position:absolute;inset:0;z-index:20;pointer-events:none}
-#river-defender-game .hud>*{pointer-events:auto}
+  overflow: hidden;
 
-#river-defender-game .topbar{
-  position:absolute;
-  top:12px;
-  left:14px;
-  right:14px;
-  height:68px;
-  display:grid;
-  grid-template-columns:190px minmax(420px,1fr) 92px;
-  gap:10px;
-  align-items:center;
-  z-index:30;
-  pointer-events:none;
-}
-#river-defender-game .game-logo{
-  padding:8px 12px;
-  border-radius:14px;
-  background:rgba(255,248,216,.86);
-  box-shadow:0 8px 22px rgba(18,50,56,.15);
-}
-#river-defender-game .game-logo strong{font-size:25px;line-height:.83;letter-spacing:-1px;color:#123238}
-#river-defender-game .game-logo span{display:block;margin-top:8px;font-size:9px;font-weight:900;color:#2a6948;letter-spacing:.7px}
+  color: var(--river-ink);
 
-#river-defender-game .stats{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:8px;pointer-events:none}
-#river-defender-game .stats div{
-  min-height:50px;
-  padding:7px 12px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:14px;
-  color:#fff;
-  background:linear-gradient(145deg,rgba(12,69,78,.94),rgba(28,94,72,.88));
-  box-shadow:0 9px 22px rgba(18,50,56,.18),inset 0 1px 0 rgba(255,255,255,.12);
-  backdrop-filter:blur(8px);
-}
-#river-defender-game .stats span{display:block;font-size:9px;font-weight:900;color:#dff8ff;letter-spacing:.4px}
-#river-defender-game .stats strong{display:block;margin-top:3px;font-size:19px}
-#river-defender-game .pause{min-width:92px;padding:11px 14px;pointer-events:auto}
+  font-family:
+    "Trebuchet MS",
+    "Segoe UI",
+    Arial,
+    sans-serif;
 
-#river-defender-game .mission{
-  position:absolute;
-  left:18px;
-  top:96px;
-  width:222px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:18px;
-  color:#fff;
-  background:linear-gradient(150deg,rgba(8,64,75,.96),rgba(26,93,70,.91));
-  box-shadow:0 16px 34px rgba(12,45,50,.26),inset 0 1px 0 rgba(255,255,255,.1);
-  backdrop-filter:blur(8px);
-  z-index:26;
-}
-#river-defender-game .mission h2,
-#river-defender-game .mission h3{margin:0 0 9px;font-size:10px;color:#dff8ff;letter-spacing:.6px}
-#river-defender-game .mission h3{margin-top:17px;color:#ffe58b}
-#river-defender-game .mission p{margin:0 0 7px;font-size:13px;font-weight:800;line-height:1.4}
-#river-defender-game .mission ul{margin:0;padding:0;list-style:none;font-size:14px;font-weight:900;line-height:1.85}
-#river-defender-game .mission li{display:flex;align-items:center;gap:7px}
-#river-defender-game .mission li::first-letter{color:#ffd15c}
-#river-defender-game .mission::after{content:'DRAG TO EXPLORE  •  SCROLL TO ZOOM';display:block;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.14);font-size:8px;font-weight:900;letter-spacing:.4px;color:rgba(255,255,255,.7)}
+  background:
+    linear-gradient(
+      180deg,
+      #bde7ff 0%,
+      #e9f8ff 42%,
+      #8ed576 43%,
+      #55ad55 100%
+    );
 
-#river-defender-game .status{
-  position:absolute;
-  top:92px;
-  left:50%;
-  transform:translateX(-50%);
-  padding:11px 22px;
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:15px;
-  color:#fff;
-  background:linear-gradient(145deg,rgba(9,75,78,.96),rgba(27,101,69,.92));
-  box-shadow:0 10px 25px rgba(12,50,55,.22),inset 0 1px 0 rgba(255,255,255,.1);
-  font-size:18px;font-weight:900;text-align:center;white-space:nowrap;z-index:28
-}
-#river-defender-game .place-hint{
-  position:absolute;
-  left:50%;
-  bottom:118px;
-  transform:translateX(-50%);
-  max-width:min(680px,calc(100% - 540px));
-  padding:10px 18px;
-  border:1px solid rgba(255,255,255,.8);
-  border-radius:14px;
-  color:#123238;
-  background:rgba(255,248,216,.96);
-  box-shadow:0 9px 20px rgba(18,50,56,.17);
-  font-size:14px;font-weight:900;text-align:center;z-index:27
+  isolation: isolate;
 }
 
-/* Defense dock */
-#river-defender-game .toolbar{
-  position:absolute;
-  left:50%;
-  bottom:12px;
-  transform:translateX(-50%);
-  display:flex!important;
-  gap:10px;
-  margin:0;
-  padding:8px;
-  border:1px solid rgba(255,255,255,.2);
-  border-radius:20px;
-  background:linear-gradient(145deg,rgba(10,62,67,.94),rgba(27,87,69,.9));
-  box-shadow:0 16px 34px rgba(13,47,53,.3),inset 0 1px 0 rgba(255,255,255,.14);
-  backdrop-filter:blur(10px);
-  z-index:35;
-}
-#river-defender-game .tool{
-  width:182px;height:86px;
-  display:grid;
-  grid-template-columns:48px 1fr 38px;
-  grid-template-rows:1fr 18px;
-  grid-template-areas:'icon name count' 'icon desc count';
-  align-items:center;justify-items:start;column-gap:8px;
-  padding:9px 11px;
-  border:2px solid rgba(255,255,255,.8);
-  border-radius:14px;
-  background:linear-gradient(145deg,#fffdf2,#e6ebdf);
-  box-shadow:0 5px 0 rgba(112,134,60,.55),0 12px 24px rgba(18,50,56,.18),inset 0 1px 0 #fff;
-}
-#river-defender-game .tool .icon{grid-area:icon;width:46px;height:46px;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:#edf0e8;box-shadow:inset 0 1px 0 #fff,0 3px 8px rgba(20,60,65,.1)}
-#river-defender-game .tool .icon svg{width:42px;height:42px;display:block;filter:drop-shadow(0 2px 2px rgba(25,55,55,.18))}
-#river-defender-game .wall-tool .icon{background:linear-gradient(145deg,#eee9df,#cfc8bc)}
-#river-defender-game .pump-tool .icon{background:linear-gradient(145deg,#e3f5fa,#c6e3e8)}
-#river-defender-game .sand-tool .icon{background:linear-gradient(145deg,#f5e7c3,#e0c486)}
-#river-defender-game .tool strong{grid-area:name;font-size:13px;line-height:1;white-space:nowrap}
-#river-defender-game .tool small{grid-area:desc;font-size:8px;font-weight:900;color:#28719a;white-space:nowrap}
-#river-defender-game .tool em{grid-area:count;justify-self:center;font-style:normal;font-size:18px;font-weight:900;color:#276137}
-#river-defender-game .tool.selected{background:linear-gradient(145deg,#ffe070,#ffc94d);outline:3px solid #fff;transform:translateY(-4px);box-shadow:0 6px 0 rgba(179,119,24,.75),0 16px 30px rgba(18,50,56,.25)}
-#river-defender-game .tool:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.15)}
-#river-defender-game .tool:disabled:hover{transform:none}
 
-/* Responsive */
-@media(max-width:980px){
-  #river-defender-game .topbar{grid-template-columns:140px 1fr 78px;left:10px;right:10px}
-  #river-defender-game .game-logo strong{font-size:22px}
-  #river-defender-game .stats{grid-template-columns:repeat(3,minmax(82px,1fr))}
-  #river-defender-game .mission{width:190px;top:98px}
-  #river-defender-game .tool{width:155px}
-  #river-defender-game .place-hint{max-width:calc(100% - 420px)}
+/* ============================================================
+   INTRO
+   ============================================================ */
+
+.river-intro {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      #b8e8ff 0%,
+      #e6f8ff 48%,
+      #8bd374 49%,
+      #53ad55 100%
+    );
 }
-@media(max-width:820px){
-  #river-defender-game .topbar{grid-template-columns:1fr auto; height:auto}
-  #river-defender-game .game-logo{display:none}
-  #river-defender-game .stats{grid-template-columns:repeat(3,minmax(72px,1fr))}
-  #river-defender-game .mission{top:112px;width:178px;padding:12px}
-  #river-defender-game .toolbar{gap:7px;padding:6px}
-  #river-defender-game .tool{width:140px;height:78px;grid-template-columns:40px 1fr 30px;padding:7px}
-  #river-defender-game .tool .icon{width:38px;height:38px}
-  #river-defender-game .tool .icon svg{width:35px;height:35px}
-  #river-defender-game .tool strong{font-size:11px}
-  #river-defender-game .tool small{font-size:7px}
-  #river-defender-game .place-hint{bottom:100px;max-width:calc(100% - 240px);font-size:12px}
+
+.river-intro::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(255,255,255,0.7),
+      transparent 34%
+    );
+
+  pointer-events: none;
 }
-@media(max-width:620px){
-  #river-defender-game{min-height:680px;height:100vh}
-  #river-defender-game .topbar{left:8px;right:8px;top:8px}
-  #river-defender-game .stats{grid-template-columns:repeat(2,minmax(80px,1fr));gap:6px}
-  #river-defender-game .stats div{min-height:42px;padding:6px 8px}
-  #river-defender-game .stats strong{font-size:15px}
-  #river-defender-game .pause{min-width:72px;padding:9px 10px}
-  #river-defender-game .mission{left:8px;top:108px;width:155px;padding:10px}
-  #river-defender-game .mission ul{font-size:12px}
-  #river-defender-game .status{top:96px;font-size:14px;max-width:calc(100% - 20px);white-space:normal}
-  #river-defender-game .place-hint{left:8px;right:8px;bottom:94px;width:auto;max-width:none;transform:none;font-size:11px}
-  #river-defender-game .toolbar{width:calc(100% - 12px);justify-content:center;gap:5px;bottom:6px}
-  #river-defender-game .tool{flex:1;width:auto;max-width:120px;height:70px;grid-template-columns:34px 1fr 26px;column-gap:5px;padding:6px}
-  #river-defender-game .tool .icon{width:32px;height:32px}
-  #river-defender-game .tool .icon svg{width:30px;height:30px}
-  #river-defender-game .tool strong{font-size:9px}
-  #river-defender-game .tool small{font-size:6px}
-  #river-defender-game .tool em{font-size:13px}
+
+.river-intro-water {
+  position: absolute;
+
+  left: -10%;
+  right: -10%;
+
+  bottom: -14%;
+
+  height: 42%;
+
+  background:
+    linear-gradient(
+      180deg,
+      #38b9e7,
+      #087fbe
+    );
+
+  clip-path:
+    polygon(
+      0 25%,
+      8% 19%,
+      18% 24%,
+      28% 17%,
+      39% 24%,
+      50% 16%,
+      62% 23%,
+      73% 17%,
+      84% 23%,
+      100% 15%,
+      100% 100%,
+      0 100%
+    );
+
+  opacity: 0.9;
+
+  animation:
+    riverIntroWave
+    7s ease-in-out infinite;
+}
+
+@keyframes riverIntroWave {
+
+  0%,
+  100% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(-12px);
+  }
+}
+
+.river-intro-content {
+  position: relative;
+
+  z-index: 2;
+
+  width:
+    min(700px, calc(100% - 36px));
+
+  text-align: center;
+
+  margin-top: -4vh;
+}
+
+.river-eyebrow {
+  margin-bottom: 12px;
+
+  font-size:
+    clamp(10px, 1.2vw, 13px);
+
+  font-weight: 900;
+
+  letter-spacing: 0.2em;
+
+  color: #24694f;
+}
+
+.river-intro h1 {
+  margin: 0;
+
+  font-size:
+    clamp(58px, 9vw, 112px);
+
+  line-height: 0.78;
+
+  font-weight: 1000;
+
+  letter-spacing: -0.055em;
+
+  color: #123238;
+
+  text-shadow:
+    0 4px 0 #fff0a9,
+    0 12px 24px rgba(17,66,70,0.25);
+}
+
+.river-intro h1 span {
+  display: block;
+
+  color: #176f9e;
+}
+
+.river-tagline {
+  margin:
+    18px 0 12px;
+
+  font-size:
+    clamp(12px, 1.5vw, 16px);
+
+  font-weight: 900;
+
+  letter-spacing: 0.28em;
+
+  color: #fff7d5;
+
+  text-shadow:
+    0 2px 6px rgba(20,69,69,0.55);
+}
+
+.river-intro-description {
+  width:
+    min(520px, 100%);
+
+  margin:
+    0 auto;
+
+  font-size:
+    clamp(14px, 1.5vw, 18px);
+
+  line-height: 1.5;
+
+  font-weight: 700;
+
+  color: #17474d;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.river-intro-actions {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 26px;
+
+  flex-wrap: wrap;
+}
+
+.river-primary-button,
+.river-secondary-button,
+.river-training-button {
+  min-height: 46px;
+
+  padding:
+    11px 22px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  font: inherit;
+
+  font-size: 13px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.river-primary-button {
+  color: #17372f;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffe57a,
+      #ffc94d
+    );
+
+  box-shadow:
+    0 5px 0 #c79528,
+    0 12px 24px rgba(30,73,58,0.2);
+}
+
+.river-secondary-button {
+  color: white;
+
+  background:
+    rgba(18,67,73,0.9);
+
+  box-shadow:
+    0 8px 20px rgba(17,54,60,0.18);
+}
+
+.river-training-button {
+  color: #24634c;
+
+  background:
+    rgba(255,255,255,0.82);
+
+  border:
+    2px solid rgba(255,255,255,0.75);
+
+  box-shadow:
+    0 8px 18px rgba(35,80,64,0.12);
+}
+
+.river-primary-button:hover,
+.river-secondary-button:hover,
+.river-training-button:hover {
+  transform:
+    translateY(-2px);
+
+  filter:
+    brightness(1.04);
+}
+
+.river-primary-button:active,
+.river-secondary-button:active,
+.river-training-button:active {
+  transform:
+    translateY(1px);
+}
+
+.river-simple-rule {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 26px;
+
+  font-size: 12px;
+
+  font-weight: 900;
+
+  color: #275c4c;
+
+  flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   GAME PAGE
+   ============================================================ */
+
+.river-game-page {
+  display: flex;
+
+  flex-direction: column;
+
+  background:
+    linear-gradient(
+      180deg,
+      #9bdcf4 0%,
+      #ccefff 35%,
+      #68bd61 36%,
+      #4ea753 100%
+    );
+}
+
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.river-topbar {
+  position: relative;
+
+  z-index: 50;
+
+  flex:
+    0 0 68px;
+
+  height: 68px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding:
+    9px 16px;
+
+  background:
+    rgba(12,52,59,0.88);
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.14);
+
+  box-shadow:
+    0 5px 18px rgba(14,55,61,0.16);
+
+  backdrop-filter:
+    blur(10px);
+}
+
+.river-brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  min-width: 170px;
+}
+
+.river-brand-icon {
+  width: 39px;
+  height: 39px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #58d2f0,
+      #1388bf
+    );
+
+  font-size: 20px;
+
+  box-shadow:
+    inset
+    0 1px 0
+    rgba(255,255,255,0.35);
+}
+
+.river-brand strong {
+  display: block;
+
+  color: white;
+
+  font-size: 15px;
+
+  line-height: 1;
+}
+
+.river-brand span {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #a9dbe1;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.16em;
+}
+
+
+/* ============================================================
+   TOP STATS
+   ============================================================ */
+
+.river-top-stats {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 7px;
+}
+
+.river-stat {
+  min-width: 76px;
+
+  padding:
+    6px 10px;
+
+  border:
+    1px solid rgba(255,255,255,0.12);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255,255,255,0.075);
+
+  text-align: center;
+}
+
+.river-stat span {
+  display: block;
+
+  color: #a9dbe1;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.12em;
+}
+
+.river-stat strong {
+  display: block;
+
+  margin-top: 2px;
+
+  color: white;
+
+  font-size: 15px;
+}
+
+.river-exit-button {
+  min-height: 34px;
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid rgba(255,255,255,0.18);
+
+  border-radius: 8px;
+
+  background:
+    rgba(239,92,77,0.86);
+
+  color: white;
+
+  font: inherit;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.river-exit-button:hover {
+  transform:
+    translateY(-1px);
+
+  filter:
+    brightness(1.06);
+}
+
+
+/* ============================================================
+   GAME LAYOUT
+   ============================================================ */
+/*
+   IMPORTANT:
+   The map now occupies the entire game area.
+   Mission + defenses are floating HUDs.
+*/
+
+.river-game-layout {
+  position: relative;
+
+  flex:
+    1 1 auto;
+
+  min-height: 0;
+
+  display: block;
+
+  padding: 8px;
+
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   WORLD
+   ============================================================ */
+
+.river-world-container {
+  position: absolute;
+
+  inset: 8px;
+
+  overflow: hidden;
+
+  border-radius: 15px;
+
+  background:
+    #6abf60;
+
+  box-shadow:
+    0 10px 30px rgba(18,55,52,0.22);
+
+  border:
+    2px solid rgba(255,255,255,0.35);
+}
+
+.river-world-canvas {
+  position: absolute;
+
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  cursor: grab;
+
+  touch-action: none;
+
+  user-select: none;
+}
+
+.river-world-canvas:active {
+  cursor: grabbing;
+}
+
+
+/* ============================================================
+   MISSION FLOATING HUD
+   ============================================================ */
+
+.river-objectives {
+  position: absolute;
+
+  left: 18px;
+  top: 18px;
+
+  z-index: 30;
+
+  width: 155px;
+
+  padding: 11px;
+
+  border:
+    1px solid rgba(255,255,255,0.2);
+
+  border-radius: 12px;
+
+  background:
+    rgba(13,66,70,0.72);
+
+  color: white;
+
+  box-shadow:
+    0 8px 24px rgba(12,48,51,0.18);
+
+  backdrop-filter:
+    blur(7px);
+
+  overflow: hidden;
+
+  user-select: none;
+}
+
+.river-panel-title {
+  margin-bottom: 7px;
+
+  font-size: 9px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.14em;
+
+  color: #c4edf0;
+}
+
+.river-objective {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 7px;
+
+  padding:
+    6px 0;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.river-objective > span {
+  flex:
+    0 0 auto;
+
+  width: 18px;
+  height: 18px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255,255,255,0.12);
+
+  color: #bfe2e5;
+
+  font-size: 9px;
+}
+
+.river-objective > span.complete {
+  color: #123c2b;
+
+  background:
+    #69dd82;
+}
+
+.river-objective strong {
+  display: block;
+
+  font-size: 9px;
+
+  line-height: 1.1;
+}
+
+.river-objective small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #a9d3d7;
+
+  font-size: 7px;
+
+  line-height: 1.25;
+}
+
+
+/* ============================================================
+   COMMUNITY PROGRESS
+   ============================================================ */
+
+.river-community-progress {
+  margin-top: 8px;
+
+  padding-top: 8px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.river-community-progress > div:first-child {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.river-community-progress span {
+  color: #a9d3d7;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+}
+
+.river-community-progress strong {
+  color: white;
+
+  font-size: 9px;
+}
+
+.river-progress-track {
+  width: 100%;
+
+  height: 5px;
+
+  margin-top: 5px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.12);
+}
+
+.river-progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #45c76b,
+      #8ee26b
+    );
+
+  transition:
+    width 0.35s ease;
+}
+
+.river-tip {
+  display: flex;
+
+  gap: 6px;
+
+  margin-top: 9px;
+
+  padding: 7px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(255,210,86,0.12);
+
+  color: #fff1b1;
+}
+
+.river-tip span {
+  flex:
+    0 0 auto;
+}
+
+.river-tip p {
+  margin: 0;
+
+  font-size: 7px;
+
+  line-height: 1.35;
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   DEFENSE FLOATING HUD
+   ============================================================ */
+
+.river-tools {
+  position: absolute;
+
+  right: 18px;
+  top: 18px;
+
+  z-index: 30;
+
+  width: 168px;
+
+  padding: 10px;
+
+  border:
+    1px solid rgba(255,255,255,0.2);
+
+  border-radius: 12px;
+
+  background:
+    rgba(13,66,70,0.72);
+
+  color: white;
+
+  box-shadow:
+    0 8px 24px rgba(12,48,51,0.18);
+
+  backdrop-filter:
+    blur(7px);
+
+  overflow: hidden;
+
+  user-select: none;
+}
+
+.river-tool-help {
+  margin:
+    -2px 0 8px;
+
+  color:
+    #a8d0d4;
+
+  font-size: 7px;
+
+  line-height: 1.3;
+}
+
+.river-tool-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.river-tool {
+  position: relative;
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    30px minmax(0,1fr) auto;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px;
+
+  border:
+    1px solid rgba(255,255,255,0.2);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255,248,220,0.94);
+
+  color: #183e42;
+
+  text-align: left;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.river-tool:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(255,255,255,0.7);
+}
+
+.river-tool:active:not(:disabled) {
+  transform:
+    translateY(1px);
+}
+
+.river-tool.selected {
+  background:
+    linear-gradient(
+      135deg,
+      #ffe47b,
+      #ffc94e
+    );
+
+  border-color:
+    white;
+
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.5);
+}
+
+.river-tool.empty {
+  opacity: 0.42;
+
+  cursor: not-allowed;
+}
+
+.river-tool:disabled {
+  cursor: not-allowed;
+}
+
+.river-tool-icon {
+  width: 27px;
+  height: 27px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 7px;
+
+  background:
+    rgba(25,116,145,0.12);
+
+  font-size: 17px;
+}
+
+.river-tool-info {
+  min-width: 0;
+}
+
+.river-tool-info strong {
+  display: block;
+
+  font-size: 9px;
+
+  line-height: 1.1;
+}
+
+.river-tool-info small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #577275;
+
+  font-size: 7px;
+
+  line-height: 1.15;
+}
+
+.river-tool-count {
+  min-width: 21px;
+
+  padding:
+    3px 4px;
+
+  border-radius: 6px;
+
+  background:
+    #247c63;
+
+  color: white;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  text-align: center;
+}
+
+.river-cancel-tool {
+  width: 100%;
+
+  margin-top: 7px;
+
+  padding:
+    6px;
+
+  border:
+    1px solid rgba(255,255,255,0.15);
+
+  border-radius: 7px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  color: #d9eff1;
+
+  font: inherit;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.river-cancel-tool:hover {
+  background:
+    rgba(255,255,255,0.14);
+
+  transform:
+    translateY(-1px);
+}
+
+.river-error {
+  margin-top: 7px;
+
+  padding:
+    7px;
+
+  border-radius: 7px;
+
+  background:
+    rgba(239,92,77,0.18);
+
+  color:
+    #ffd2cd;
+
+  font-size: 7px;
+
+  line-height: 1.35;
+
+  font-weight: 800;
+}
+
+
+/* ============================================================
+   MINI CONTROLS
+   ============================================================ */
+
+.river-mini-guide {
+  display: grid;
+
+  gap: 4px;
+
+  margin-top: 9px;
+
+  padding-top: 8px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.1);
+}
+
+.river-mini-guide div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color:
+    #a8ced2;
+
+  font-size: 7px;
+
+  font-weight: 800;
+}
+
+
+/* ============================================================
+   DEFENSE LEGEND
+   ============================================================ */
+
+.river-defense-legend {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap: 4px;
+
+  margin-top: 8px;
+
+  padding-top: 7px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.1);
+}
+
+.river-defense-legend div {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 2px;
+}
+
+.river-defense-legend span {
+  font-size: 13px;
+}
+
+.river-defense-legend small {
+  color:
+    #9fc8cc;
+
+  font-size: 6px;
+
+  font-weight: 800;
+}
+
+
+/* ============================================================
+   GAME MESSAGE
+   ============================================================ */
+
+.river-message {
+  position: absolute;
+
+  left: 50%;
+  top: 14px;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 20;
+
+  max-width:
+    min(500px, calc(100% - 300px));
+
+  padding:
+    8px 15px;
+
+  border-radius: 20px;
+
+  color: white;
+
+  background:
+    rgba(13,62,70,0.78);
+
+  box-shadow:
+    0 6px 18px rgba(20,55,60,0.18);
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  text-align: center;
+
+  pointer-events: none;
+
+  backdrop-filter:
+    blur(6px);
+}
+
+.river-message.success {
+  background:
+    rgba(32,135,72,0.88);
+}
+
+.river-message.warning {
+  background:
+    rgba(207,123,35,0.9);
+}
+
+.river-message.danger {
+  background:
+    rgba(196,56,50,0.9);
+}
+
+.river-message.reward {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34,137,91,0.95),
+      rgba(22,103,129,0.95)
+    );
+}
+
+
+/* ============================================================
+   PLACEMENT HINT
+   ============================================================ */
+
+.river-placement-hint {
+  position: absolute;
+
+  left: 50%;
+
+  bottom: 14px;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 25;
+
+  padding:
+    7px 12px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,248,220,0.94);
+
+  color:
+    #24594a;
+
+  font-size: 9px;
+
+  font-weight: 900;
+
+  pointer-events: none;
+
+  box-shadow:
+    0 5px 14px rgba(20,55,50,0.16);
+}
+
+
+/* ============================================================
+   BOTTOM BAR
+   ============================================================ */
+
+.river-bottom-bar {
+  position: relative;
+
+  z-index: 50;
+
+  flex:
+    0 0 34px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto 1fr;
+
+  align-items: center;
+
+  padding:
+    0 13px;
+
+  background:
+    rgba(10,46,53,0.92);
+
+  color:
+    #b9dfe2;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.05em;
+}
+
+.river-status-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+.river-status-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background:
+    #54dc75;
+
+  box-shadow:
+    0 0 8px #54dc75;
+}
+
+.river-status-center {
+  color:
+    #fff3bd;
+
+  text-align: center;
+}
+
+.river-status-right {
+  display: flex;
+
+  justify-content: flex-end;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.river-status-right strong {
+  color: white;
+}
+
+
+/* ============================================================
+   HOW TO PLAY
+   ============================================================ */
+
+.river-modal-backdrop {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+
+  background:
+    rgba(10,44,51,0.5);
+
+  backdrop-filter:
+    blur(5px);
+}
+
+.river-howto {
+  position: relative;
+
+  width:
+    min(650px,100%);
+
+  max-height:
+    calc(100dvh - 36px);
+
+  overflow-y: auto;
+
+  padding:
+    25px;
+
+  border:
+    2px solid rgba(255,255,255,0.7);
+
+  border-radius: 18px;
+
+  background:
+    #fff8dc;
+
+  box-shadow:
+    0 25px 70px rgba(11,51,57,0.35);
+
+  text-align: center;
+}
+
+.river-modal-close {
+  position: absolute;
+
+  top: 10px;
+  right: 12px;
+
+  width: 30px;
+  height: 30px;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  background:
+    rgba(18,50,56,0.1);
+
+  color:
+    #123238;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.river-howto h2 {
+  margin:
+    0 0 7px;
+
+  font-size:
+    clamp(27px,4vw,40px);
+
+  line-height: 1;
+
+  color:
+    #123238;
+}
+
+.river-howto-intro {
+  margin:
+    0 auto 20px;
+
+  max-width: 460px;
+
+  color:
+    #527075;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  line-height: 1.45;
+}
+
+.river-howto-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap: 9px;
+
+  text-align: left;
+}
+
+.river-howto-grid > div {
+  padding:
+    11px;
+
+  border-radius: 11px;
+
+  background:
+    rgba(60,154,108,0.1);
+}
+
+.river-howto-grid span {
+  display: grid;
+
+  width: 24px;
+  height: 24px;
+
+  place-items: center;
+
+  margin-bottom: 7px;
+
+  border-radius: 50%;
+
+  background:
+    #2f9a65;
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 900;
+}
+
+.river-howto-grid strong {
+  display: block;
+
+  font-size: 11px;
+}
+
+.river-howto-grid p {
+  margin:
+    4px 0 0;
+
+  color:
+    #557174;
+
+  font-size: 9px;
+
+  line-height: 1.35;
+}
+
+.river-howto-tools {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap: 8px;
+
+  margin:
+    15px 0;
+}
+
+.river-howto-tools div {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 3px;
+
+  padding:
+    9px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(30,159,234,0.08);
+}
+
+.river-howto-tools strong {
+  font-size: 10px;
+}
+
+.river-howto-tools small {
+  color:
+    #60777a;
+
+  font-size: 8px;
+}
+
+
+/* ============================================================
+   TRAINING
+   ============================================================ */
+
+.river-training-guide {
+  position: absolute;
+
+  left: 50%;
+
+  bottom: 15px;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 40;
+
+  width:
+    min(440px,calc(100% - 30px));
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    10px 12px;
+
+  border:
+    2px solid rgba(255,255,255,0.7);
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,248,220,0.97);
+
+  box-shadow:
+    0 10px 30px rgba(20,55,55,0.22);
+}
+
+.river-training-icon {
+  font-size: 24px;
+}
+
+.river-training-guide strong {
+  display: block;
+
+  color:
+    #173d42;
+
+  font-size: 10px;
+}
+
+.river-training-guide p {
+  margin:
+    3px 0 0;
+
+  color:
+    #5b7376;
+
+  font-size: 8px;
+
+  line-height: 1.3;
+}
+
+.river-training-guide button {
+  margin-left: auto;
+
+  flex:
+    0 0 auto;
+
+  padding:
+    7px 10px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background:
+    #2d9a65;
+
+  color: white;
+
+  font: inherit;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   RESULT
+   ============================================================ */
+
+.river-result-page {
+  width: 100%;
+  height: 100dvh;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 18px;
+
+  overflow: auto;
+
+  background:
+    linear-gradient(
+      180deg,
+      #bceaff 0%,
+      #e7f8ff 45%,
+      #7cc96c 46%,
+      #51aa55 100%
+    );
+}
+
+.river-result-card {
+  width:
+    min(560px,100%);
+
+  padding:
+    clamp(22px,5vw,40px);
+
+  border:
+    2px solid rgba(255,255,255,0.75);
+
+  border-radius: 20px;
+
+  background:
+    rgba(255,248,220,0.96);
+
+  box-shadow:
+    0 25px 70px rgba(15,53,58,0.28);
+
+  text-align: center;
+}
+
+.river-result-icon {
+  font-size:
+    clamp(48px,8vw,76px);
+
+  margin-bottom: 6px;
+}
+
+.river-result-card h1 {
+  margin:
+    0 0 8px;
+
+  font-size:
+    clamp(32px,6vw,52px);
+
+  line-height: 0.95;
+
+  color:
+    #123238;
+}
+
+.river-result-card > p {
+  margin:
+    0 auto 20px;
+
+  max-width: 410px;
+
+  color:
+    #587174;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+
+  font-weight: 700;
+}
+
+.river-result-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap: 7px;
+
+  margin-bottom: 22px;
+}
+
+.river-result-stats div {
+  padding:
+    9px 5px;
+
+  border-radius: 9px;
+
+  background:
+    rgba(60,154,108,0.1);
+}
+
+.river-result-stats span {
+  display: block;
+
+  color:
+    #658083;
+
+  font-size: 7px;
+
+  font-weight: 900;
+}
+
+.river-result-stats strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color:
+    #246a4d;
+
+  font-size: 12px;
+}
+
+.river-result-actions {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+.river-defender-page button:focus-visible {
+  outline:
+    3px solid white;
+
+  outline-offset:
+    2px;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+  .river-objectives {
+    left: 14px;
+    top: 14px;
+
+    width: 145px;
+  }
+
+  .river-tools {
+    right: 14px;
+    top: 14px;
+
+    width: 155px;
+  }
+
+  .river-stat {
+    min-width: 65px;
+
+    padding:
+      5px 7px;
+  }
+
+  .river-stat strong {
+    font-size: 13px;
+  }
+
+  .river-tool {
+    grid-template-columns:
+      27px minmax(0,1fr) auto;
+  }
+
+  .river-tool-icon {
+    width: 25px;
+    height: 25px;
+
+    font-size: 15px;
+  }
+
+}
+
+
+/* ============================================================
+   SMALL LAPTOP / TABLET
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+  .river-topbar {
+    height: 60px;
+
+    flex-basis: 60px;
+  }
+
+  .river-brand {
+    min-width: 145px;
+  }
+
+  .river-brand strong {
+    font-size: 12px;
+  }
+
+  .river-brand span {
+    font-size: 7px;
+  }
+
+  .river-brand-icon {
+    width: 34px;
+    height: 34px;
+
+    font-size: 17px;
+  }
+
+  .river-top-stats {
+    gap: 4px;
+  }
+
+  .river-stat {
+    min-width: 56px;
+
+    padding:
+      4px 5px;
+  }
+
+  .river-stat span {
+    font-size: 7px;
+  }
+
+  .river-stat strong {
+    font-size: 11px;
+  }
+
+  .river-exit-button {
+    min-height: 29px;
+
+    padding:
+      5px 8px;
+
+    font-size: 8px;
+  }
+
+  .river-objectives {
+    width: 135px;
+  }
+
+  .river-tools {
+    width: 145px;
+  }
+
+  .river-tool-info small {
+    display: none;
+  }
+
+  .river-bottom-bar {
+    flex-basis: 29px;
+
+    font-size: 7px;
+  }
+
+}
+
+
+/* ============================================================
+   PHONE
+   ============================================================ */
+
+@media (max-width: 650px) {
+
+  .river-defender-page {
+    min-height: 520px;
+  }
+
+
+  /* ----------------------------------------------------------
+     INTRO
+     ---------------------------------------------------------- */
+
+  .river-intro-content {
+    margin-top: -8vh;
+  }
+
+  .river-intro h1 {
+    font-size:
+      clamp(50px,17vw,80px);
+  }
+
+  .river-intro-description {
+    font-size: 13px;
+
+    max-width: 370px;
+  }
+
+  .river-intro-actions {
+    gap: 7px;
+
+    margin-top: 19px;
+  }
+
+  .river-primary-button,
+  .river-secondary-button,
+  .river-training-button {
+    min-height: 40px;
+
+    padding:
+      8px 13px;
+
+    font-size: 10px;
+  }
+
+  .river-simple-rule {
+    margin-top: 17px;
+
+    font-size: 9px;
+
+    gap: 6px;
+  }
+
+
+  /* ----------------------------------------------------------
+     TOP BAR
+     ---------------------------------------------------------- */
+
+  .river-topbar {
+    height: 52px;
+
+    flex-basis: 52px;
+
+    padding:
+      6px 7px;
+  }
+
+  .river-brand {
+    min-width: 0;
+  }
+
+  .river-brand-icon {
+    width: 30px;
+    height: 30px;
+
+    font-size: 15px;
+  }
+
+  .river-brand strong {
+    font-size: 9px;
+  }
+
+  .river-brand span {
+    display: none;
+  }
+
+  .river-top-stats {
+    flex: 1;
+
+    justify-content: flex-end;
+  }
+
+  .river-stat {
+    min-width: 42px;
+
+    padding:
+      3px 4px;
+  }
+
+  .river-stat span {
+    font-size: 6px;
+  }
+
+  .river-stat strong {
+    font-size: 9px;
+  }
+
+  .river-exit-button {
+    min-height: 26px;
+
+    padding:
+      4px 7px;
+
+    font-size: 7px;
+  }
+
+
+  /* ----------------------------------------------------------
+     GAME AREA
+     ---------------------------------------------------------- */
+
+  .river-game-layout {
+    padding: 4px;
+  }
+
+  .river-world-container {
+    inset: 4px;
+
+    border-radius: 11px;
+  }
+
+
+  /* ----------------------------------------------------------
+     MISSION
+     ---------------------------------------------------------- */
+
+  .river-objectives {
+    left: 9px;
+    top: 9px;
+
+    width: 132px;
+
+    max-height: 105px;
+
+    padding: 7px;
+  }
+
+  .river-panel-title {
+    margin-bottom: 3px;
+
+    font-size: 7px;
+  }
+
+  .river-objective {
+    padding:
+      4px 0;
+
+    gap: 5px;
+  }
+
+  .river-objective > span {
+    width: 16px;
+    height: 16px;
+
+    font-size: 8px;
+  }
+
+  .river-objective strong {
+    font-size: 7px;
+  }
+
+  .river-objective small {
+    display: none;
+  }
+
+  .river-community-progress {
+    display: none;
+  }
+
+  .river-tip {
+    display: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     DEFENSES
+     ---------------------------------------------------------- */
+
+  .river-tools {
+    left: 50%;
+    right: auto;
+
+    top: auto;
+    bottom: 8px;
+
+    transform:
+      translateX(-50%);
+
+    width:
+      calc(100% - 18px);
+
+    max-width: 390px;
+
+    padding: 6px;
+  }
+
+  .river-tools .river-panel-title,
+  .river-tool-help {
+    display: none;
+  }
+
+  .river-tool-list {
+    display: grid;
+
+    grid-template-columns:
+      repeat(3,1fr);
+
+    gap: 5px;
+  }
+
+  .river-tool {
+    height: 54px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 2px;
+
+    padding: 4px;
+  }
+
+  .river-tool-icon {
+    width: auto;
+    height: auto;
+
+    background:
+      transparent;
+
+    font-size: 18px;
+  }
+
+  .river-tool-info {
+    text-align: center;
+  }
+
+  .river-tool-info strong {
+    font-size: 7px;
+  }
+
+  .river-tool-info small {
+    display: none;
+  }
+
+  .river-tool-count {
+    position: absolute;
+
+    top: 3px;
+    right: 3px;
+
+    min-width: 16px;
+
+    padding: 2px;
+
+    font-size: 7px;
+  }
+
+  .river-cancel-tool {
+    position: absolute;
+
+    right: 5px;
+    top: -25px;
+
+    width: auto;
+
+    padding:
+      4px 7px;
+
+    font-size: 6px;
+  }
+
+  .river-error {
+    position: absolute;
+
+    left: 50%;
+    bottom: 67px;
+
+    transform:
+      translateX(-50%);
+
+    width:
+      calc(100% - 20px);
+
+    margin: 0;
+
+    text-align: center;
+  }
+
+  .river-mini-guide {
+    display: none;
+  }
+
+  .river-defense-legend {
+    display: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     MESSAGE
+     ---------------------------------------------------------- */
+
+  .river-message {
+    top: 9px;
+
+    max-width:
+      calc(100% - 160px);
+
+    padding:
+      6px 9px;
+
+    font-size: 8px;
+  }
+
+  .river-placement-hint {
+    bottom: 76px;
+
+    font-size: 8px;
+  }
+
+
+  /* ----------------------------------------------------------
+     BOTTOM
+     ---------------------------------------------------------- */
+
+  .river-bottom-bar {
+    display: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     HOW TO PLAY
+     ---------------------------------------------------------- */
+
+  .river-howto {
+    padding: 18px;
+
+    border-radius: 15px;
+  }
+
+  .river-howto-grid {
+    grid-template-columns:
+      repeat(2,1fr);
+
+    gap: 6px;
+  }
+
+  .river-howto-tools {
+    grid-template-columns:
+      repeat(3,1fr);
+  }
+
+  .river-howto-grid > div {
+    padding: 8px;
+  }
+
+  .river-howto-grid p {
+    font-size: 8px;
+  }
+
+
+  /* ----------------------------------------------------------
+     TRAINING
+     ---------------------------------------------------------- */
+
+  .river-training-guide {
+    bottom: 76px;
+
+    width:
+      calc(100% - 20px);
+
+    padding:
+      7px 9px;
+  }
+
+  .river-training-guide p {
+    font-size: 7px;
+  }
+
+
+  /* ----------------------------------------------------------
+     RESULT
+     ---------------------------------------------------------- */
+
+  .river-result-stats {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+}
+
+
+/* ============================================================
+   VERY SMALL PHONE
+   ============================================================ */
+
+@media (max-width: 400px) {
+
+  .river-topbar {
+    height: 47px;
+
+    flex-basis: 47px;
+  }
+
+  .river-brand-icon {
+    width: 26px;
+    height: 26px;
+
+    font-size: 13px;
+  }
+
+  .river-brand strong {
+    font-size: 8px;
+  }
+
+  .river-stat:nth-child(2) {
+    display: none;
+  }
+
+  .river-objectives {
+    width: 118px;
+
+    max-height: 84px;
+  }
+
+  .river-tool {
+    height: 48px;
+  }
+
+  .river-tool-icon {
+    font-size: 15px;
+  }
+
+  .river-tool-info strong {
+    font-size: 6px;
+  }
+
+  .river-howto-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .river-howto-tools {
+    gap: 4px;
+  }
+
+}
+
+
+/* ============================================================
+   LANDSCAPE PHONE
+   ============================================================ */
+
+@media (
+  max-height: 560px
+) and (orientation: landscape) {
+
+  .river-topbar {
+    height: 45px;
+
+    flex-basis: 45px;
+  }
+
+  .river-game-layout {
+    padding: 3px;
+  }
+
+  .river-world-container {
+    inset: 3px;
+  }
+
+  .river-objectives {
+    left: 8px;
+    top: 8px;
+
+    width: 125px;
+  }
+
+  .river-tools {
+    left: auto;
+    right: 8px;
+
+    bottom: 8px;
+
+    transform: none;
+
+    width: 180px;
+  }
+
+  .river-tool-list {
+    grid-template-columns:
+      repeat(3,1fr);
+  }
+
+  .river-tool {
+    height: 43px;
+  }
+
+  .river-bottom-bar {
+    display: none;
+  }
+
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .river-intro-water {
+    animation: none;
+  }
+
+  .river-primary-button,
+  .river-secondary-button,
+  .river-training-button,
+  .river-tool,
+  .river-cancel-tool,
+  .river-training-guide button {
+    transition: none;
+  }
+
+  .river-progress-fill {
+    transition: none;
+  }
+
 }

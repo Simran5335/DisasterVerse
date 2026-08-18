@@ -576,16 +576,13 @@ export default function FirstAid() {
 
         .firstAidPage {
           width: 100%;
-          height: 100vh;
-          min-height: 100vh;
-
+          height: 100%;
+          min-height: 0;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          padding: 10px;
-
-          overflow: hidden;
+          padding: 0;
+          overflow: visible;
 
           background:
             linear-gradient(
@@ -610,11 +607,11 @@ export default function FirstAid() {
         ====================================== */
 
         .firstAidCard {
-          width: min(900px, 98vw);
-
-          height: calc(100vh - 20px);
-
+          width: 100%;
+          max-width: 900px;
+          height: auto;
           min-height: 0;
+          max-height: none;
 
           display: flex;
           flex-direction: column;
@@ -731,29 +728,25 @@ export default function FirstAid() {
           position: relative;
 
           /*
-            Larger image area.
-            The complete image, including its
-            original background, expands here.
+            Keep the character in a predictable square box.
+            The hotspots use percentages of this same box,
+            so they remain aligned as the character scales.
           */
-          width: min(760px, 82vw);
-
-          height: min(650px, 65vh);
+          width: min(680px, 100%);
+          aspect-ratio: 1 / 1;
+          height: auto;
 
           display: flex;
-
           align-items: center;
-
           justify-content: center;
 
-          margin: 0 auto;
+          margin: 4px auto 8px;
 
           overflow: visible;
-
-          flex: 1;
-
+          flex: 0 1 auto;
           min-height: 0;
+          max-height: min(62vh, 680px);
         }
-
 
         /* =====================================
            CHARACTER IMAGE
@@ -761,22 +754,19 @@ export default function FirstAid() {
 
         .characterImage {
           width: 100%;
-
           height: 100%;
-
           display: block;
 
           /*
-            Fill the expanded area while
-            preserving the image background.
+            Never crop the character. The complete image
+            remains visible inside the responsive box.
           */
-          object-fit: fill;
+          object-fit: contain;
+          object-position: center;
 
           user-select: none;
-
           pointer-events: none;
         }
-
 
         /* =====================================
            HOTSPOTS
@@ -1424,23 +1414,18 @@ export default function FirstAid() {
         @media (max-width: 700px) {
 
           .firstAidPage {
-            width: 100vw;
-
-            height: 100vh;
-
-            min-height: 100vh;
-
+            width: 100%;
+            height: 100%;
+            min-height: 0;
             padding: 4px;
-
-            overflow: hidden;
+            overflow: visible;
           }
 
 
           .firstAidCard {
-            width: 100vw;
-
-            height: 100vh;
-
+            width: 100%;
+            max-width: 100%;
+            height: auto;
             min-height: 0;
 
             padding: 10px 8px;
@@ -1482,24 +1467,21 @@ export default function FirstAid() {
           }
 
 
-          /* Larger mobile image */
+          /* Responsive mobile character */
           .characterArea {
-            width: 96vw;
-
-            height: 62vh;
-
-            flex: 1;
-
+            width: min(92vw, 560px);
+            aspect-ratio: 1 / 1;
+            height: auto;
+            max-height: 55vh;
+            flex: 0 1 auto;
             min-height: 0;
           }
 
-
           .characterImage {
             width: 100%;
-
             height: 100%;
-
-            object-fit: fill;
+            object-fit: contain;
+            object-position: center;
           }
 
 
