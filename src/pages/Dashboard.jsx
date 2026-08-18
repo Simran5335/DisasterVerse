@@ -130,7 +130,6 @@ const Dashboard = () => {
     }
   };
 
-
   const badgesList = [
     {
       id: 1,
@@ -376,17 +375,36 @@ const Dashboard = () => {
       title: '🌊 Tsunami',
       image: '/tsunami.png',
       protocols: [
-        { stage: '🟢 Before', color: '#4ade80', items: ['Know evacuation routes to higher ground.', 'Learn local tsunami warning signals.', 'Prepare an emergency kit.'] },
-        { stage: '🟠 During', color: '#fbbf24', items: ['Move immediately to higher ground.', 'Stay away from beaches and rivers.', 'Follow official evacuation orders.'] },
-        { stage: '🔵 After', color: '#60a5fa', items: ['Stay away until officials declare it safe.', 'Watch for additional waves.', 'Avoid damaged areas and debris.'] }
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Know evacuation routes to higher ground.',
+            'Learn local tsunami warning signals.',
+            'Prepare an emergency kit.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move immediately to higher ground.',
+            'Stay away from beaches and rivers.',
+            'Follow official evacuation orders.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Stay away until officials declare it safe.',
+            'Watch for additional waves.',
+            'Avoid damaged areas and debris.'
+          ]
+        }
       ]
     }
   ];
-
-  useEffect(() => {
-    localStorage.setItem('userName', userName);
-    localStorage.setItem('userAvatar', userAvatar);
-  }, [userName, userAvatar]);
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -396,6 +414,15 @@ const Dashboard = () => {
 
     localStorage.setItem('userName', newName);
     localStorage.setItem('userAvatar', selectedAvatarOption);
+
+    const email = localStorage.getItem('currentUserEmail');
+    if (email) {
+      const userKey = `user_${email}`;
+      const existingData = JSON.parse(localStorage.getItem(userKey) || '{}');
+      const updatedData = { ...existingData, name: newName, avatar: selectedAvatarOption };
+      localStorage.setItem(userKey, JSON.stringify(updatedData));
+    }
+
     setShowSettingsModal(false);
 
     alert('Profile updated successfully!');
@@ -436,15 +463,30 @@ const Dashboard = () => {
           </div>
 
           <nav style={styles.navLinks}>
-            <button onClick={() => { setActiveTab('achievements'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'achievements' ? styles.activeNavBtn : {}) }}>🏅 Badges & Progress</button>
+            <button onClick={() => { setActiveTab('pokemon'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'pokemon' ? styles.activeNavBtn : {}) }}>⚡ Companion Pokémon</button>
             <button onClick={() => { setActiveTab('games'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'games' ? styles.activeNavBtn : {}) }}>🎮 Disaster Games & Sims</button>
             <button onClick={() => navigate('/india-map')} style={styles.navBtn}>🗺️ India Disaster Map</button>
             <button onClick={() => navigate('/crisis-archive')} style={styles.navBtn}>📰 Crisis Archive</button>
-            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Disaster Quiz</button>
+            <button onClick={() => navigate('/quiz')} style={styles.navBtn}>🧠 Know2Survive</button>
             <button onClick={() => { setActiveTab('flip-prepare'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'flip-prepare' ? styles.activeNavBtn : {}) }}>🃏 Flip & Prepare</button>
             <button onClick={() => { setActiveTab('checklist'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'checklist' ? styles.activeNavBtn : {}) }}>📋 Readiness Checklist</button>
             <button onClick={() => { setActiveTab('firstaid'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'firstaid' ? styles.activeNavBtn : {}) }}>🩹 First Aid Guide</button>
             <button onClick={() => { setActiveTab('plan'); setMobileNavOpen(false); }} style={{ ...styles.navBtn, ...(activeTab === 'plan' ? styles.activeNavBtn : {}) }}>📑 Safety Plan</button>
+            <button
+              onClick={() => {
+                setActiveTab('achievements');
+                setMobileNavOpen(false);
+              }}
+              style={{
+                ...styles.navBtn,
+                ...(activeTab === 'achievements'
+                  ? styles.activeNavBtn
+                  : {})
+              }}
+            >
+              🏅 Badges & Progress
+            </button>
+
           </nav>
         </div>
 
@@ -525,6 +567,116 @@ const Dashboard = () => {
             </div>
           </div>
         </header>
+
+        {/* --- COMPANION POKÉMON MODULE TAB --- */}
+        {activeTab === 'pokemon' && (
+          <div 
+            style={{
+              ...styles.tabContentCard,
+              background: getDynamicCardBackground(currentPokemon.type),
+              borderColor: getDynamicAccentColor(currentPokemon.type)
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <span style={{ fontSize: '12px', color: getDynamicAccentColor(currentPokemon.type), fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>⚡ Evolution Sanctuary</span>
+              <h2 style={{ margin: '4px 0 2px 0', fontSize: '24px' }}>Your Pokémon Companion Hub</h2>
+              <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0 }}>Progress through evolutionary rows by earning XP to unlock powerful survival partners!</p>
+            </div>
+
+            {/* Extra Large Centered Active Partner Showcase */}
+            <div style={styles.extraLargeCompanionHero} className={isEvolving ? 'evolution-flash-anim' : ''}>
+              <div style={styles.heroTopRow}>
+                <span style={styles.activePartnerBadge}>Active Partner</span>
+                <button 
+                  onClick={() => setIsMuted(!isMuted)} 
+                  style={styles.soundToggleBtn}
+                  title={isMuted ? 'Enable Audio' : 'Mute Audio'}
+                >
+                  {isMuted ? '🔇 Sound Off' : '🔊 Sound On'}
+                </button>
+              </div>
+
+              <div style={styles.extraLargeHeroFrame}>
+                <video 
+                  ref={activeVideoRef}
+                  key={currentPokemon.name}
+                  autoPlay 
+                  loop 
+                  muted={isMuted} 
+                  playsInline 
+                  style={styles.extraLargeHeroVideo}
+                >
+                  <source src={currentPokemon.video} type="video/mp4" />
+                </video>
+              </div>
+
+              <div style={styles.extraLargeHeroTextContent}>
+                <h3 style={styles.extraLargeHeroTitle}>{currentPokemon.name}</h3>
+                <p style={styles.extraLargeHeroDesc}>{currentPokemon.desc}</p>
+                <div style={styles.extraLargeHeroXp}>Current XP: {currentXP} XP</div>
+              </div>
+            </div>
+
+            {/* Pokémon Evolution Roster Grouped by Rows */}
+            <h3 style={{ fontSize: '18px', marginTop: '35px', marginBottom: '14px', color: '#fff' }}>Pokémon Evolution Roster (Row-Based Progression)</h3>
+            
+            {[1, 2, 3].map((rowNum) => {
+              const rowPokemons = allPokemonList.filter(p => p.row === rowNum);
+              return (
+                <div key={rowNum} style={{ marginBottom: '25px' }}>
+                  <h4 style={{ fontSize: '13px', color: '#fbbf24', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.5px' }}>
+                    Evolution Path #{rowNum}
+                  </h4>
+                  <div style={styles.pokemon3Grid}>
+                    {rowPokemons.map((poke) => {
+                      const isUnlocked = currentXP >= poke.minXp;
+                      const isSelected = selectedPokemonName === poke.name;
+                      return (
+                        <div 
+                          key={poke.name}
+                          onClick={() => {
+                            if (isUnlocked) setSelectedPokemonName(poke.name);
+                          }}
+                          style={{
+                            ...styles.smallGalleryCard,
+                            borderColor: isSelected ? '#fbbf24' : (isUnlocked ? '#dc2626' : '#2a2422'),
+                            backgroundColor: isUnlocked ? '#1f1a18' : '#120f0e',
+                            cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                            boxShadow: isSelected ? '0 0 15px rgba(251, 191, 36, 0.3)' : 'none'
+                          }}
+                        >
+                          <div style={styles.smallGalleryVideoContainer}>
+                            <video 
+                              autoPlay 
+                              loop 
+                              muted={true} 
+                              playsInline 
+                              style={{
+                                ...styles.smallGalleryVideo,
+                                filter: isUnlocked ? 'none' : 'grayscale(100%) brightness(40%) contrast(120%)'
+                              }}
+                            >
+                              <source src={poke.video} type="video/mp4" />
+                            </video>
+                          </div>
+                          <div style={{ padding: '10px', textAlign: 'center' }}>
+                            <h4 style={{ margin: 0, fontSize: '14px', color: isUnlocked ? '#fff' : '#6b7280' }}>{poke.name}</h4>
+                            <span style={{ fontSize: '10px', color: isUnlocked ? (isSelected ? '#fbbf24' : '#4ade80') : '#f87171', fontWeight: 'bold', display: 'block', marginTop: '3px' }}>
+                              {isSelected ? '★ Active Partner' : (isUnlocked ? '✓ Unlocked' : `🔒 ${poke.minXp} XP`)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {/* =====================================================
+            ACHIEVEMENTS
+        ====================================================== */}
 
         {activeTab === 'achievements' && (
           <div style={styles.tabContentCard}>
@@ -820,21 +972,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* =====================================================
-            CHECKLIST
-        ====================================================== */}
-
-        {activeTab === 'checklist' && (
-          <div style={styles.tabContentCard}>
-            <h2>📋 Preparedness Checklist & Readiness Score</h2>
-            <p style={{ color: '#9ca3af' }}>Answer a few quick household questions to compute your overall disaster resilience score.</p>
-          </div>
-        )}
-
-        {/* =====================================================
-            FIRST AID
-        ====================================================== */}
-
         {/* FIRST AID */}
         {activeTab === 'firstaid' && (
           <div style={styles.firstAidDashboardCard}>
@@ -845,20 +982,20 @@ const Dashboard = () => {
         {/* CHECKLIST */}
         {activeTab === 'checklist' && (
           <div style={styles.tabContentCard}>
-            <h2>🩹 First Aid Treatment Guide</h2>
-            <p style={{ color: '#9ca3af' }}>Select an injury category (Burns, Fractures, Bleeding, Choking) for instant emergency protocols.</p>
+            <h2>📋 Preparedness Checklist & Readiness Score</h2>
+            <p style={{ color: '#9ca3af' }}>
+              Answer a few quick household questions to compute your overall disaster resilience score.
+            </p>
           </div>
         )}
-
-        {/* =====================================================
-            SAFETY PLAN
-        ====================================================== */}
 
         {/* SAFETY PLAN */}
         {activeTab === 'plan' && (
           <div style={styles.tabContentCard}>
             <h2>📑 Personalized Safety Plan Generator</h2>
-            <p style={{ color: '#9ca3af' }}>Enter your family details and location coordinates to auto-generate a custom family evacuation plan.</p>
+            <p style={{ color: '#9ca3af' }}>
+              Enter your family details and location coordinates to auto-generate a custom family evacuation plan.
+            </p>
           </div>
         )}
 
@@ -1017,12 +1154,11 @@ const Dashboard = () => {
 
       {showSettingsModal && (
         <div style={styles.modalOverlay}>
-
           <div style={styles.modalContent}>
             <h2 style={{ marginTop: 0, color: '#fff' }}>⚙️ Profile & Account Settings</h2>
-            <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar.</p>
+            <p style={{ color: '#9ca3af', fontSize: '13px' }}>Update your registered name, password, or choose a custom avatar / photo upload.</p>
 
-            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
               <div>
                 <label style={styles.modalLabel}>
                   Display Name
@@ -1062,10 +1198,7 @@ const Dashboard = () => {
               </div>
 
               <div>
-                <label style={styles.modalLabel}>
-                  Choose Avatar
-                </label>
-
+                <label style={styles.modalLabel}>Choose Avatar</label>
                 <div style={styles.avatarPickerGrid}>
                   {avatarOptions.map((av, index) => (
                     <img
@@ -1376,6 +1509,121 @@ const styles = {
     height: '100%',
     objectFit: 'cover'
   },
+  extraLargeCompanionHero: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    border: '2px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '24px',
+    padding: '35px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    maxWidth: '580px',
+    margin: '0 auto',
+    width: '100%',
+    boxSizing: 'border-box',
+    boxShadow: '0 20px 45px rgba(0, 0, 0, 0.4)'
+  },
+  heroTopRow: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
+  },
+  activePartnerBadge: {
+    fontSize: '12px',
+    backgroundColor: '#dc2626',
+    color: '#fff',
+    padding: '4px 12px',
+    borderRadius: '14px',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  },
+  soundToggleBtn: {
+    backgroundColor: '#2a2422',
+    color: '#fbbf24',
+    border: '1px solid #fbbf24',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  },
+  extraLargeHeroFrame: {
+    width: '100%',
+    maxWidth: '360px',
+    aspectRatio: '4 / 3',
+    borderRadius: '16px',
+    backgroundColor: '#161211',
+    border: '3px solid #fbbf24',
+    boxSizing: 'border-box',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '20px'
+  },
+  extraLargeHeroVideo: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  },
+  extraLargeHeroTextContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '6px'
+  },
+  extraLargeHeroTitle: {
+    fontSize: '28px',
+    fontWeight: 'bold',
+    margin: 0,
+    color: '#fff'
+  },
+  extraLargeHeroDesc: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    margin: 0
+  },
+  extraLargeHeroXp: {
+    fontSize: '13px',
+    color: '#fbbf24',
+    fontWeight: 'bold',
+    marginTop: '6px'
+  },
+  pokemon3Grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '12px',
+    marginTop: '10px'
+  },
+  smallGalleryCard: {
+    border: '1px solid #2a2422',
+    borderRadius: '14px',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingBottom: '8px',
+    transition: 'all 0.2s'
+  },
+  smallGalleryVideoContainer: {
+    width: '100%',
+    aspectRatio: '4 / 3',
+    backgroundColor: '#161211',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  smallGalleryVideo: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  },
   tabContentCard: {
     backgroundColor: '#161211',
     border: '1px solid #241e1c',
@@ -1555,6 +1803,11 @@ const styles = {
   lbXp: {
     color: '#9ca3af',
     fontWeight: 'bold'
+  },
+  firstAidDashboardCard: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: '16px'
   },
   modalOverlay: {
     position: 'fixed',
