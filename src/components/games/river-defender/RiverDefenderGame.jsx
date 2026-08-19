@@ -190,16 +190,12 @@ export default function RiverDefenderGame() {
 
 
     return () => {
-
-      unsubscribe();
-
-      engine.destroy();
-
-      engineRef.current =
-        null;
-
+      if (unsubscribe) unsubscribe();
+      if (engine && typeof engine.destroy === 'function') {
+        engine.destroy();
+      }
+      engineRef.current = null;
     };
-
   }, []);
 
 
@@ -208,7 +204,6 @@ export default function RiverDefenderGame() {
   // ==========================================================
 
   useEffect(() => {
-
     if (
       screen !== "game" &&
       screen !== "training"
@@ -216,31 +211,25 @@ export default function RiverDefenderGame() {
       return;
     }
 
-
     if (
       !canvasRef.current
     ) {
       return;
     }
 
-
     const renderer =
       new RiverDefenderRenderer(
         canvasRef.current
       );
 
-
     rendererRef.current =
       renderer;
 
-
     return () => {
-
-      renderer.destroy();
-
-      rendererRef.current =
-        null;
-
+      if (renderer && typeof renderer.destroy === 'function') {
+        renderer.destroy();
+      }
+      rendererRef.current = null;
     };
 
   }, [screen]);

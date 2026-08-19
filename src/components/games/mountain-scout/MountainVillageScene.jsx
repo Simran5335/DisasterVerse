@@ -14,6 +14,7 @@ export default function MountainVillageScene({
   setPanOffset,
   isInvestigateMode,
   isBinocularActive,
+  isCalibrationMode,
   observeNotice
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -64,22 +65,7 @@ export default function MountainVillageScene({
         if (!isDragging && onSceneClick) onSceneClick(e);
       }}
     >
-      {/* AREA A-E NAVIGATION BAR */}
-      <div className="ms-area-nav-bar">
-        {AREAS.map((area) => (
-          <button
-            key={area.id}
-            type="button"
-            className={`ms-area-pill ${activeArea === area.id ? "active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAreaClick(area);
-            }}
-          >
-            {area.name}
-          </button>
-        ))}
-      </div>
+
 
       {/* BINOCULAR OVERLAY */}
       {isBinocularActive && (
@@ -105,16 +91,17 @@ export default function MountainVillageScene({
       >
         <div className="ms-illustration-container">
           <img
-            src={`${process.env.PUBLIC_URL || ""}/images/hazard/mountain/level1_cliffside_warning.jpg`}
-            alt="Level 1 Cliffside Warning"
-            className="ms-background-illustration"
+            src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level1-final.png`}
+            alt="Mountain Scout Level 1"
+            className="ms-background-illustration absolute inset-0 w-full h-full object-cover object-center block"
             draggable="false"
+            decoding="async"
           />
 
           {/* CLICKABLE HAZARDS HOTSPOTS */}
           {hazards.map((hazard) => {
-            const isDiscovered = discoveredHazards.includes(hazard.id);
-            const isMissed = missedHazards.includes(hazard.id);
+            const isDiscovered = discoveredHazards.includes(hazard.id) || (hazard.aliasId && discoveredHazards.includes(hazard.aliasId));
+            const isMissed = missedHazards.includes(hazard.id) || (hazard.aliasId && missedHazards.includes(hazard.aliasId));
 
             const leftPct = hazard.x !== undefined ? `${hazard.x}%` : hazard.svgPos?.left;
             const topPct = hazard.y !== undefined ? `${hazard.y}%` : hazard.svgPos?.top;
@@ -144,6 +131,25 @@ export default function MountainVillageScene({
                     </div>
                   )}
                 </div>
+
+                {isCalibrationMode && (
+                  <div
+                    className="ms-calibration-overlay"
+                    style={{
+                      left: leftPct,
+                      top: topPct,
+                      width: widthPct,
+                      height: heightPct
+                    }}
+                  >
+                    <div className="ms-calibration-center-dot" />
+                    <div className="ms-calibration-badge">
+                      <strong>{hazard.id}</strong> - {hazard.name}
+                      <br />
+                      x: {hazard.x}%, y: {hazard.y}%, w: {hazard.width}%, h: {hazard.height}%
+                    </div>
+                  </div>
+                )}
 
                 {isDiscovered && (
                   <div

@@ -101,7 +101,7 @@ export default function GameCanvas({
     }
 
     return () => {
-      if (gameRef.current) {
+      if (gameRef.current && typeof gameRef.current.destroy === 'function') {
         gameRef.current.destroy(true);
         gameRef.current = null;
       }

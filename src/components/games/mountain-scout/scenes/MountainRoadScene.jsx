@@ -14,6 +14,7 @@ export default function MountainRoadScene({
   setPanOffset,
   isInvestigateMode,
   isBinocularActive,
+  isCalibrationMode,
   observeNotice
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -21,11 +22,11 @@ export default function MountainRoadScene({
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   const AREAS = [
-    { id: "A", name: "AREA A: VILLAGE ROAD", focusX: 120, focusY: -60 },
-    { id: "B", name: "AREA B: HOUSE & SLOPE", focusX: -30, focusY: -10 },
-    { id: "C", name: "AREA C: RETAINING WALL", focusX: -140, focusY: -90 },
-    { id: "D", name: "AREA D: STREAM & BRIDGE", focusX: 40, focusY: -140 },
-    { id: "E", name: "AREA E: UPPER HILLSIDE", focusX: 100, focusY: 130 }
+    { id: "A", name: "AREA A: WEST FOREST SLOPE", focusX: 120, focusY: -60 },
+    { id: "B", name: "AREA B: LEANING PINE RIDGE", focusX: -30, focusY: -10 },
+    { id: "C", name: "AREA C: CENTRAL MUD SLUMP", focusX: -140, focusY: -90 },
+    { id: "D", name: "AREA D: EAST EXPOSED ROOTS", focusX: 40, focusY: -140 },
+    { id: "E", name: "AREA E: UNDERCUT SLOPE BASE", focusX: 100, focusY: 130 }
   ];
 
   const handleAreaClick = (area) => {
@@ -64,35 +65,20 @@ export default function MountainRoadScene({
         if (!isDragging && onSceneClick) onSceneClick(e);
       }}
     >
-      {/* AREA A-E NAVIGATION BAR */}
-      <div className="ms-area-nav-bar">
-        {AREAS.map((area) => (
-          <button
-            key={area.id}
-            type="button"
-            className={`ms-area-pill ${activeArea === area.id ? "active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAreaClick(area);
-            }}
-          >
-            {area.name}
-          </button>
-        ))}
-      </div>
+
 
       {/* BINOCULAR OVERLAY */}
       {isBinocularActive && (
         <>
           <div className="ms-binocular-overlay" />
-          <div className="ms-binocular-tag">🔭 BINOCULARS ACTIVE (LEVEL 2: MOUNTAIN VILLAGE SLOPE)</div>
+          <div className="ms-binocular-tag">🔭 BINOCULARS ACTIVE (LEVEL 2: FOREST SHELF)</div>
         </>
       )}
 
       {/* DYNAMIC OBSERVE NOTICE */}
       {observeNotice && (
         <div className="ms-observe-event-banner">
-          👀 SOMETHING CHANGED IN THE MOUNTAIN VILLAGE!
+          👀 SOMETHING CHANGED IN THE MISH FOREST SLOPE!
         </div>
       )}
 
@@ -105,16 +91,20 @@ export default function MountainRoadScene({
       >
         <div className="ms-illustration-container">
           <img
-            src={`${process.env.PUBLIC_URL || ""}/images/hazard/mountain/level2_mountain_village.jpg`}
-            alt="Level 2 Mountain Village Slope"
-            className="ms-background-illustration"
+            src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level2-forest.png`}
+            alt="Mountain Scout Level 2 Forest Shelf"
+            className="ms-background-illustration absolute inset-0 w-full h-full object-cover object-center block"
             draggable="false"
+            decoding="async"
           />
+          {/* MIST & DENSE FOREST FOG ATMOSPHERIC OVERLAY */}
+          <div className="ms-fog-overlay" />
+          <div className="ms-mist-cloud" />
 
           {/* CLICKABLE HAZARDS HOTSPOTS */}
           {hazards.map((hazard) => {
-            const isDiscovered = discoveredHazards.includes(hazard.id);
-            const isMissed = missedHazards.includes(hazard.id);
+            const isDiscovered = discoveredHazards.includes(hazard.id) || (hazard.aliasId && discoveredHazards.includes(hazard.aliasId));
+            const isMissed = missedHazards.includes(hazard.id) || (hazard.aliasId && missedHazards.includes(hazard.aliasId));
 
             const leftPct = hazard.x !== undefined ? `${hazard.x}%` : hazard.svgPos?.left;
             const topPct = hazard.y !== undefined ? `${hazard.y}%` : hazard.svgPos?.top;
@@ -144,6 +134,25 @@ export default function MountainRoadScene({
                     </div>
                   )}
                 </div>
+
+                {isCalibrationMode && (
+                  <div
+                    className="ms-calibration-overlay"
+                    style={{
+                      left: leftPct,
+                      top: topPct,
+                      width: widthPct,
+                      height: heightPct
+                    }}
+                  >
+                    <div className="ms-calibration-center-dot" />
+                    <div className="ms-calibration-badge">
+                      <strong>{hazard.id}</strong> - {hazard.name}
+                      <br />
+                      x: {hazard.x}%, y: {hazard.y}%, w: {hazard.width}%, h: {hazard.height}%
+                    </div>
+                  </div>
+                )}
 
                 {isDiscovered && (
                   <div

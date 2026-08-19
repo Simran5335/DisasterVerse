@@ -14,6 +14,7 @@ export default function CliffValleyScene({
   setPanOffset,
   isInvestigateMode,
   isBinocularActive,
+  isCalibrationMode,
   observeNotice
 }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -21,11 +22,11 @@ export default function CliffValleyScene({
   const dragStartRef = useRef({ x: 0, y: 0 });
 
   const AREAS = [
-    { id: "A", name: "AREA A: HIGH MOUNTAIN TRAIL", focusX: 150, focusY: -80 },
-    { id: "B", name: "AREA B: CLIFF & ROCKFALL", focusX: 0, focusY: -40 },
-    { id: "C", name: "AREA C: RIDGE PATH", focusX: -140, focusY: 40 },
-    { id: "D", name: "AREA D: STREAM & DRAINAGE", focusX: -180, focusY: -100 },
-    { id: "E", name: "AREA E: HIGH RIDGE PEAK", focusX: 0, focusY: 140 }
+    { id: "A", name: "AREA A: UPPER CLIFFS & OVERHANGS", focusX: 150, focusY: -80 },
+    { id: "B", name: "AREA B: SCREE CONE & FRACTURES", focusX: 0, focusY: -40 },
+    { id: "C", name: "AREA C: DUST TRAIL & TALUS", focusX: -140, focusY: 40 },
+    { id: "D", name: "AREA D: PERCHED BOULDER & MUDFLOW", focusX: -180, focusY: -100 },
+    { id: "E", name: "AREA E: CATCH MESH & WATER VENT", focusX: 0, focusY: 140 }
   ];
 
   const handleAreaClick = (area) => {
@@ -64,28 +65,13 @@ export default function CliffValleyScene({
         if (!isDragging && onSceneClick) onSceneClick(e);
       }}
     >
-      {/* AREA A-E NAVIGATION BAR OVERLAID ON IMAGE */}
-      <div className="ms-area-nav-bar">
-        {AREAS.map((area) => (
-          <button
-            key={area.id}
-            type="button"
-            className={`ms-area-pill ${activeArea === area.id ? "active" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAreaClick(area);
-            }}
-          >
-            {area.name}
-          </button>
-        ))}
-      </div>
+
 
       {/* BINOCULAR OVERLAY */}
       {isBinocularActive && (
         <>
           <div className="ms-binocular-overlay" />
-          <div className="ms-binocular-tag">🔭 BINOCULARS ACTIVE (LEVEL 3: HIGH MOUNTAIN EXPEDITION)</div>
+          <div className="ms-binocular-tag">🔭 BINOCULARS ACTIVE (LEVEL 3: SCREE ROCKFALL)</div>
         </>
       )}
 
@@ -105,22 +91,20 @@ export default function CliffValleyScene({
       >
         <div className="ms-illustration-container">
           <img
-            src={`${process.env.PUBLIC_URL || ""}/images/hazard/mountain/level3-final-cliff-expedition-2026.png`}
-            alt="Level 3 High Mountain Expedition"
-            className="ms-background-illustration"
+            src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level3-scree.png`}
+            alt="Mountain Scout Level 3 Scree Rockfall"
+            className="ms-background-illustration absolute inset-0 w-full h-full object-cover object-center block"
             draggable="false"
-            onError={(e) => {
-              if (!e.target.dataset.triedJpg) {
-                e.target.dataset.triedJpg = "true";
-                e.target.src = `${process.env.PUBLIC_URL || ""}/images/hazard/mountain/level3-final-cliff-expedition-2026.jpg`;
-              }
-            }}
+            decoding="async"
           />
+          {/* HIGH ALPINE SCREE & ROCKFALL DUST OVERLAY */}
+          <div className="ms-alpine-dust-overlay" />
+          <div className="ms-scree-dust-particles" />
 
           {/* CLICKABLE HAZARDS HOTSPOTS */}
           {hazards.map((hazard) => {
-            const isDiscovered = discoveredHazards.includes(hazard.id);
-            const isMissed = missedHazards.includes(hazard.id);
+            const isDiscovered = discoveredHazards.includes(hazard.id) || (hazard.aliasId && discoveredHazards.includes(hazard.aliasId));
+            const isMissed = missedHazards.includes(hazard.id) || (hazard.aliasId && missedHazards.includes(hazard.aliasId));
 
             const leftPct = hazard.x !== undefined ? `${hazard.x}%` : hazard.svgPos?.left;
             const topPct = hazard.y !== undefined ? `${hazard.y}%` : hazard.svgPos?.top;
@@ -150,6 +134,25 @@ export default function CliffValleyScene({
                     </div>
                   )}
                 </div>
+
+                {isCalibrationMode && (
+                  <div
+                    className="ms-calibration-overlay"
+                    style={{
+                      left: leftPct,
+                      top: topPct,
+                      width: widthPct,
+                      height: heightPct
+                    }}
+                  >
+                    <div className="ms-calibration-center-dot" />
+                    <div className="ms-calibration-badge">
+                      <strong>{hazard.id}</strong> - {hazard.name}
+                      <br />
+                      x: {hazard.x}%, y: {hazard.y}%, w: {hazard.width}%, h: {hazard.height}%
+                    </div>
+                  </div>
+                )}
 
                 {isDiscovered && (
                   <div

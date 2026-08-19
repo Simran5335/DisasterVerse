@@ -27,38 +27,35 @@ export class SoundEngine {
     }
   }
 
+  // Background audio & music completely disabled for Smoke Vision
   startFireAlarm() {
-    this.init(); this.resume(); if (!this.ctx || this.alarmOsc) return;
-    
-    // Pulsing Emergency Siren Tone
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(880, this.ctx.currentTime);
-
-    // Pulse gain modulation
-    const lfo = this.ctx.createOscillator();
-    lfo.frequency.value = 2; // 2Hz pulse
-    const lfoGain = this.ctx.createGain();
-    lfoGain.gain.value = 0.15;
-    lfo.connect(gain.gain);
-    lfo.start();
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start();
-    this.alarmOsc = osc;
+    this.stopFireAlarm();
   }
 
   stopFireAlarm() {
     if (this.alarmOsc) {
-      this.alarmOsc.stop();
+      try {
+        this.alarmOsc.stop();
+      } catch (e) {}
       this.alarmOsc = null;
     }
   }
 
+  destroy() {
+    this.stopFireAlarm();
+    if (this.ctx) {
+      try {
+        this.ctx.close();
+      } catch (e) {}
+      this.ctx = null;
+      this.masterGain = null;
+    }
+  }
+
   playDoorCheckSound(state) {
-    this.init(); this.resume(); if (!this.ctx) return;
+    this.init();
+    this.resume();
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -90,7 +87,9 @@ export class SoundEngine {
   }
 
   playFootstep() {
-    this.init(); this.resume(); if (!this.ctx) return;
+    this.init();
+    this.resume();
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
