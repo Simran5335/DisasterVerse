@@ -1,10 +1,12 @@
-// MOUNTAIN SCOUT — LANDSLIDE WARNING SIGNS DATA MODEL & LEVEL-UNIQUE MISSIONS & VISUAL THEMES
+import level1Img from "../assets/images/mountain-scout-level1-final.png";
+import level2Img from "../assets/images/mountain-scout-level2-forest.png";
+import level3Img from "../assets/images/mountain-scout-level3-scree.png";
 
 export const LEVELS_DATA = {
   1: {
     level: 1,
     name: "CLIFF PATH & FENCE",
-    image: "/images/mountain-scout-level1-final.png",
+    image: level1Img,
     headerTitle: "🏔️ CLIFF PATH & FENCE",
     headerSubtitle: "Managed Mountain Trail & Cliffside Exploration",
     missionName: "Inspect the Cliffside Trail",
@@ -115,7 +117,7 @@ export const LEVELS_DATA = {
   2: {
     level: 2,
     name: "FOREST SHELF",
-    image: "/images/mountain-scout-level2-forest.png",
+    image: level2Img,
     headerTitle: "🌲 FOREST SHELF",
     headerSubtitle: "Misty Mountain Slope & Forest Inspection",
     missionName: "Inspect Dense Forest Slope Hazards",
@@ -298,7 +300,7 @@ export const LEVELS_DATA = {
   3: {
     level: 3,
     name: "SCREE ROCKFALL",
-    image: "/images/mountain-scout-level3-scree.png",
+    image: level3Img,
     headerTitle: "⚠️ SCREE ROCKFALL",
     headerSubtitle: "High Alpine Scree & Rockfall Hazard Inspection",
     missionName: "Inspect High Alpine Rockfall Hazards",

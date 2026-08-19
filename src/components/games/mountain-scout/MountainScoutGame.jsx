@@ -527,7 +527,7 @@ export default function MountainScoutGame() {
               >
                 <div className="ms-card-img-preview">
                   <img
-                    src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level1-final.png`}
+                    src={LEVELS_DATA[1]?.image}
                     alt="Level 1 Cliff Path & Fence"
                     className="object-cover w-full h-full block"
                   />
@@ -566,7 +566,7 @@ export default function MountainScoutGame() {
               >
                 <div className="ms-card-img-preview">
                   <img
-                    src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level2-forest.png`}
+                    src={LEVELS_DATA[2]?.image}
                     alt="Level 2 Forest Shelf"
                     className="object-cover w-full h-full block"
                   />
@@ -605,7 +605,7 @@ export default function MountainScoutGame() {
               >
                 <div className="ms-card-img-preview">
                   <img
-                    src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level3-scree.png`}
+                    src={LEVELS_DATA[3]?.image}
                     alt="Level 3 Scree Rockfall"
                     className="object-cover w-full h-full block"
                   />

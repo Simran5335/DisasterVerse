@@ -1,11 +1,15 @@
 {
   "files": {
     "main.css": "/static/css/main.e3a05ba6.css",
-    "main.js": "/static/js/main.56d1309b.js",
+    "main.js": "/static/js/main.6eb96c7e.js",
+    "static/media/mountain-scout-level1-final.png": "/static/media/mountain-scout-level1-final.3491e0ee676400149218.png",
+    "static/media/mountain-scout-level2-forest.png": "/static/media/mountain-scout-level2-forest.a22edb2fc2f651edb928.png",
+    "static/media/mountain-scout-level3-scree.png": "/static/media/mountain-scout-level3-scree.6f108580b978ebf00c0a.png",
+    "static/media/Screenshot 2026-08-17 231432.png": "/static/media/Screenshot 2026-08-17 231432.5fb45e979cb997dfae8c.png",
     "index.html": "/index.html"
   },
   "entrypoints": [
     "static/css/main.e3a05ba6.css",
-    "static/js/main.56d1309b.js"
+    "static/js/main.6eb96c7e.js"
   ]
 }

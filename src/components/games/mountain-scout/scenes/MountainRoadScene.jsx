@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { LEVELS_DATA } from "../../../../data/mountainScoutData";
 
 export default function MountainRoadScene({
   hazards,
@@ -91,7 +92,7 @@ export default function MountainRoadScene({
       >
         <div className="ms-illustration-container">
           <img
-            src={`${process.env.PUBLIC_URL || ""}/images/mountain-scout-level2-forest.png`}
+            src={LEVELS_DATA[2]?.image}
             alt="Mountain Scout Level 2 Forest Shelf"
             className="ms-background-illustration absolute inset-0 w-full h-full object-cover object-center block"
             draggable="false"
