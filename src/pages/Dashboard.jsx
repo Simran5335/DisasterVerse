@@ -403,6 +403,204 @@ const Dashboard = () => {
           ]
         }
       ]
+    },
+    {
+      title: '💣 Bomb / Explosion',
+      image: '/bomb.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Report suspicious packages or objects.',
+            'Know building evacuation routes.',
+            'Keep emergency contacts accessible.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move away from the danger area.',
+            'Do not touch or move suspicious objects.',
+            'Follow police and emergency instructions.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Stay outside the restricted area.',
+            'Check for injuries and seek medical help.',
+            'Do not return until authorities declare it safe.'
+          ]
+        }
+      ]
+    },
+    {
+      title: '🧪 Chemical Emergency',
+      image: '/chemical.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Learn local chemical emergency procedures.',
+            'Know evacuation and shelter-in-place routes.',
+            'Keep emergency supplies ready.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move away from the release area.',
+            'Avoid touching spilled chemicals.',
+            'Shelter indoors if instructed and close windows.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Avoid the contaminated area.',
+            'Remove contaminated clothing if exposed.',
+            'Follow official decontamination instructions.'
+          ]
+        }
+      ]
+    },
+    {
+      title: '🌵 Drought',
+      image: '/drought.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Store safe drinking water.',
+            'Use water-efficient appliances and fixtures.',
+            'Follow local water-use restrictions.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Prioritize drinking and essential water needs.',
+            'Avoid unnecessary water use.',
+            'Protect vulnerable people from extreme heat.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Continue conserving water while restrictions remain.',
+            'Check local water-quality advisories.',
+            'Restock emergency water supplies.'
+          ]
+        }
+      ]
+    },
+    {
+      title: '⚡ Lightning',
+      image: '/lightning.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Check thunderstorm and lightning warnings.',
+            'Plan a sturdy indoor shelter.',
+            'Secure loose outdoor objects.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Move indoors immediately when thunder is heard.',
+            'Stay away from windows, doors, and plumbing.',
+            'Avoid open fields and tall isolated objects.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Wait at least 30 minutes after the last thunder.',
+            'Check for fire or electrical damage.',
+            'Avoid downed power lines.'
+          ]
+        }
+      ]
+    },
+    {
+      title: '☢️ Nuclear / Radiation Emergency',
+      image: '/nuclear.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Know your local emergency shelter locations.',
+            'Keep an emergency kit and water supply ready.',
+            'Learn official emergency alert channels.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Get inside the nearest sturdy building.',
+            'Move to the basement or center of the building.',
+            'Stay inside and follow official instructions.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Do not leave shelter until officials say it is safe.',
+            'Follow instructions about food and water safety.',
+            'Seek medical guidance if exposed to radiation.'
+          ]
+        }
+      ]
+    },
+    {
+      title: '🌋 Volcano',
+      image: '/volcano.png',
+      protocols: [
+        {
+          stage: '🟢 Before',
+          color: '#4ade80',
+          items: [
+            'Learn local volcano hazard zones.',
+            'Prepare an emergency kit and evacuation plan.',
+            'Keep masks or cloths available for ash protection.'
+          ]
+        },
+        {
+          stage: '🟠 During',
+          color: '#fbbf24',
+          items: [
+            'Evacuate immediately when ordered.',
+            'Stay away from lava, ash, and volcanic valleys.',
+            'Wear a mask and protect your eyes from ash.'
+          ]
+        },
+        {
+          stage: '🔵 After',
+          color: '#60a5fa',
+          items: [
+            'Avoid ash-covered roads and damaged areas.',
+            'Protect water and food from ash contamination.',
+            'Return only when authorities declare it safe.'
+          ]
+        }
+      ]
     }
   ];
 
@@ -474,33 +672,7 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        <div
-          style={styles.sidebarPromo}
-          onClick={() => {
-            setShowSettingsModal(true);
-            setMobileNavOpen(false);
-          }}
-        >
-          <p
-            style={{
-              margin: '0 0 4px 0',
-              fontSize: '13px',
-              fontWeight: 'bold',
-              color: '#fca5a5'
-            }}
-          >
-            ⚙️ Profile Settings
-          </p>
-
-          <span
-            style={{
-              fontSize: '11px',
-              color: '#9ca3af'
-            }}
-          >
-            Customize avatar, name & password
-          </span>
-        </div>
+        
       </aside>
 
       {/* MAIN CONTENT AREA */}
@@ -1249,6 +1421,21 @@ const Dashboard = () => {
             minmax(min(100%, 280px), 1fr)
           );
           gap: 16px;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        .dv-fluid-grid > * {
+          min-width: 0;
+          max-width: 100%;
+        }
+
+        .dv-main-content,
+        .dv-main-content > * {
+          min-width: 0;
+          max-width: 100%;
+          box-sizing: border-box;
         }
 
         @keyframes evolveGlow {
@@ -1318,6 +1505,19 @@ const Dashboard = () => {
 
           .dv-main-content {
             padding: 16px !important;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+          .dv-fluid-grid {
+            grid-template-columns: minmax(0, 1fr);
+            width: 100%;
+          }
+
+          .dv-fluid-grid > * {
+            width: 100%;
+            min-width: 0;
           }
 
           .dv-top-bar {
